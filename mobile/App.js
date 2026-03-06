@@ -23,6 +23,7 @@ import Timesheet from "./src/pages/Timesheet";
 import Leave from "./src/pages/Leave";
 import Overtime from "./src/pages/Overtime";
 import Schedule from "./src/pages/Schedule";
+import Profile from "./src/pages/Profile";
 
 import BottomNav from "./src/_components/layout/BottomNav";
 import { getTheme, COLORS } from "./src/_styles/theme";
@@ -33,6 +34,7 @@ const TimesheetStack = createNativeStackNavigator();
 const LeaveStack = createNativeStackNavigator();
 const OvertimeStack = createNativeStackNavigator();
 const ScheduleStack = createNativeStackNavigator();
+const ProfileStack = createNativeStackNavigator();
 
 /* ─── Custom Tab Bar using BottomNav ─── */
 
@@ -57,6 +59,7 @@ function CustomTabBar({ state, navigation }) {
           return;
         }
         if (tab === "Profile") {
+          navigation.navigate("Profile");
           return;
         }
         if (tab === "Requests") {
@@ -166,11 +169,31 @@ function ScheduleStackScreen() {
   );
 }
 
+function ProfileStackScreen({ onLogout }) {
+  const ProfileWithLogout = React.useCallback(
+    () => <Profile onLogout={onLogout} />,
+    [onLogout]
+  );
+  return (
+    <ProfileStack.Navigator screenOptions={defaultStackScreenOptions}>
+      <ProfileStack.Screen
+        name="ProfileScreen"
+        component={ProfileWithLogout}
+        options={{ title: "Profile" }}
+      />
+    </ProfileStack.Navigator>
+  );
+}
+
 /* ─── Main Tabs (authenticated) ─── */
 
 function MainTabs({ onLogout }) {
   const HomeScreenWithLogout = useCallback(
     () => <HomeStackScreen onLogout={onLogout} />,
+    [onLogout]
+  );
+  const ProfileScreenWithLogout = useCallback(
+    () => <ProfileStackScreen onLogout={onLogout} />,
     [onLogout]
   );
 
@@ -186,6 +209,7 @@ function MainTabs({ onLogout }) {
       <Tab.Screen name="Leave" component={LeaveStackScreen} />
       <Tab.Screen name="Overtime" component={OvertimeStackScreen} />
       <Tab.Screen name="Schedule" component={ScheduleStackScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreenWithLogout} />
     </Tab.Navigator>
   );
 }
