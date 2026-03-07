@@ -7,15 +7,7 @@ import { COLORS } from "../../_styles/theme";
  * Summary cards: Công tháng, OT tuần, Nghỉ phép tháng
  * TODO: replace hardcoded values with API data
  */
-export default function SummaryCards({ styles, theme }) {
-  // Sample data (replace with props or API)
-  const workedDays = 18;
-  const standardDays = 26;
-  const otHoursWeek = 4.5;
-
-  // Phép có lương: tổng buổi được nghỉ/tháng - số buổi đã dùng (nghỉ phép)
-  const paidLeavePerMonth = 2;   // tổng buổi phép có lương mỗi tháng
-  const usedPaidLeave = 0.5;     // số buổi đã xin nghỉ phép
+export default function SummaryCards({ styles, theme, workedDays = 0, standardDays = 0, otHoursWeek = 0, paidLeavePerMonth = 0, usedPaidLeave = 0 }) {
   const remainingLeave = paidLeavePerMonth - usedPaidLeave;
 
   return (

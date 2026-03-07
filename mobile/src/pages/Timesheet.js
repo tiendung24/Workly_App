@@ -34,42 +34,8 @@ const DIR_COLORS = {
   OUT: { bg: "#FEE2E2", text: "#EF4444" },
 };
 
-// Sample requests
-const SAMPLE_REQUESTS = [
-  {
-    id: "1",
-    type: "missed_checkout",
-    typeLabel: "Quên Check-out",
-    date: "04/03/2026",
-    day: 4, month: 2,
-    correctedTime: "17:30",
-    reason: "Quên bấm check-out do đang gọi điện cho khách hàng",
-    status: "approved",
-    createdAt: "04/03/2026",
-  },
-  {
-    id: "2",
-    type: "offsite",
-    typeLabel: "Làm việc ngoài",
-    date: "03/03/2026",
-    day: 3, month: 2,
-    correctedTime: "08:15",
-    reason: "Đi gặp khách hàng tại văn phòng đối tác buổi sáng",
-    status: "approved",
-    createdAt: "03/03/2026",
-  },
-  {
-    id: "3",
-    type: "wrong_time",
-    typeLabel: "Sai giờ ghi nhận",
-    date: "28/02/2026",
-    day: 28, month: 1,
-    correctedTime: "08:05",
-    reason: "Máy chấm công bị lỗi, ghi nhận check-in 09:30 thay vì 08:05",
-    status: "pending",
-    createdAt: "01/03/2026",
-  },
-];
+// TODO: fetch from API
+const INITIAL_REQUESTS = [];
 
 const TABS = [
   { key: "all", label: "All" },
@@ -81,7 +47,7 @@ const TABS = [
 export default function Timesheet({ navigation }) {
   const [tab, setTab] = useState("all");
   const [showForm, setShowForm] = useState(false);
-  const [requests, setRequests] = useState(SAMPLE_REQUESTS);
+  const [requests, setRequests] = useState(INITIAL_REQUESTS);
 
   const filteredRequests = tab === "all"
     ? requests

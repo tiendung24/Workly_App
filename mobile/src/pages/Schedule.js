@@ -39,55 +39,15 @@ function getCalendarDays(year, month) {
   return cells;
 }
 
-/* ═══════════════════════════════════════════
-   SAMPLE DATA (replace with API later)
-   ═══════════════════════════════════════════ */
+/* TODO: fetch from API */
 
 const today = new Date();
-const Y = today.getFullYear();
-const M = today.getMonth(); // 0-indexed
 
-// Public holidays
-const HOLIDAYS = new Set([`${Y}-${padTwo(M+1)}-01`]); // e.g. 1st of this month
-
-// Leave days
-const LEAVE_DAYS = {
-  [`${Y}-${padTwo(M+1)}-${padTwo(7)}`]: { type: "annual", reason: "Nghỉ phép năm" },
-  [`${Y}-${padTwo(M+1)}-${padTwo(20)}`]: { type: "sick", reason: "Nghỉ ốm" },
-};
-
-// Overtime days
-const OT_DAYS = {
-  [`${Y}-${padTwo(M+1)}-${padTwo(3)}`]: { hours: 2, reason: "Deadline project A" },
-  [`${Y}-${padTwo(M+1)}-${padTwo(5)}`]: { hours: 2.5, reason: "Client demo prep" },
-  [`${Y}-${padTwo(M+1)}-${padTwo(12)}`]: { hours: 3, reason: "Server migration" },
-};
-
-// Check-in records (past working days that were checked in)
-const CHECKIN_RECORDS = {};
-// Auto-generate for past working days this month
-for (let d = 1; d < today.getDate(); d++) {
-  const dt = new Date(Y, M, d);
-  const dow = dt.getDay(); // 0=Sun
-  const key = `${Y}-${padTwo(M+1)}-${padTwo(d)}`;
-  if (dow === 0) continue; // Sunday off
-  if (dow === 6) {
-    // Saturday: morning only if not on leave
-    if (!LEAVE_DAYS[key] && !HOLIDAYS.has(key)) {
-      CHECKIN_RECORDS[key] = { checkIn: "08:02", checkOut: "12:05", hours: 4, late: false };
-    }
-  } else {
-    if (!LEAVE_DAYS[key] && !HOLIDAYS.has(key)) {
-      const late = d === 4; // one day was late
-      CHECKIN_RECORDS[key] = {
-        checkIn: late ? "08:22" : "07:5" + (d % 9),
-        checkOut: "17:0" + (d % 8),
-        hours: 8,
-        late,
-      };
-    }
-  }
-}
+// Data will be populated from API
+const HOLIDAYS = new Set();     // e.g. "2026-03-01"
+const LEAVE_DAYS = {};          // e.g. { "2026-03-07": { type: "annual", reason: "..." } }
+const OT_DAYS = {};             // e.g. { "2026-03-03": { hours: 2, reason: "..." } }
+const CHECKIN_RECORDS = {};     // e.g. { "2026-03-04": { checkIn: "08:02", checkOut: "17:05", hours: 8, late: false } }
 
 function getDayData(year, month, day) {
   const key = `${year}-${padTwo(month + 1)}-${padTwo(day)}`;

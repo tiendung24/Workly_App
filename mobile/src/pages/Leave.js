@@ -46,7 +46,7 @@ export default function Leave({ navigation }) {
               ]}
             >
               <View style={styles.content}>
-                <LeaveBalance styles={styles} theme={theme} monthlyBalance={12} />
+                <LeaveBalance styles={styles} theme={theme} />
 
                 <View style={styles.sectionRow}>
                   <Text style={[styles.sectionTitle, { color: theme.text }]}>

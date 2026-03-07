@@ -13,36 +13,42 @@ import { profileStyles as s } from "../_styles/pages/profileStyles";
 import Layout from "../_components/layout/Layout";
 import { LinearGradient } from "expo-linear-gradient";
 
-const AVATAR_URL = "https://i.pravatar.cc/200?img=12";
-
-// Sample employee data (replace with API)
-const EMPLOYEE = {
-  name: "Nguyễn Văn A",
-  role: "Software Developer",
-  department: "Engineering",
-  employeeId: "NV-20231045",
-  email: "nguyenvana@company.com",
-  phone: "0912 345 678",
-  address: "12 Nguyễn Huệ, Quận 1, TP.HCM",
-  startDate: "15/06/2023",
-  position: "Main Office - Tầng 5",
+// TODO: pass employee data from API via props
+const DEFAULT_EMPLOYEE = {
+  name: "—",
+  role: "—",
+  department: "—",
+  employeeId: "—",
+  email: "—",
+  phone: "—",
+  address: "—",
+  startDate: "—",
+  position: "—",
 };
 
-const INFO_ITEMS = [
-  { icon: "badge", label: "Mã nhân viên", value: EMPLOYEE.employeeId, color: COLORS.primary },
-  { icon: "email", label: "Email", value: EMPLOYEE.email, color: "#2563EB" },
-  { icon: "phone", label: "Số điện thoại", value: EMPLOYEE.phone, color: "#10B981" },
-  { icon: "location-on", label: "Địa chỉ", value: EMPLOYEE.address, color: "#F59E0B" },
-  { icon: "date-range", label: "Ngày bắt đầu", value: EMPLOYEE.startDate, color: "#EF4444" },
-  { icon: "business", label: "Vị trí làm việc", value: EMPLOYEE.position, color: "#8B5CF6" },
-];
+function getInfoItems(emp) {
+  return [
+    { icon: "badge", label: "Mã nhân viên", value: emp.employeeId, color: COLORS.primary },
+    { icon: "email", label: "Email", value: emp.email, color: "#2563EB" },
+    { icon: "phone", label: "Số điện thoại", value: emp.phone, color: "#10B981" },
+    { icon: "location-on", label: "Địa chỉ", value: emp.address, color: "#F59E0B" },
+    { icon: "date-range", label: "Ngày bắt đầu", value: emp.startDate, color: "#EF4444" },
+    { icon: "business", label: "Vị trí làm việc", value: emp.position, color: "#8B5CF6" },
+  ];
+}
 
-const WORK_ITEMS = [
-  { icon: "work", label: "Phòng ban", value: EMPLOYEE.department, color: "#0EA5E9" },
-  { icon: "person", label: "Chức vụ", value: EMPLOYEE.role, color: "#EC4899" },
-];
+function getWorkItems(emp) {
+  return [
+    { icon: "work", label: "Phòng ban", value: emp.department, color: "#0EA5E9" },
+    { icon: "person", label: "Chức vụ", value: emp.role, color: "#EC4899" },
+  ];
+}
 
-export default function Profile({ onLogout }) {
+export default function Profile({ onLogout, employee, avatarUrl }) {
+  const emp = employee || DEFAULT_EMPLOYEE;
+  const INFO_ITEMS = getInfoItems(emp);
+  const WORK_ITEMS = getWorkItems(emp);
+
   return (
     <Layout>
       {({ theme, isDark, insets, isWeb, webPadding }) => (
@@ -62,18 +68,18 @@ export default function Profile({ onLogout }) {
             style={s.topSection}
           >
             <View style={s.avatarWrap}>
-              {AVATAR_URL ? (
-                <Image source={{ uri: AVATAR_URL }} style={s.avatar} />
+              {avatarUrl ? (
+                <Image source={{ uri: avatarUrl }} style={s.avatar} />
               ) : (
                 <View style={s.avatarFallback}>
                   <Text style={s.avatarInitial}>
-                    {EMPLOYEE.name.charAt(0)}
+                    {emp.name.charAt(0)}
                   </Text>
                 </View>
               )}
             </View>
-            <Text style={s.userName}>{EMPLOYEE.name}</Text>
-            <Text style={s.userRole}>{EMPLOYEE.role} • {EMPLOYEE.department}</Text>
+            <Text style={s.userName}>{emp.name}</Text>
+            <Text style={s.userRole}>{emp.role} • {emp.department}</Text>
             <TouchableOpacity style={s.editBtn} activeOpacity={0.8}>
               <MaterialIcons name="edit" size={14} color="#fff" />
               <Text style={s.editBtnText}>Edit Profile</Text>
