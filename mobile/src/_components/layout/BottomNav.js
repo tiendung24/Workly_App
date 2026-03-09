@@ -94,6 +94,16 @@ export default function BottomNav({
         />
       )}
 
+      {userRole === 'Admin' && (
+        <NavBtn
+          label="Admin"
+          icon="admin-panel-settings"
+          active={activeTab === "Admin"}
+          onPress={() => onTabChange("Admin")}
+          isDark={isDark}
+        />
+      )}
+
       <NavBtn
         label="Profile"
         icon="person"

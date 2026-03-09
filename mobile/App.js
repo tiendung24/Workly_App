@@ -29,8 +29,11 @@ import Overtime from "./src/pages/Overtime";
 import Schedule from "./src/pages/Schedule";
 import Profile from "./src/pages/Profile";
 import Approval from "./src/pages/Approval";
+import AdminDashboard from "./src/pages/admin/AdminDashboard";
+import AdminUsers from "./src/pages/admin/AdminUsers";
 
 import BottomNav from "./src/_components/layout/BottomNav";
+import AdminBottomNav from "./src/_components/layout/AdminBottomNav";
 import { getTheme, COLORS } from "./src/_styles/theme";
 
 const Tab = createBottomTabNavigator();
@@ -41,6 +44,7 @@ const OvertimeStack = createNativeStackNavigator();
 const ScheduleStack = createNativeStackNavigator();
 const ProfileStack = createNativeStackNavigator();
 const ApprovalStack = createNativeStackNavigator();
+const AdminStack = createNativeStackNavigator();
 
 /* ─── Custom Tab Bar using BottomNav ─── */
 
@@ -79,7 +83,33 @@ function CustomTabBar({ state, navigation }) {
         navigation.navigate(tab);
       }}
       bottomInset={safeBottomInset}
-      userRole={state.routes.find(r => r.name === 'Approval') ? 'Manager' : 'Employee'} // Hacky but works for BottomNav
+      userRole={state.routes.find(r => r.name === 'Admin') ? 'Admin' : state.routes.find(r => r.name === 'Approval') ? 'Manager' : 'Employee'} // Hacky but works for BottomNav
+    />
+  );
+}
+
+/* ─── Custom Tab Bar for Admin ─── */
+
+function AdminTabBar({ state, navigation }) {
+  const scheme = useColorScheme();
+  const isWeb = Platform.OS === "web";
+  const isDark = isWeb ? false : scheme === "dark";
+  const theme = useMemo(() => getTheme({ isDark }), [isDark]);
+  const insets = useSafeAreaInsets();
+  const safeBottomInset = typeof insets.bottom === "number" ? insets.bottom : 0;
+
+  const tabNames = state.routes.map((r) => r.name);
+  const activeTab = tabNames[state.index];
+
+  return (
+    <AdminBottomNav
+      theme={theme}
+      isDark={isDark}
+      activeTab={activeTab}
+      onTabChange={(tab) => {
+        navigation.navigate(tab);
+      }}
+      bottomInset={safeBottomInset}
     />
   );
 }
@@ -208,6 +238,23 @@ function ApprovalStackScreen() {
   );
 }
 
+function AdminStackScreen() {
+  return (
+    <AdminStack.Navigator screenOptions={defaultStackScreenOptions}>
+      <AdminStack.Screen
+        name="AdminDashboardScreen"
+        component={AdminDashboard}
+        options={{ title: "Admin Portal" }}
+      />
+      <AdminStack.Screen
+        name="AdminUsersScreen"
+        component={AdminUsers}
+        options={{ title: "Users" }}
+      />
+    </AdminStack.Navigator>
+  );
+}
+
 /* ─── Main Tabs (authenticated) ─── */
 
 function MainTabs({ onLogout, role }) {
@@ -233,9 +280,27 @@ function MainTabs({ onLogout, role }) {
       <Tab.Screen name="Overtime" component={OvertimeStackScreen} />
       <Tab.Screen name="Schedule" component={ScheduleStackScreen} />
       <Tab.Screen name="Profile" component={ProfileScreenWithLogout} />
-      {(role === 'Manager' || role === 'Admin') && (
+      {(role === 'Manager') && (
         <Tab.Screen name="Approval" component={ApprovalStackScreen} />
       )}
+    </Tab.Navigator>
+  );
+}
+
+function AdminTabs({ onLogout }) {
+  const ProfileScreenWithLogout = useCallback(
+    () => <ProfileStackScreen onLogout={onLogout} />,
+    [onLogout]
+  );
+  return (
+    <Tab.Navigator
+      tabBar={(props) => <AdminTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Tab.Screen name="Admin" component={AdminStackScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreenWithLogout} />
     </Tab.Navigator>
   );
 }
@@ -256,7 +321,11 @@ function RootNavigation() {
   return (
     <NavigationContainer>
       {userToken ? (
-        <MainTabs onLogout={logout} role={userInfo?.role?.name || userInfo?.role} />
+        userInfo?.role === 'Admin' || userInfo?.role?.name === 'Admin' ? (
+           <AdminTabs onLogout={logout} />
+        ) : (
+           <MainTabs onLogout={logout} role={userInfo?.role?.name || userInfo?.role} />
+        )
       ) : (
         authScreen === "register" ? (
           <Register onGoToLogin={() => setAuthScreen("login")} />

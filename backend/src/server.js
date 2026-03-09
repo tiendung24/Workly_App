@@ -24,6 +24,7 @@ app.use('/api/leave', require('./routes/leaveRoutes'));
 app.use('/api/overtime', require('./routes/overtimeRoutes'));
 app.use('/api/correction', require('./routes/correctionRoutes'));
 app.use('/api/manager', require('./routes/managerRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
 
 app.get('/', async (req, res) => {
     res.status(200).json({ message: 'Workly API is running 🚀' });
