@@ -16,6 +16,7 @@ import { formatTime } from "../_utils/dateTime";
 import { getQuickActions } from "../_utils/homeConfig";
 import { attendanceService } from "../_utils/attendanceService";
 import { AuthContext } from "../_utils/AuthContext";
+import Toast from "react-native-toast-message";
 
 const AVATAR_URL =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuC9wDdMYNbAG8bXNx5s6yV54bWQGDsIGcCxECKR3QZJfPiyvn6T76EsoxFMhW0UQXOcLzI4AaqxlVB3woa56wWJ-nqu5pl1lgoN_4t1EGGtRbe5fL3vtT_x3ECGXEACuePPGpo8Byy7wT08g0oDqGptbtiPlzb_XoGv_Wa5TiJKHhV54vpMnqypJcjhmBalHDKEGsyWrBJY4PZ6K-IAwTf4XpBwepPqYS56AJ1Gz4cph66NOlMS1o4N4_56ZJPznmZIAIvT_wFUobXG";
@@ -75,14 +76,14 @@ export default function Home({ navigation }) {
     try {
       if (type === "IN") {
         await attendanceService.checkIn();
-        alert("Check-in thành công!");
+        Toast.show({ type: 'success', text1: 'Thành công', text2: 'Check-in thành công!' });
       } else if (type === "OUT") {
         await attendanceService.checkOut();
-        alert("Check-out thành công!");
+        Toast.show({ type: 'success', text1: 'Thành công', text2: 'Check-out thành công!' });
       }
       await loadTodayStatus();
     } catch (error) {
-      alert("Lỗi: " + error.message);
+      Toast.show({ type: 'error', text1: 'Lỗi', text2: error.message || 'Có lỗi xảy ra' });
     } finally {
       setLoadingAction(false);
     }

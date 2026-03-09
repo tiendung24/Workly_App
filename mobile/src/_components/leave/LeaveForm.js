@@ -58,10 +58,21 @@ export default function LeaveForm({ visible, onClose, onSubmit, theme }) {
 
   const handleSubmit = () => {
     if (!leaveType || !startDate) return;
+    
+    const parseDate = (dStr) => {
+      if (!dStr) return null;
+      if (dStr.includes("-")) return dStr; // already parsed?
+      const parts = dStr.split("/");
+      if (parts.length === 3) {
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+      return dStr;
+    };
+
     onSubmit({
       type: leaveType,
-      startDate,
-      endDate: endDate || startDate,
+      startDate: parseDate(startDate),
+      endDate: parseDate(endDate || startDate),
       reason,
     });
     setLeaveType(null);

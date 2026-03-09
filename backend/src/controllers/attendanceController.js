@@ -1,4 +1,4 @@
-const { Attendance, WorkShift } = require('../models');
+const { Attendance, WorkShift, LeaveRequest, LeaveType } = require('../models');
 const { Op } = require('sequelize');
 const moment = require('moment'); // You might need to install moment, or use native Date
 
@@ -163,8 +163,43 @@ const getMonthly = async (req, res, next) => {
             order: [['date', 'ASC']]
         });
 
+        const leaves = await LeaveRequest.findAll({
+            where: {
+                user_id: userId,
+                status: 'Approved',
+                start_date: { [Op.lte]: endDate },
+                end_date: { [Op.gte]: startDate }
+            },
+            include: [{ model: LeaveType, as: 'leaveType' }]
+        });
+
+        // Convert db results to simple objects so we can merge
+        const dataMap = {};
+        attendances.forEach(a => {
+            dataMap[a.date] = a.toJSON();
+        });
+
+        leaves.forEach(lv => {
+            let curr = moment(lv.start_date);
+            const end = moment(lv.end_date);
+            while (curr.isSameOrBefore(end)) {
+                const dateStr = curr.format('YYYY-MM-DD');
+                if (dateStr >= startDate && dateStr <= endDate) {
+                    if (!dataMap[dateStr]) {
+                        dataMap[dateStr] = { date: dateStr };
+                    }
+                    dataMap[dateStr].status = 'Leave';
+                    dataMap[dateStr].leaveInfo = {
+                        type: lv.leaveType ? lv.leaveType.name : 'Nghỉ',
+                        reason: lv.reason
+                    };
+                }
+                curr.add(1, 'days');
+            }
+        });
+
         res.status(200).json({
-            data: attendances
+            data: Object.values(dataMap).sort((a, b) => a.date.localeCompare(b.date))
         });
 
     } catch (error) {

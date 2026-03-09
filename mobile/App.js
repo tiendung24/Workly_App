@@ -19,6 +19,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 // Auth Context
 import { AuthProvider, AuthContext } from "./src/_utils/AuthContext";
+import Toast from "react-native-toast-message";
 
 import Login from "./src/pages/Login";
 import Register from "./src/pages/Register";
@@ -31,6 +32,8 @@ import Profile from "./src/pages/Profile";
 import Approval from "./src/pages/Approval";
 import AdminDashboard from "./src/pages/admin/AdminDashboard";
 import AdminUsers from "./src/pages/admin/AdminUsers";
+import AdminConfig from "./src/pages/admin/AdminConfig";
+import AdminTimesheet from "./src/pages/admin/AdminTimesheet";
 
 import BottomNav from "./src/_components/layout/BottomNav";
 import AdminBottomNav from "./src/_components/layout/AdminBottomNav";
@@ -251,6 +254,16 @@ function AdminStackScreen() {
         component={AdminUsers}
         options={{ title: "Users" }}
       />
+      <AdminStack.Screen
+        name="AdminConfigScreen"
+        component={AdminConfig}
+        options={{ title: "Config" }}
+      />
+      <AdminStack.Screen
+        name="AdminTimesheetScreen"
+        component={AdminTimesheet}
+        options={{ title: "Timesheet" }}
+      />
     </AdminStack.Navigator>
   );
 }
@@ -345,6 +358,7 @@ export default function App() {
     <SafeAreaProvider>
       <AuthProvider>
         <RootNavigation />
+        <Toast />
       </AuthProvider>
     </SafeAreaProvider>
   );

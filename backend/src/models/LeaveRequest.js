@@ -42,6 +42,7 @@ const LeaveRequest = sequelize.define('LeaveRequest', {
 }, {
     tableName: 'LeaveRequests',
     updatedAt: false, // Bảng gốc chỉ có created_at
+    createdAt: 'created_at'
 });
 
 module.exports = LeaveRequest;

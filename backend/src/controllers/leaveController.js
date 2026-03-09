@@ -4,24 +4,49 @@ const { LeaveRequest, LeaveType, UserLeaveBalance } = require('../models');
 const getBalance = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        
-        // Find user's leave balance in the current year
         const currentYear = new Date().getFullYear();
-        const balance = await UserLeaveBalance.findOne({
-            where: { user_id: userId, year: currentYear }
+        
+        // 1. Lấy thông tin quỹ phép của user từ DB
+        let balance = await UserLeaveBalance.findOne({
+            where: { user_id: userId, year: currentYear },
+            include: [{ model: LeaveType, as: 'leaveType' }]
         });
 
+        // 2. Nếu chưa có, tự động cấp phát dựa trên cấu hình LeaveType
         if (!balance) {
-            // Mặc định trả về 0 nếu chưa có cấu hình
-            return res.status(200).json({
-                message: 'Chưa có thông tin phép năm nay',
-                data: { total_days: 0, used_days: 0, remaining_days: 0 }
+            const leaveType = await LeaveType.findOne({
+                where: { name: 'Nghỉ Phép Năm' }
             });
+
+            if (leaveType) {
+                balance = await UserLeaveBalance.create({
+                    user_id: userId,
+                    leave_type_id: leaveType.id,
+                    year: currentYear,
+                    total_days: leaveType.default_days || 12,
+                    used_days: 0
+                });
+                
+                // Fetch again to include the leftType data natively or just return created
+                balance = await UserLeaveBalance.findOne({
+                    where: { id: balance.id },
+                    include: [{ model: LeaveType, as: 'leaveType' }]
+                });
+            } else {
+                return res.status(200).json({
+                    message: 'Chưa có cấu hình nghỉ phép',
+                    data: { total_days: 0, used_days: 0, remaining_days: 0 }
+                });
+            }
         }
 
         res.status(200).json({
             message: 'Thành công',
-            data: balance
+            data: {
+               total_days: balance.total_days,
+               used_days: balance.used_days,
+               remaining_days: balance.total_days - balance.used_days
+            }
         });
 
     } catch (error) {

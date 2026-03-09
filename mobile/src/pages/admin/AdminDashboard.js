@@ -81,7 +81,12 @@ export default function AdminDashboard({ navigation }) {
                   key={item.id}
                   style={[s.card, { backgroundColor: theme.card }]}
                   activeOpacity={0.8}
-                  onPress={() => item.id === "AdminUsers" ? navigation.navigate("AdminUsersScreen") : alert("Tính năng đang phát triển")}
+                  onPress={() => {
+                    if (item.id === "AdminUsers") navigation.navigate("AdminUsersScreen");
+                    else if (item.id === "AdminTimesheet") navigation.navigate("AdminTimesheetScreen");
+                    else if (item.id === "AdminConfig") navigation.navigate("AdminConfigScreen");
+                    else alert("Chức năng Cơ cấu tổ chức đang phát triển");
+                  }}
                 >
                   <View style={s.row}>
                     <View style={{ flexDirection: "row", alignItems: "center" }}>

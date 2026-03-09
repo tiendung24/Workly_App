@@ -14,6 +14,8 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../_styles/theme";
 import { loginStyles as s } from "../_styles/pages/loginStyles";
+import Toast from "react-native-toast-message";
+
 export default function Login({ onGoToRegister }) {
   const { login } = useContext(AuthContext);
   const [email, setEmail] = useState("");
@@ -25,14 +27,14 @@ export default function Login({ onGoToRegister }) {
 
   const handleLogin = async () => {
     if (!canSubmit) {
-      if (email.trim().length === 0) return alert("Please enter your email.");
-      if (password.trim().length === 0) return alert("Please enter your password.");
+      if (email.trim().length === 0) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Please enter your email.' });
+      if (password.trim().length === 0) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Please enter your password.' });
       return;
     }
     Keyboard.dismiss();
     const result = await login(email, password);
     if (!result.success) {
-      alert(result.message || "Login failed");
+      Toast.show({ type: 'error', text1: 'Lỗi', text2: result.message || "Login failed" });
     }
   };
 

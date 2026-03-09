@@ -1,4 +1,5 @@
-const { User, LeaveRequest, OvertimeRequest, CorrectionRequest, LeaveType } = require('../models');
+const { User, LeaveRequest, OvertimeRequest, CorrectionRequest, LeaveType, UserLeaveBalance } = require('../models');
+const moment = require('moment');
 
 // GET /api/manager/requests
 const getTeamRequests = async (req, res, next) => {
@@ -87,6 +88,27 @@ const updateRequestStatus = async (req, res, next) => {
         // Ensure the manager approving is actually the user's manager
         if (item.user.manager_id !== managerId) {
             return res.status(403).json({ message: 'Không có quyền duyệt đơn này' });
+        }
+
+        // Process specific hook for Leave Approval
+        if (modelClass === LeaveRequest && status === 'Approved') {
+             // Lấy chi tiết phép
+             const leaveDetail = await LeaveRequest.findByPk(id, { include: [{ model: LeaveType, as: 'leaveType' }] });
+             if (leaveDetail && leaveDetail.leaveType && leaveDetail.leaveType.name.includes('Phép Năm')) {
+                  const start = moment(leaveDetail.start_date);
+                  const end = moment(leaveDetail.end_date);
+                  const diffDays = end.diff(start, 'days') + 1;
+
+                  const currentYear = new Date().getFullYear();
+                  const balance = await UserLeaveBalance.findOne({
+                      where: { user_id: item.user_id, leave_type_id: leaveDetail.leave_type_id, year: currentYear }
+                  });
+                  
+                  if (balance) {
+                      balance.used_days += diffDays;
+                      await balance.save();
+                  }
+             }
         }
 
         item.status = status;

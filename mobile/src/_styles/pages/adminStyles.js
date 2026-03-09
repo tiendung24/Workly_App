@@ -78,5 +78,12 @@ export const adminStyles = StyleSheet.create({
   badgeText: {
     fontSize: 12,
     fontWeight: "bold",
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    fontSize: 14,
   }
 });

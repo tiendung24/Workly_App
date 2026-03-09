@@ -41,6 +41,7 @@ const CorrectionRequest = sequelize.define('CorrectionRequest', {
 }, {
     tableName: 'CorrectionRequests',
     updatedAt: false,
+    createdAt: 'created_at'
 });
 
 module.exports = CorrectionRequest;

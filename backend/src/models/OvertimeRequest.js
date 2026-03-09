@@ -42,6 +42,7 @@ const OvertimeRequest = sequelize.define('OvertimeRequest', {
 }, {
     tableName: 'OvertimeRequests',
     updatedAt: false,
+    createdAt: 'created_at'
 });
 
 module.exports = OvertimeRequest;

@@ -14,6 +14,7 @@ import LeaveList from "../_components/leave/LeaveList";
 import FloatingAddButton from "../_components/leave/FloatingAddButton";
 import LeaveForm from "../_components/leave/LeaveForm";
 import { leaveService } from "../_utils/leaveService";
+import Toast from "react-native-toast-message";
 
 export default function Leave({ navigation }) {
   const [tab, setTab] = useState("all");
@@ -55,10 +56,11 @@ export default function Leave({ navigation }) {
       });
       if (res.data) {
         setShowForm(false);
+        Toast.show({ type: 'success', text1: 'Thành công', text2: 'Tạo đơn phép thành công!' });
         loadData(); // Refresh list 
       }
     } catch (error) {
-      alert("Error creating request: " + error.message);
+      Toast.show({ type: 'error', text1: 'Lỗi', text2: error.message || 'Không thể tạo đơn' });
     } finally {
       setLoading(false);
     }
@@ -94,7 +96,11 @@ export default function Leave({ navigation }) {
                   value={tab}
                   onChange={setTab}
                 />
-                <LeaveList styles={styles} theme={theme} items={leaveRequests} />
+                <LeaveList 
+                  styles={styles} 
+                  theme={theme} 
+                  items={leaveRequests.filter(r => tab === 'all' || r.status.toLowerCase() === tab)} 
+                />
               </View>
             </ScrollView>
 

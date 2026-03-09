@@ -14,6 +14,8 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../_styles/theme";
 import { loginStyles as s } from "../_styles/pages/loginStyles";
+import Toast from "react-native-toast-message";
+
 export default function Register({ onGoToLogin }) {
   const { register } = useContext(AuthContext);
   const [fullName, setFullName] = useState("");
@@ -34,10 +36,10 @@ export default function Register({ onGoToLogin }) {
 
   const handleRegister = async () => {
     if (!canSubmit) {
-      if (fullName.trim().length === 0) return alert("Please enter your full name.");
-      if (email.trim().length === 0) return alert("Please enter your email.");
-      if (password.trim().length < 6) return alert("Password must be at least 6 characters.");
-      if (!passwordsMatch) return alert("Passwords do not match.");
+      if (fullName.trim().length === 0) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Please enter your full name.' });
+      if (email.trim().length === 0) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Please enter your email.' });
+      if (password.trim().length < 6) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Password must be at least 6 characters.' });
+      if (!passwordsMatch) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Passwords do not match.' });
       return;
     }
     Keyboard.dismiss();
@@ -52,7 +54,7 @@ export default function Register({ onGoToLogin }) {
     });
     
     if (!result.success) {
-      alert(result.message || "Registration failed");
+      Toast.show({ type: 'error', text1: 'Lỗi', text2: result.message || "Registration failed" });
     }
   };
 

@@ -73,7 +73,10 @@ function getDayData(year, month, day, apiData) {
           // Could leave as work and it just has no checkin
       } else if (record.status === 'Leave') {
           type = "leave"; timeRange = "";
-          leave = { type: 'annual', reason: 'Tự động mapping' };
+          leave = { 
+              type: record.leaveInfo?.type?.toLowerCase().includes("ốm") ? 'sick' : 'annual', 
+              reason: `${record.leaveInfo?.type || 'Nghỉ'} - ${record.leaveInfo?.reason || ''}` 
+          };
       } else if (record.status === 'Holiday') {
           type = "holiday"; timeRange = "";
       } else if (record.status === 'Off') {

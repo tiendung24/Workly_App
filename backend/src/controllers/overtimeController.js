@@ -1,4 +1,5 @@
 const { OvertimeRequest } = require('../models');
+const moment = require('moment');
 
 // GET /api/overtime/requests
 const getRequests = async (req, res, next) => {
@@ -19,16 +20,27 @@ const getRequests = async (req, res, next) => {
 const createRequest = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { date, hours, reason } = req.body;
+        const { date, start_time, end_time, reason } = req.body;
 
-        if (!date || !hours) {
-            return res.status(400).json({ message: 'Vui lòng cung cấp ngày và số giờ tăng ca' });
+        if (!date || !start_time || !end_time) {
+            return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin ngày và giờ' });
+        }
+
+        // Calculate hours
+        const t1 = moment(start_time, "HH:mm");
+        const t2 = moment(end_time, "HH:mm");
+        const total_hours = t2.diff(t1, 'hours', true);
+
+        if (total_hours <= 0) {
+            return res.status(400).json({ message: 'Giờ kết thúc phải lớn hơn giờ bắt đầu' });
         }
 
         const newRequest = await OvertimeRequest.create({
             user_id: userId,
             date,
-            hours,
+            start_time,
+            end_time,
+            total_hours,
             reason: reason || '',
             status: 'Pending'
         });

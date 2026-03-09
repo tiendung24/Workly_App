@@ -11,6 +11,7 @@ import StatusTabs from "../_components/overtime/StatusTabs";
 import OvertimeList from "../_components/overtime/OvertimeList";
 import OvertimeForm from "../_components/overtime/OvertimeForm";
 import { overtimeService } from "../_utils/requestService";
+import Toast from "react-native-toast-message";
 
 export default function Overtime({ navigation }) {
   const [tab, setTab] = useState("all");
@@ -33,21 +34,30 @@ export default function Overtime({ navigation }) {
     }
   };
 
+  const parseDate = (d) => {
+    if (!d) return null;
+    if (d.includes('-')) return d; // already formatted
+    const [day, month, year] = d.split('/');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleSubmitOT = async (data) => {
     if (loading) return;
     setLoading(true);
     try {
       const res = await overtimeService.createRequest({
-        date: data.date,
-        hours: data.hours,
+        date: parseDate(data.date),
+        start_time: data.startTime,
+        end_time: data.endTime,
         reason: data.reason
       });
       if (res && res.data) {
         setShowForm(false);
+        Toast.show({ type: "success", text1: "Thành công", text2: "Ghi nhận đơn làm thêm giờ thành công!" });
         loadData(); // Refresh list
       }
     } catch (error) {
-      alert("Error creating OT request: " + error.message);
+       Toast.show({ type: "error", text1: "Lỗi", text2: error.response?.data?.message || error.message || "Có lỗi xảy ra" });
     } finally {
       setLoading(false);
     }

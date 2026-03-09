@@ -120,6 +120,59 @@ export const leaveStyles = StyleSheet.create({
   emptyTitle: { fontSize: 13, fontWeight: "900" },
   emptyDesc: { fontSize: 12, fontWeight: "800", marginTop: 6, lineHeight: 16 },
 
+  // History Card styles
+  historyCard: {
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+  },
+  historyRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  historyType: {
+    fontSize: 15,
+    fontWeight: "900",
+    marginBottom: 4,
+  },
+  historyDates: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  historyStatusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    gap: 4,
+  },
+  historyStatusText: {
+    fontSize: 11,
+    fontWeight: "900",
+  },
+  historyReason: {
+    fontSize: 13,
+    fontWeight: "600",
+    fontStyle: "italic",
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  managerCommentBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 8,
+  },
+  managerCommentText: {
+    fontSize: 12,
+    fontWeight: "700",
+    flexShrink: 1,
+  },
+
   // FAB
   fabWrap: { position: "absolute", right: 18, zIndex: 50 },
   fab: {
