@@ -156,4 +156,8 @@ CREATE TABLE CorrectionRequests (
     FOREIGN KEY (approver_id) REFERENCES Users(id)
 );
 
+UPDATE Users SET role = 'Admin' WHERE email = 'admin@gmail.com';
+
+
+
 select * from Users ;

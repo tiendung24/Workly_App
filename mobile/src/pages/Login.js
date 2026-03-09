@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Keyboard,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../_styles/theme";
@@ -23,7 +24,12 @@ export default function Login({ onGoToRegister }) {
   const canSubmit = email.trim().length > 0 && password.trim().length > 0;
 
   const handleLogin = async () => {
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      if (email.trim().length === 0) return alert("Please enter your email.");
+      if (password.trim().length === 0) return alert("Please enter your password.");
+      return;
+    }
+    Keyboard.dismiss();
     const result = await login(email, password);
     if (!result.success) {
       alert(result.message || "Login failed");
@@ -132,10 +138,9 @@ export default function Login({ onGoToRegister }) {
 
             {/* Login Button */}
             <TouchableOpacity
-              style={[s.loginBtn, !canSubmit && { opacity: 0.6 }]}
+              style={s.loginBtn}
               activeOpacity={0.85}
               onPress={handleLogin}
-              disabled={!canSubmit}
             >
               <MaterialIcons name="login" size={20} color="#fff" />
               <Text style={s.loginBtnText}>Sign In</Text>

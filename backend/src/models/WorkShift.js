@@ -21,6 +21,7 @@ const WorkShift = sequelize.define('WorkShift', {
     },
 }, {
     tableName: 'WorkShifts',
+    timestamps: false
 });
 
 module.exports = WorkShift;

@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Keyboard,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../_styles/theme";
@@ -32,7 +33,14 @@ export default function Register({ onGoToLogin }) {
     passwordsMatch;
 
   const handleRegister = async () => {
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      if (fullName.trim().length === 0) return alert("Please enter your full name.");
+      if (email.trim().length === 0) return alert("Please enter your email.");
+      if (password.trim().length < 6) return alert("Password must be at least 6 characters.");
+      if (!passwordsMatch) return alert("Passwords do not match.");
+      return;
+    }
+    Keyboard.dismiss();
     // Hardcode employee_code generation for now
     const employee_code = "EMP" + Math.floor(Math.random() * 10000);
     const result = await register({ 
@@ -243,10 +251,9 @@ export default function Register({ onGoToLogin }) {
 
             {/* Register Button */}
             <TouchableOpacity
-              style={[s.loginBtn, !canSubmit && { opacity: 0.6 }, { marginTop: 20 }]}
+              style={[s.loginBtn, { marginTop: 20 }]}
               activeOpacity={0.85}
               onPress={handleRegister}
-              disabled={!canSubmit}
             >
               <MaterialIcons name="person-add" size={20} color="#fff" />
               <Text style={s.loginBtnText}>Create Account</Text>

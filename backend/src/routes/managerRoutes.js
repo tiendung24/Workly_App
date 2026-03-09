@@ -5,7 +5,8 @@ const { verifyToken, requireRole } = require('../middleware/auth');
 
 // Chỉ manager mới được gọi các route này
 router.use(verifyToken);
-// router.use(requireRole(['Manager', 'Admin'])); // Cần thì bật, hoặc tự handle trong controller
+router.use(requireRole('Manager', 'Admin'));
+
 router.get('/requests', managerController.getTeamRequests);
 router.patch('/approve/:type/:id', managerController.updateRequestStatus);
 
