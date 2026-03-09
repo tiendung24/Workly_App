@@ -24,15 +24,16 @@ const STATUS_COLORS = {
 };
 
 const TYPE_ICONS = {
-  missed_checkout: { icon: "logout", color: "#EF4444", dir: "OUT" },
-  missed_checkin: { icon: "login", color: "#F59E0B", dir: "IN" },
-  wrong_time: { icon: "edit-calendar", color: "#2563EB", dir: "IN" },
-  offsite: { icon: "location-on", color: "#10B981", dir: "IN" },
+  Forgot_CheckOut: { icon: "logout", color: "#EF4444", dir: "OUT", label: "Quên Check-out" },
+  Forgot_CheckIn: { icon: "login", color: "#F59E0B", dir: "IN", label: "Quên Check-in" },
+  Wrong_Time: { icon: "edit-calendar", color: "#2563EB", dir: "IN/OUT", label: "Sai giờ ghi nhận" },
+  Work_Outside: { icon: "location-on", color: "#10B981", dir: "IN", label: "Làm việc ngoài" },
 };
 
 const DIR_COLORS = {
   IN: { bg: "#D1FAE5", text: "#059669" },
   OUT: { bg: "#FEE2E2", text: "#EF4444" },
+  "IN/OUT": { bg: "#DBEAFE", text: "#2563EB" },
 };
 
 // TODO: fetch from API
@@ -63,15 +64,44 @@ export default function Timesheet({ navigation }) {
         const mapped = res.data.map(r => {
           const d = new Date(r.date);
           const crt = new Date(r.createdAt || r.created_at || new Date());
+          
+          let timeStr = "";
+          let computedDir = "IN";
+
+          if (r.type === "Wrong_Time") {
+              if (r.requested_check_in) {
+                  computedDir = "IN";
+                  timeStr = new Date(r.requested_check_in).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+              } else if (r.requested_check_out) {
+                  computedDir = "OUT";
+                  timeStr = new Date(r.requested_check_out).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+              }
+          } else if (r.type === "Work_Outside") {
+              computedDir = "IN/OUT";
+              if (r.requested_check_in && r.requested_check_out) {
+                  const start = new Date(r.requested_check_in).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+                  const end = new Date(r.requested_check_out).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+                  timeStr = `${start} - ${end}`;
+              }
+          } else {
+             computedDir = TYPE_ICONS[r.type]?.dir || "IN";
+             if (r.requested_check_in) {
+                 timeStr = new Date(r.requested_check_in).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+             } else if (r.requested_check_out) {
+                 timeStr = new Date(r.requested_check_out).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+             }
+          }
+
           return {
             id: r.id.toString(),
             day: d.getDate(),
-            month: d.getMonth(), // 0-indexed
-            type: r.correction_type.toLowerCase().replace(" ", "_"), // Simple mapping assumption
-            typeLabel: r.correction_type,
+            month: d.getMonth(), 
+            type: r.type, 
+            typeLabel: TYPE_ICONS[r.type]?.label || r.type,
             reason: r.reason,
-            status: r.status.toLowerCase(), // pending, approved, rejected
-            correctedTime: r.correct_time, 
+            status: r.status.toLowerCase(), 
+            correctedTime: timeStr, 
+            dir: computedDir,
             createdAt: crt.toLocaleDateString("en-GB")
           };
         });
@@ -103,8 +133,9 @@ export default function Timesheet({ navigation }) {
       
       const res = await correctionService.createRequest({
         date: dt,
-        correction_type: data.type,
-        correct_time: data.correctedTime,
+        type: data.type,
+        requested_check_in: data.requested_check_in,
+        requested_check_out: data.requested_check_out,
         reason: data.reason
       });
       if (res && res.data) {
@@ -213,8 +244,8 @@ export default function Timesheet({ navigation }) {
                             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                               <Text style={[styles.requestDetailValue, { color: theme.text }]}>{req.correctedTime}</Text>
                               {(() => {
-                                const dir = ti.dir || "IN";
-                                const dc = DIR_COLORS[dir];
+                                const dir = req.dir || ti.dir || "IN";
+                                const dc = DIR_COLORS[dir] || DIR_COLORS["IN"];
                                 return (
                                   <View style={{ backgroundColor: dc.bg, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
                                     <Text style={{ fontSize: 9, fontWeight: "900", color: dc.text }}>{dir}</Text>
