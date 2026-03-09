@@ -16,6 +16,7 @@ const Department = sequelize.define('Department', {
     },
 }, {
     tableName: 'Departments',
+    timestamps: false,
 });
 
 module.exports = Department;

@@ -160,4 +160,4 @@ UPDATE Users SET role = 'Admin' WHERE email = 'admin@gmail.com';
 
 
 
-select * from LeaveRequests ;
+select * from Users ;

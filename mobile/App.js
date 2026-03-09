@@ -9,8 +9,16 @@ import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator
+  ActivityIndicator,
+  LogBox
 } from "react-native";
+
+// Ignore third-party deprecation warnings on Web
+LogBox.ignoreLogs([
+  "props.pointerEvents is deprecated",
+  "Warning: props.pointerEvents is deprecated"
+]);
+
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";

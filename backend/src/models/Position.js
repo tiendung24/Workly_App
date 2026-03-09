@@ -13,6 +13,7 @@ const Position = sequelize.define('Position', {
     },
 }, {
     tableName: 'Positions',
+    timestamps: false,
 });
 
 module.exports = Position;

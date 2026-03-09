@@ -13,7 +13,7 @@ const generateToken = (user) => {
 // POST /api/auth/register
 const register = async (req, res, next) => {
     try {
-        const { employee_code, full_name, email, password, phone, address, department_id, position_id } = req.body;
+        const { employee_code, full_name, email, password, phone, address, department_name, position_name, start_date } = req.body;
 
         // Validate input
         if (!employee_code || !full_name || !email || !password) {
@@ -32,6 +32,26 @@ const register = async (req, res, next) => {
             return res.status(400).json({ message: 'Mã nhân viên đã tồn tại' });
         }
 
+        // Xử lý Department bằng chữ
+        let finalDepartmentId = null;
+        if (department_name && department_name.trim() !== "") {
+            const [dept] = await Department.findOrCreate({
+                where: { name: department_name.trim() },
+                defaults: { name: department_name.trim() }
+            });
+            finalDepartmentId = dept.id;
+        }
+
+        // Xử lý Position bằng chữ
+        let finalPositionId = null;
+        if (position_name && position_name.trim() !== "") {
+            const [pos] = await Position.findOrCreate({
+                where: { name: position_name.trim() },
+                defaults: { name: position_name.trim() }
+            });
+            finalPositionId = pos.id;
+        }
+
         // Tạo user (password sẽ tự hash nhờ hook beforeCreate)
         const user = await User.create({
             employee_code,
@@ -40,9 +60,9 @@ const register = async (req, res, next) => {
             password_hash: password, // Hook beforeCreate sẽ hash
             phone,
             address,
-            department_id: department_id || null,
-            position_id: position_id || null,
-            start_date: new Date(),
+            department_id: finalDepartmentId,
+            position_id: finalPositionId,
+            start_date: start_date ? new Date(start_date) : new Date(),
         });
 
         const token = generateToken(user);
@@ -53,6 +73,7 @@ const register = async (req, res, next) => {
             user: user.toJSON(),
         });
     } catch (error) {
+        console.error("Registration Error:", error);
         next(error);
     }
 };
