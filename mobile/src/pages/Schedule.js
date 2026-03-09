@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -85,11 +86,56 @@ function getDayData(year, month, day, apiData) {
       
       // Populate Checkin Data (Late, etc)
       if (record.checkIn || record.checkOut || record.status === 'Present' || record.status === 'Late' || record.status === 'EarlyLeave') {
+          let actualHoursLabel = '—';
+          let lateMins = 0;
+          let earlyMins = 0;
+
+          const cInDate = record.checkIn ? new Date(record.checkIn) : null;
+          const cOutDate = record.checkOut ? new Date(record.checkOut) : null;
+
+          if (cInDate && cOutDate) {
+              const diffMs = cOutDate - cInDate;
+              const diffMins = Math.floor(diffMs / 60000);
+              
+              if (diffMins < 60) {
+                  actualHoursLabel = `${diffMins} phút`;
+              } else {
+                  const hrs = Math.floor(diffMins / 60);
+                  const mns = diffMins % 60;
+                  actualHoursLabel = mns > 0 ? `${hrs}h ${mns}m` : `${hrs}h`;
+              }
+          }
+
+          // Calculate Late/Early based on Time Range (e.g., "08:00-17:00")
+          if (timeRange && timeRange.includes("-")) {
+              const [sTr, eTr] = timeRange.split("-");
+              if (sTr && eTr && cInDate) {
+                  const expectedIn = new Date(cInDate);
+                  const [inH, inM] = sTr.split(":");
+                  expectedIn.setHours(parseInt(inH, 10), parseInt(inM, 10), 0, 0);
+                  
+                  if (cInDate > expectedIn) {
+                      lateMins = Math.floor((cInDate - expectedIn) / 60000);
+                  }
+              }
+              if (sTr && eTr && cOutDate) {
+                  const expectedOut = new Date(cOutDate);
+                  const [outH, outM] = eTr.split(":");
+                  expectedOut.setHours(parseInt(outH, 10), parseInt(outM, 10), 0, 0);
+
+                  if (cOutDate < expectedOut) {
+                      earlyMins = Math.floor((expectedOut - cOutDate) / 60000);
+                  }
+              }
+          }
+
           checkin = {
-              checkIn: record.checkIn ? new Date(record.checkIn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}) : '—',
-              checkOut: record.checkOut ? new Date(record.checkOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}) : '—',
-              hours: record.checkOut ? 8 : (record.checkIn ? 4 : 0), // rough dummy
-              late: record.status === 'Late'
+              checkIn: cInDate ? cInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}) : '—',
+              checkOut: cOutDate ? cOutDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}) : '—',
+              hoursLabel: actualHoursLabel,
+              late: record.status === 'Late' || lateMins > 0,
+              lateMins,
+              earlyMins
           };
       }
   }
@@ -235,15 +281,39 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
       iconBg: "#E0E7FF",
       iconColor: "#4338CA",
       label: "Actual Hours",
-      value: `${checkin.hours}h`,
+      value: checkin.hoursLabel,
     });
-    if (checkin.late) {
+    if (checkin.lateMins > 0) {
+      const h = Math.floor(checkin.lateMins / 60);
+      const m = checkin.lateMins % 60;
+      const lateStr = h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m} phút`;
       rows.push({
+        icon: "warning",
+        iconBg: "#FEF3C7",
+        iconColor: "#D97706",
+        label: "Late Arrival",
+        value: `Trễ ${lateStr}`,
+      });
+    } else if (checkin.late) {
+       // Fallback to simple "Đi trễ" if lateMins = 0 but status was somehow Late
+       rows.push({
         icon: "warning",
         iconBg: "#FEF3C7",
         iconColor: "#D97706",
         label: "Status",
         value: "Đi trễ",
+      });
+    }
+    if (checkin.earlyMins > 0) {
+      const h2 = Math.floor(checkin.earlyMins / 60);
+      const m2 = checkin.earlyMins % 60;
+      const earlyStr = h2 > 0 ? (m2 > 0 ? `${h2}h ${m2}m` : `${h2}h`) : `${m2} phút`;
+      rows.push({
+        icon: "run-circle",
+        iconBg: "#FEF3C7",
+        iconColor: "#D97706",
+        label: "Early Leave",
+        value: `Sớm ${earlyStr}`,
       });
     }
   }
@@ -377,9 +447,11 @@ export default function Schedule() {
   const cells = useMemo(() => getCalendarDays(viewYear, viewMonth), [viewYear, viewMonth]);
   const monthLabel = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
 
-  useEffect(() => {
-    loadScheduleData(viewYear, viewMonth + 1); // API expects 1-indexed month
-  }, [viewYear, viewMonth]);
+  useFocusEffect(
+    useCallback(() => {
+      loadScheduleData(viewYear, viewMonth + 1); // API expects 1-indexed month
+    }, [viewYear, viewMonth])
+  );
 
   const loadScheduleData = async (year, month) => {
     try {

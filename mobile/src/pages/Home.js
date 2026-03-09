@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState, useContext } from "react";
+import React, { useEffect, useMemo, useState, useContext, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   ScrollView,
@@ -45,10 +46,12 @@ export default function Home({ navigation }) {
     return () => clearInterval(t);
   }, []);
 
-  // Fetch today status on mount
-  useEffect(() => {
-    loadTodayStatus();
-  }, []);
+  // Fetch today status on mount/focus
+  useFocusEffect(
+    useCallback(() => {
+      loadTodayStatus();
+    }, [])
+  );
 
   const loadTodayStatus = async () => {
     try {
