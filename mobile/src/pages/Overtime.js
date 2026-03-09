@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -10,21 +10,47 @@ import OvertimeSummary from "../_components/overtime/OvertimeSummary";
 import StatusTabs from "../_components/overtime/StatusTabs";
 import OvertimeList from "../_components/overtime/OvertimeList";
 import OvertimeForm from "../_components/overtime/OvertimeForm";
+import { overtimeService } from "../_utils/requestService";
 
 export default function Overtime({ navigation }) {
   const [tab, setTab] = useState("all");
   const [otRequests, setOtRequests] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmitOT = (data) => {
-    const newRequest = {
-      id: Date.now().toString(),
-      ...data,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
-    setOtRequests((prev) => [newRequest, ...prev]);
-    setShowForm(false);
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const res = await overtimeService.getRequests();
+      if (res && res.data) {
+        setOtRequests(res.data);
+      }
+    } catch (error) {
+      console.log("Error loading OT requests:", error);
+    }
+  };
+
+  const handleSubmitOT = async (data) => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const res = await overtimeService.createRequest({
+        date: data.date,
+        hours: data.hours,
+        reason: data.reason
+      });
+      if (res && res.data) {
+        setShowForm(false);
+        loadData(); // Refresh list
+      }
+    } catch (error) {
+      alert("Error creating OT request: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

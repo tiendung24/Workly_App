@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../_utils/AuthContext";
 import {
   View,
   Text,
@@ -12,8 +13,8 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../_styles/theme";
 import { loginStyles as s } from "../_styles/pages/loginStyles";
-
-export default function Register({ onRegister, onGoToLogin }) {
+export default function Register({ onGoToLogin }) {
+  const { register } = useContext(AuthContext);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -30,9 +31,21 @@ export default function Register({ onRegister, onGoToLogin }) {
     password.trim().length >= 6 &&
     passwordsMatch;
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!canSubmit) return;
-    onRegister({ fullName, email, phone, password });
+    // Hardcode employee_code generation for now
+    const employee_code = "EMP" + Math.floor(Math.random() * 10000);
+    const result = await register({ 
+      full_name: fullName, 
+      email, 
+      phone, 
+      password,
+      employee_code
+    });
+    
+    if (!result.success) {
+      alert(result.message || "Registration failed");
+    }
   };
 
   return (

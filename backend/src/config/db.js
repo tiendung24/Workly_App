@@ -1,19 +1,25 @@
-// src/config/db.js
-const mysql = require('mysql2');
-require('dotenv').config(); // Đọc file .env
+const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
-// Tạo hồ chứa kết nối (Pool)
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASS || '', // Điền pass của bạn vào .env nhé
-    database: process.env.DB_NAME || 'workly_database',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
+const sequelize = new Sequelize(
+    process.env.DB_NAME || 'Workly',
+    process.env.DB_USER || 'root',
+    process.env.DB_PASS || '',
+    {
+        host: process.env.DB_HOST || 'localhost',
+        dialect: 'mysql',
+        logging: false,
+        pool: {
+            max: 10,
+            min: 0,
+            acquire: 30000,
+            idle: 10000,
+        },
+        define: {
+            underscored: true,
+            timestamps: true,
+        },
+    }
+);
 
-// Chuyển sang dạng Promise để dùng async/await cho gọn
-const db = pool.promise();
-
-module.exports = db;
+module.exports = sequelize;

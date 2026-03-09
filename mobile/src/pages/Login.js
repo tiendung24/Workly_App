@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../_utils/AuthContext";
 import {
   View,
   Text,
@@ -12,8 +13,8 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../_styles/theme";
 import { loginStyles as s } from "../_styles/pages/loginStyles";
-
-export default function Login({ onLogin, onGoToRegister }) {
+export default function Login({ onGoToRegister }) {
+  const { login } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -21,9 +22,12 @@ export default function Login({ onLogin, onGoToRegister }) {
 
   const canSubmit = email.trim().length > 0 && password.trim().length > 0;
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!canSubmit) return;
-    onLogin({ email, password });
+    const result = await login(email, password);
+    if (!result.success) {
+      alert(result.message || "Login failed");
+    }
   };
 
   return (

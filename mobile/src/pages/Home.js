@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useContext } from "react";
 import {
   View,
   ScrollView,
@@ -14,6 +14,8 @@ import QuickActionsGrid from "../_components/home/QuickActionsGrid";
 
 import { formatTime } from "../_utils/dateTime";
 import { getQuickActions } from "../_utils/homeConfig";
+import { attendanceService } from "../_utils/attendanceService";
+import { AuthContext } from "../_utils/AuthContext";
 
 const AVATAR_URL =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuC9wDdMYNbAG8bXNx5s6yV54bWQGDsIGcCxECKR3QZJfPiyvn6T76EsoxFMhW0UQXOcLzI4AaqxlVB3woa56wWJ-nqu5pl1lgoN_4t1EGGtRbe5fL3vtT_x3ECGXEACuePPGpo8Byy7wT08g0oDqGptbtiPlzb_XoGv_Wa5TiJKHhV54vpMnqypJcjhmBalHDKEGsyWrBJY4PZ6K-IAwTf4XpBwepPqYS56AJ1Gz4cph66NOlMS1o4N4_56ZJPznmZIAIvT_wFUobXG";
@@ -28,21 +30,68 @@ function formatDateLabel(d) {
 }
 
 export default function Home({ navigation }) {
-  const role = "employee";
+  const { userInfo } = useContext(AuthContext);
+  const role = userInfo?.role?.toLowerCase() || "employee";
 
   const [now, setNow] = useState(new Date());
-  const [activeCheck, setActiveCheck] = useState("IN");
+  const [activeCheck, setActiveCheck] = useState(null); // 'IN' or 'OUT'
+  const [attendanceLabel, setAttendanceLabel] = useState("Chưa Check-in");
+  const [loadingAction, setLoadingAction] = useState(false);
 
+  // Time ticker
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000 * 30);
     return () => clearInterval(t);
   }, []);
 
+  // Fetch today status on mount
+  useEffect(() => {
+    loadTodayStatus();
+  }, []);
+
+  const loadTodayStatus = async () => {
+    try {
+      const res = await attendanceService.getTodayStatus();
+      if (res && res.attendance) {
+        if (res.attendance.check_out_time) {
+          setActiveCheck("OUT");
+          setAttendanceLabel("Đã Check-out");
+        } else if (res.attendance.check_in_time) {
+          setActiveCheck("IN");
+          setAttendanceLabel("Đang làm việc");
+        }
+      } else {
+        setActiveCheck(null);
+        setAttendanceLabel("Chưa Check-in");
+      }
+    } catch (error) {
+      console.log("Error loading today status", error);
+    }
+  };
+
+  const handleChangeCheck = async (type) => {
+    if (loadingAction) return;
+    setLoadingAction(true);
+    try {
+      if (type === "IN") {
+        await attendanceService.checkIn();
+        alert("Check-in thành công!");
+      } else if (type === "OUT") {
+        await attendanceService.checkOut();
+        alert("Check-out thành công!");
+      }
+      await loadTodayStatus();
+    } catch (error) {
+      alert("Lỗi: " + error.message);
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
   const time = formatTime(now);
   const actions = useMemo(() => getQuickActions(role), [role]);
 
-
-  const statusLabel = "Status: —";
+  const statusLabel = "Status: " + attendanceLabel;
 
   const onPressAction = (key) => {
     if (key === "timesheet") {
@@ -78,7 +127,7 @@ export default function Home({ navigation }) {
           
             statusLabel={statusLabel}
             activeCheck={activeCheck}
-            onChangeCheck={setActiveCheck}
+            onChangeCheck={handleChangeCheck}
             onPressNotifications={() => {}}
           />
 

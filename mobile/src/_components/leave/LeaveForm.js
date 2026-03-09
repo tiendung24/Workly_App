@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,19 +12,49 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../../_styles/theme";
 import DatePickerInput from "../shared/DatePickerInput";
-
-const LEAVE_TYPES = [
-  { key: "annual", label: "Annual Leave", icon: "calendar-month", color: COLORS.primary },
-  { key: "sick", label: "Sick Leave", icon: "medical-services", color: "#EA580C" },
-  { key: "unpaid", label: "Unpaid Leave", icon: "money-off", color: "#6B7280" },
-  { key: "personal", label: "Personal Leave", icon: "person", color: "#2563EB" },
-];
+import { leaveService } from "../../_utils/leaveService";
 
 export default function LeaveForm({ visible, onClose, onSubmit, theme }) {
   const [leaveType, setLeaveType] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
+  const [apiTypes, setApiTypes] = useState([]);
+
+  useEffect(() => {
+    if (visible) {
+      loadTypes();
+    }
+  }, [visible]);
+
+  const loadTypes = async () => {
+    try {
+      const res = await leaveService.getLeaveTypes();
+      if (res && res.data) {
+        // Map backend types to UI colors
+        const mapped = res.data.map(t => {
+          let icon = "event";
+          let color = "#6B7280";
+          const name = (t.name || "").toLowerCase();
+          
+          if (name.includes("phép năm") || name.includes("annual")) { color = COLORS.primary; icon = "calendar-month"; }
+          else if (name.includes("ốm") || name.includes("thái sản") || name.includes("sick")) { color = "#EA580C"; icon = "medical-services"; }
+          else if (name.includes("cá nhân") || name.includes("personal")) { color = "#2563EB"; icon = "person"; }
+          else { color = "#6B7280"; icon = "money-off"; }
+          
+          return {
+            key: t.id,
+            label: t.name,
+            icon,
+            color
+          };
+        });
+        setApiTypes(mapped);
+      }
+    } catch (error) {
+      console.log("Error loading leave types:", error);
+    }
+  };
 
   const handleSubmit = () => {
     if (!leaveType || !startDate) return;
@@ -76,7 +106,7 @@ export default function LeaveForm({ visible, onClose, onSubmit, theme }) {
             {/* Leave Type */}
             <Text style={[s.label, { color: theme.text }]}>Leave Type</Text>
             <View style={s.typeGrid}>
-              {LEAVE_TYPES.map((t) => {
+              {apiTypes.map((t) => {
                 const selected = leaveType === t.key;
                 return (
                   <TouchableOpacity

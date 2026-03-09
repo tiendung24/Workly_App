@@ -1,7 +1,7 @@
 import "react-native-gesture-handler";
 import { enableScreens } from "react-native-screens";
 enableScreens(false);
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useContext } from "react";
 import {
   Platform,
   useColorScheme,
@@ -9,12 +9,16 @@ import {
   View,
   Text,
   StyleSheet,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { MaterialIcons } from "@expo/vector-icons";
+
+// Auth Context
+import { AuthProvider, AuthContext } from "./src/_utils/AuthContext";
 
 import Login from "./src/pages/Login";
 import Register from "./src/pages/Register";
@@ -24,6 +28,7 @@ import Leave from "./src/pages/Leave";
 import Overtime from "./src/pages/Overtime";
 import Schedule from "./src/pages/Schedule";
 import Profile from "./src/pages/Profile";
+import Approval from "./src/pages/Approval";
 
 import BottomNav from "./src/_components/layout/BottomNav";
 import { getTheme, COLORS } from "./src/_styles/theme";
@@ -35,6 +40,7 @@ const LeaveStack = createNativeStackNavigator();
 const OvertimeStack = createNativeStackNavigator();
 const ScheduleStack = createNativeStackNavigator();
 const ProfileStack = createNativeStackNavigator();
+const ApprovalStack = createNativeStackNavigator();
 
 /* ─── Custom Tab Bar using BottomNav ─── */
 
@@ -66,9 +72,14 @@ function CustomTabBar({ state, navigation }) {
           navigation.navigate("Leave");
           return;
         }
+        if (tab === "Approval") {
+          navigation.navigate("Approval");
+          return;
+        }
         navigation.navigate(tab);
       }}
       bottomInset={safeBottomInset}
+      userRole={state.routes.find(r => r.name === 'Approval') ? 'Manager' : 'Employee'} // Hacky but works for BottomNav
     />
   );
 }
@@ -185,9 +196,21 @@ function ProfileStackScreen({ onLogout }) {
   );
 }
 
+function ApprovalStackScreen() {
+  return (
+    <ApprovalStack.Navigator screenOptions={defaultStackScreenOptions}>
+      <ApprovalStack.Screen
+        name="ApprovalScreen"
+        component={Approval}
+        options={{ title: "Approvals" }}
+      />
+    </ApprovalStack.Navigator>
+  );
+}
+
 /* ─── Main Tabs (authenticated) ─── */
 
-function MainTabs({ onLogout }) {
+function MainTabs({ onLogout, role }) {
   const HomeScreenWithLogout = useCallback(
     () => <HomeStackScreen onLogout={onLogout} />,
     [onLogout]
@@ -210,50 +233,50 @@ function MainTabs({ onLogout }) {
       <Tab.Screen name="Overtime" component={OvertimeStackScreen} />
       <Tab.Screen name="Schedule" component={ScheduleStackScreen} />
       <Tab.Screen name="Profile" component={ProfileScreenWithLogout} />
+      {(role === 'Manager' || role === 'Admin') && (
+        <Tab.Screen name="Approval" component={ApprovalStackScreen} />
+      )}
     </Tab.Navigator>
   );
 }
 
+/* ─── Navigation Wrapper ─── */
+function RootNavigation() {
+  const { userToken, userInfo, logout, isLoading } = useContext(AuthContext);
+  const [authScreen, setAuthScreen] = React.useState("login");
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      {userToken ? (
+        <MainTabs onLogout={logout} role={userInfo?.role?.name || userInfo?.role} />
+      ) : (
+        authScreen === "register" ? (
+          <Register onGoToLogin={() => setAuthScreen("login")} />
+        ) : (
+          <Login onGoToRegister={() => setAuthScreen("register")} />
+        )
+      )}
+    </NavigationContainer>
+  );
+}
+
+
 /* ─── App ─── */
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authScreen, setAuthScreen] = useState("login"); // 'login' | 'register'
-
-  const handleLogin = useCallback((credentials) => {
-    // TODO: call real auth API
-    console.log("Login:", credentials.email);
-    setIsLoggedIn(true);
-  }, []);
-
-  const handleRegister = useCallback((data) => {
-    // TODO: call real register API
-    console.log("Register:", data.email);
-    setIsLoggedIn(true);
-  }, []);
-
-  const handleLogout = useCallback(() => {
-    setIsLoggedIn(false);
-    setAuthScreen("login");
-  }, []);
-
   return (
     <SafeAreaProvider>
-      {isLoggedIn ? (
-        <NavigationContainer>
-          <MainTabs onLogout={handleLogout} />
-        </NavigationContainer>
-      ) : authScreen === "register" ? (
-        <Register
-          onRegister={handleRegister}
-          onGoToLogin={() => setAuthScreen("login")}
-        />
-      ) : (
-        <Login
-          onLogin={handleLogin}
-          onGoToRegister={() => setAuthScreen("register")}
-        />
-      )}
+      <AuthProvider>
+        <RootNavigation />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

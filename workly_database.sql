@@ -155,3 +155,5 @@ CREATE TABLE CorrectionRequests (
     FOREIGN KEY (user_id) REFERENCES Users(id),
     FOREIGN KEY (approver_id) REFERENCES Users(id)
 );
+
+select * from Users ;

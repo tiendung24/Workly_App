@@ -25,6 +25,7 @@ export default function BottomNav({
   activeTab,
   onTabChange,
   bottomInset = 0,
+  userRole = 'Employee'
 }) {
   const safeBottomInset = typeof bottomInset === "number" ? bottomInset : 0;
   const bottomPadding = Math.round(18 + safeBottomInset);
@@ -83,6 +84,16 @@ export default function BottomNav({
         isDark={isDark}
       />
 
+      {userRole === 'Manager' && (
+        <NavBtn
+          label="Approvals"
+          icon="verified-user"
+          active={activeTab === "Approval"}
+          onPress={() => onTabChange("Approval")}
+          isDark={isDark}
+        />
+      )}
+
       <NavBtn
         label="Profile"
         icon="person"
@@ -101,18 +112,18 @@ const s = StyleSheet.create({
     right: 0,
     bottom: 0,
     paddingTop: 10,
-    paddingHorizontal: 18,
+    paddingHorizontal: 8,
     borderTopWidth: 1,
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "space-between",
   },
-  navBtn: { width: 64, alignItems: "center" },
+  navBtn: { flex: 1, alignItems: "center" },
   navLabelBase: { marginTop: 4 },
   navLabel: { fontSize: 10 },
   navLabelActive: { fontWeight: "900" },
   navLabelInactive: { fontWeight: "800" },
-  fabSlot: { width: 80, alignItems: "center" },
+  fabSlot: { width: 70, alignItems: "center" },
   fab: {
     width: 64,
     height: 64,

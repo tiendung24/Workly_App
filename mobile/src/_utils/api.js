@@ -1,9 +1,70 @@
-// Android emulator: dùng 10.0.2.2 để trỏ về máy tính host
-// iOS simulator: có thể dùng localhost
-export const API_BASE = "http://10.0.2.2:5000";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export const API_BASE = "http://10.0.2.2:3000/api";
+
+// Helper to get auth token
+const getAuthHeaders = async () => {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  try {
+    const token = await AsyncStorage.getItem('userToken');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  } catch (error) {
+    console.error('Error getting token:', error);
+  }
+  return headers;
+};
+
+// Generic GET request
 export async function apiGet(path) {
-  const res = await fetch(`${API_BASE}${path}`);
-  if (!res.ok) throw new Error("Request failed");
-  return res.json();
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'GET',
+    headers,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Request failed");
+  return data;
+}
+
+// Generic POST request
+export async function apiPost(path, body) {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Request failed");
+  return data;
+}
+
+// Generic PUT request
+export async function apiPut(path, body) {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Request failed");
+  return data;
+}
+
+// Generic PATCH request
+export async function apiPatch(path, body) {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Request failed");
+  return data;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,21 +13,55 @@ import StatusTabs from "../_components/leave/StatusTabs";
 import LeaveList from "../_components/leave/LeaveList";
 import FloatingAddButton from "../_components/leave/FloatingAddButton";
 import LeaveForm from "../_components/leave/LeaveForm";
+import { leaveService } from "../_utils/leaveService";
 
 export default function Leave({ navigation }) {
   const [tab, setTab] = useState("all");
   const [leaveRequests, setLeaveRequests] = useState([]);
+  const [balance, setBalance] = useState({ total_days: 0, used_days: 0, remaining_days: 0 });
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmitLeave = (data) => {
-    const newRequest = {
-      id: Date.now().toString(),
-      ...data,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
-    setLeaveRequests((prev) => [newRequest, ...prev]);
-    setShowForm(false);
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [balRes, reqsRes] = await Promise.all([
+        leaveService.getBalance(),
+        leaveService.getRequests()
+      ]);
+      if (balRes && balRes.data) {
+        setBalance(balRes.data);
+      }
+      if (reqsRes && reqsRes.data) {
+        setLeaveRequests(reqsRes.data);
+      }
+    } catch (error) {
+      console.log("Error loading leave data:", error);
+    }
+  };
+
+  const handleSubmitLeave = async (data) => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const res = await leaveService.createRequest({
+        leave_type_id: data.type,
+        start_date: data.startDate,
+        end_date: data.endDate,
+        reason: data.reason
+      });
+      if (res.data) {
+        setShowForm(false);
+        loadData(); // Refresh list 
+      }
+    } catch (error) {
+      alert("Error creating request: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,7 +80,7 @@ export default function Leave({ navigation }) {
               ]}
             >
               <View style={styles.content}>
-                <LeaveBalance styles={styles} theme={theme} />
+                <LeaveBalance styles={styles} theme={theme} balance={balance} />
 
                 <View style={styles.sectionRow}>
                   <Text style={[styles.sectionTitle, { color: theme.text }]}>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { COLORS } from "../_styles/theme";
 import { profileStyles as s } from "../_styles/pages/profileStyles";
 import Layout from "../_components/layout/Layout";
 import { LinearGradient } from "expo-linear-gradient";
+import { profileService } from "../_utils/profileService";
 
 // TODO: pass employee data from API via props
 const DEFAULT_EMPLOYEE = {
@@ -44,8 +45,35 @@ function getWorkItems(emp) {
   ];
 }
 
-export default function Profile({ onLogout, employee, avatarUrl }) {
-  const emp = employee || DEFAULT_EMPLOYEE;
+export default function Profile({ onLogout, avatarUrl }) {
+  const [employeeData, setEmployeeData] = useState(null);
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const res = await profileService.getMe();
+      if (res && res.data) {
+        setEmployeeData(res.data);
+      }
+    } catch (error) {
+      console.log("Error loading profile:", error);
+    }
+  };
+
+  const emp = employeeData ? {
+    name: employeeData.full_name || "—",
+    role: employeeData.position ? employeeData.position.name : "—",
+    department: employeeData.department ? employeeData.department.name : "—",
+    employeeId: employeeData.employee_code || "—",
+    email: employeeData.email || "—",
+    phone: employeeData.phone || "—",
+    address: employeeData.address || "—",
+    startDate: employeeData.join_date ? new Date(employeeData.join_date).toLocaleDateString("en-GB") : "—",
+    position: employeeData.position ? employeeData.position.name : "—",
+  } : DEFAULT_EMPLOYEE;
   const INFO_ITEMS = getInfoItems(emp);
   const WORK_ITEMS = getWorkItems(emp);
 

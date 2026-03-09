@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../_styles/theme";
 import { scheduleStyles as s } from "../_styles/pages/scheduleStyles";
 import Layout from "../_components/layout/Layout";
-
-
+import { scheduleService } from "../_utils/scheduleService";
 
 const DAYS_HEADER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTH_NAMES = [
@@ -39,35 +38,58 @@ function getCalendarDays(year, month) {
   return cells;
 }
 
-/* TODO: fetch from API */
-
+/* ─── dynamic loading ─── */
 const today = new Date();
 
-// Data will be populated from API
-const HOLIDAYS = new Set();     // e.g. "2026-03-01"
-const LEAVE_DAYS = {};          // e.g. { "2026-03-07": { type: "annual", reason: "..." } }
-const OT_DAYS = {};             // e.g. { "2026-03-03": { hours: 2, reason: "..." } }
-const CHECKIN_RECORDS = {};     // e.g. { "2026-03-04": { checkIn: "08:02", checkOut: "17:05", hours: 8, late: false } }
-
-function getDayData(year, month, day) {
+function getDayData(year, month, day, apiData) {
   const key = `${year}-${padTwo(month + 1)}-${padTwo(day)}`;
   const dt = new Date(year, month, day);
   const dow = dt.getDay(); // 0=Sun
   const isSunday = dow === 0;
   const isSaturday = dow === 6;
-  const isHol = HOLIDAYS.has(key);
-  const leave = LEAVE_DAYS[key] || null;
-  const ot = OT_DAYS[key] || null;
-  const checkin = CHECKIN_RECORDS[key] || null;
   const isPast = dt < new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const isToday_ = isSameDay(dt, today);
 
   let type = "work"; // work, half, off, leave, holiday
   let timeRange = "08:00-17:00";
+  let leave = null;
+  let ot = null;
+  let checkin = null;
+  
   if (isSunday) { type = "off"; timeRange = ""; }
-  else if (isHol) { type = "holiday"; timeRange = ""; }
-  else if (leave) { type = "leave"; timeRange = ""; }
   else if (isSaturday) { type = "half"; timeRange = "08:00-12:00"; }
+  
+  // Apply API data overrides
+  if (apiData && apiData[key]) {
+      const record = apiData[key];
+      
+      // Override timeRange if shift exists
+      if (record.shift && record.shift !== 'Không có ca') {
+          timeRange = record.shift;
+      }
+      
+      if (record.status === 'Absent') {
+          type = isPast ? (isSunday ? 'off' : 'work') : type;
+          // Could leave as work and it just has no checkin
+      } else if (record.status === 'Leave') {
+          type = "leave"; timeRange = "";
+          leave = { type: 'annual', reason: 'Tự động mapping' };
+      } else if (record.status === 'Holiday') {
+          type = "holiday"; timeRange = "";
+      } else if (record.status === 'Off') {
+          type = "off"; timeRange = "";
+      }
+      
+      // Populate Checkin Data (Late, etc)
+      if (record.checkIn || record.checkOut || record.status === 'Present' || record.status === 'Late' || record.status === 'EarlyLeave') {
+          checkin = {
+              checkIn: record.checkIn ? new Date(record.checkIn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}) : '—',
+              checkOut: record.checkOut ? new Date(record.checkOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}) : '—',
+              hours: record.checkOut ? 8 : (record.checkIn ? 4 : 0), // rough dummy
+              late: record.status === 'Late'
+          };
+      }
+  }
 
   return { key, dt, dow, type, timeRange, leave, ot, checkin, isPast, isToday: isToday_, isSunday, isSaturday };
 }
@@ -76,10 +98,10 @@ function getDayData(year, month, day) {
    DAY CELL COMPONENT
    ═══════════════════════════════════════════ */
 
-function DayCell({ day, year, month, theme, onPress, filter }) {
+function DayCell({ day, year, month, theme, onPress, filter, apiData }) {
   if (day === null) return <View style={s.dayCell} />;
 
-  const data = getDayData(year, month, day);
+  const data = getDayData(year, month, day, apiData);
   const { type, timeRange, ot, checkin, isPast, isToday: isToday_, isSunday } = data;
 
   // Filter logic
@@ -340,6 +362,7 @@ export default function Schedule() {
   const [selectedDay, setSelectedDay] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
   const [filter, setFilter] = useState("all");
+  const [apiDataMap, setApiDataMap] = useState({});
 
   const viewDate = useMemo(() => {
     const d = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
@@ -349,8 +372,27 @@ export default function Schedule() {
   const viewYear = viewDate.getFullYear();
   const viewMonth = viewDate.getMonth();
   const cells = useMemo(() => getCalendarDays(viewYear, viewMonth), [viewYear, viewMonth]);
-
   const monthLabel = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
+
+  useEffect(() => {
+    loadScheduleData(viewYear, viewMonth + 1); // API expects 1-indexed month
+  }, [viewYear, viewMonth]);
+
+  const loadScheduleData = async (year, month) => {
+    try {
+      const res = await scheduleService.getMonthly(year, month);
+      if (res && res.data) {
+        // Build map: { "2026-03-01": { status: 'Present', ... } }
+        const map = {};
+        res.data.forEach(item => {
+          map[item.date] = item;
+        });
+        setApiDataMap(map);
+      }
+    } catch (error) {
+      console.log("Error loading schedule data:", error);
+    }
+  };
 
   const handleDayPress = (data) => {
     setSelectedDay(data);
@@ -438,6 +480,7 @@ export default function Schedule() {
                   theme={theme}
                   onPress={handleDayPress}
                   filter={filter}
+                  apiData={apiDataMap}
                 />
               ))}
             </View>

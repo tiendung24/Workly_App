@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import { COLORS } from "../_styles/theme";
 import Layout from "../_components/layout/Layout";
 import { timesheetStyles as styles } from "../_styles/pages/timesheetStyles";
 import CorrectionForm from "../_components/timesheet/CorrectionForm";
+import { correctionService } from "../_utils/requestService";
 
 const MONTH_SHORT = [
   "Jan","Feb","Mar","Apr","May","Jun",
@@ -47,7 +48,39 @@ const TABS = [
 export default function Timesheet({ navigation }) {
   const [tab, setTab] = useState("all");
   const [showForm, setShowForm] = useState(false);
-  const [requests, setRequests] = useState(INITIAL_REQUESTS);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const res = await correctionService.getRequests();
+      if (res && res.data) {
+        // Map backend to UI shape
+        const mapped = res.data.map(r => {
+          const d = new Date(r.date);
+          const crt = new Date(r.createdAt || r.created_at || new Date());
+          return {
+            id: r.id.toString(),
+            day: d.getDate(),
+            month: d.getMonth(), // 0-indexed
+            type: r.correction_type.toLowerCase().replace(" ", "_"), // Simple mapping assumption
+            typeLabel: r.correction_type,
+            reason: r.reason,
+            status: r.status.toLowerCase(), // pending, approved, rejected
+            correctedTime: r.correct_time, 
+            createdAt: crt.toLocaleDateString("en-GB")
+          };
+        });
+        setRequests(mapped);
+      }
+    } catch (error) {
+      console.log("Error loading corrections:", error);
+    }
+  };
 
   const filteredRequests = tab === "all"
     ? requests
@@ -55,18 +88,34 @@ export default function Timesheet({ navigation }) {
 
   const pendingCount = requests.filter((r) => r.status === "pending").length;
 
-  const handleSubmit = (data) => {
-    const parts = data.date.split("/");
-    const newReq = {
-      id: String(Date.now()),
-      ...data,
-      day: parseInt(parts[0], 10),
-      month: parseInt(parts[1], 10) - 1,
-      status: "pending",
-      createdAt: new Date().toLocaleDateString("en-GB"),
-    };
-    setRequests((prev) => [newReq, ...prev]);
-    setShowForm(false);
+  const handleSubmit = async (data) => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      // Assuming data from form is { date: "YYYY-MM-DD", type: "missed_checkout", correctedTime: "17:00", reason: "..." }
+      // The old mock code had "DD/MM/YYYY" but API wants YYYY-MM-DD usually. Let's assume standard YYYY-MM-DD from a DatePicker
+      // We'll normalize if needed below, but just pass raw for now.
+      let dt = data.date;
+      if (dt.includes("/")) {
+          const p = dt.split("/");
+          dt = `${p[2]}-${p[1]}-${p[0]}`;
+      }
+      
+      const res = await correctionService.createRequest({
+        date: dt,
+        correction_type: data.type,
+        correct_time: data.correctedTime,
+        reason: data.reason
+      });
+      if (res && res.data) {
+        setShowForm(false);
+        loadData();
+      }
+    } catch (error) {
+      alert("Error: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
