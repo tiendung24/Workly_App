@@ -71,7 +71,7 @@ export default function Profile({ onLogout, avatarUrl }) {
     email: employeeData.email || "—",
     phone: employeeData.phone || "—",
     address: employeeData.address || "—",
-    startDate: employeeData.join_date ? new Date(employeeData.join_date).toLocaleDateString("en-GB") : "—",
+    startDate: employeeData.start_date ? new Date(employeeData.start_date).toLocaleDateString("en-GB") : "—",
     position: employeeData.position ? employeeData.position.name : "—",
   } : DEFAULT_EMPLOYEE;
   const INFO_ITEMS = getInfoItems(emp);
