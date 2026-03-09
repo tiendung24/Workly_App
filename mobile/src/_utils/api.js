@@ -1,6 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
-export const API_BASE = "http://10.0.2.2:3000/api";
+const HOST = Platform.select({
+  android: '10.0.2.2',
+  default: 'localhost'
+});
+
+export const API_BASE = `http://${HOST}:3000/api`;
 
 // Helper to get auth token
 const getAuthHeaders = async () => {
