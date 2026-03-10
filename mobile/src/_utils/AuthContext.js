@@ -5,7 +5,8 @@ import { ActivityIndicator, View } from 'react-native';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [userToken, setUserToken] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
 
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         console.error("Auth init error:", error);
       } finally {
-        setIsLoading(false);
+        setIsInitializing(false);
       }
     };
 
@@ -81,7 +82,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  if (isLoading) {
+  if (isInitializing) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#4A90E2" />

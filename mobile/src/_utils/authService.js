@@ -20,6 +20,10 @@ export const authService = {
     return response;
   },
 
+  forgotPassword: async (email) => {
+    return await apiPost('/auth/forgot-password', { email });
+  },
+
   logout: async () => {
     await AsyncStorage.removeItem('userToken');
     await AsyncStorage.removeItem('userInfo');

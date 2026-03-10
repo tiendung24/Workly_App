@@ -70,6 +70,13 @@ export default function Profile({ onLogout, avatarUrl }) {
 
   const [isSaving, setIsSaving] = useState(false);
 
+  // Password logic
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [oldPass, setOldPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+  const [isChangingPass, setIsChangingPass] = useState(false);
+
   const mockTheme = { bg: "#FAFAFA", card: "#fff", text: "#1F2937", sub: "#9CA3AF", navBorder: "#E5E7EB" };
 
 
@@ -133,6 +140,31 @@ export default function Profile({ onLogout, avatarUrl }) {
       Toast.show({ type: "error", text1: "Lỗi", text2: "Không thể lưu hồ sơ" });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!oldPass || !newPass || !confirmPass) {
+      return Toast.show({ type: "error", text1: "Lỗi", text2: "Vui lòng nhập đủ thông tin" });
+    }
+    if (newPass !== confirmPass) {
+      return Toast.show({ type: "error", text1: "Lỗi", text2: "Mật khẩu xác nhận không khớp" });
+    }
+
+    setIsChangingPass(true);
+    try {
+      await profileService.changePassword({ oldPassword: oldPass, newPassword: newPass });
+      Toast.show({ type: "success", text1: "Thành công", text2: "Đổi mật khẩu thành công" });
+      setShowPasswordModal(false);
+      setOldPass("");
+      setNewPass("");
+      setConfirmPass("");
+    } catch (err) {
+      console.log("Change password error", err);
+      const msg = err.response?.data?.message || "Không thể đổi mật khẩu";
+      Toast.show({ type: "error", text1: "Lỗi", text2: msg });
+    } finally {
+      setIsChangingPass(false);
     }
   };
 
@@ -244,7 +276,7 @@ export default function Profile({ onLogout, avatarUrl }) {
               <Text style={[s.infoTitle, { color: theme.text }]}>Settings</Text>
 
               {[
-                { icon: "lock", label: "Change Password", color: "#6B7280" },
+                { icon: "lock", label: "Change Password", color: "#6B7280", onPress: () => setShowPasswordModal(true) },
                 { icon: "notifications", label: "Notifications", color: "#6B7280" },
                 { icon: "language", label: "Language", color: "#6B7280" },
               ].map((item, i, arr) => (
@@ -256,6 +288,7 @@ export default function Profile({ onLogout, avatarUrl }) {
                     i === arr.length - 1 && { borderBottomWidth: 0 },
                   ]}
                   activeOpacity={0.7}
+                  onPress={item.onPress}
                 >
                   <View style={s.actionLeft}>
                     <MaterialIcons name={item.icon} size={20} color={item.color} />
@@ -387,6 +420,77 @@ export default function Profile({ onLogout, avatarUrl }) {
                     disabled={isSaving}
                   >
                     {isSaving && <ActivityIndicator size="small" color="#fff" />}
+                    <Text style={{ fontWeight: "600", color: "#fff" }}>Lưu</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+            </View>
+          </Modal>
+
+          {/* ─── Change Password Modal ─── */}
+          <Modal
+            visible={showPasswordModal}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setShowPasswordModal(false)}
+          >
+            <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" }}>
+              <View style={{ width: "85%", backgroundColor: theme.card, borderRadius: 16, padding: 24, elevation: 5 }}>
+                <Text style={{ fontSize: 18, fontWeight: "700", color: theme.text, marginBottom: 16 }}>Đổi mật khẩu</Text>
+                
+                <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Mật khẩu hiện tại</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 16 }}>
+                  <MaterialIcons name="lock" size={18} color={theme.sub} />
+                  <TextInput
+                    style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }}
+                    value={oldPass}
+                    onChangeText={setOldPass}
+                    placeholder="Nhập mật khẩu cũ"
+                    placeholderTextColor={theme.sub}
+                    secureTextEntry
+                  />
+                </View>
+
+                <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Mật khẩu mới</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 16 }}>
+                  <MaterialIcons name="lock-outline" size={18} color={theme.sub} />
+                  <TextInput
+                    style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }}
+                    value={newPass}
+                    onChangeText={setNewPass}
+                    placeholder="Nhập mật khẩu mới"
+                    placeholderTextColor={theme.sub}
+                    secureTextEntry
+                  />
+                </View>
+
+                <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Xác nhận mật khẩu</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 24 }}>
+                  <MaterialIcons name="lock-outline" size={18} color={theme.sub} />
+                  <TextInput
+                    style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }}
+                    value={confirmPass}
+                    onChangeText={setConfirmPass}
+                    placeholder="Nhập lại mật khẩu mới"
+                    placeholderTextColor={theme.sub}
+                    secureTextEntry
+                  />
+                </View>
+
+                <View style={{ flexDirection: "row", gap: 12 }}>
+                  <TouchableOpacity 
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: theme.navBorder, alignItems: "center" }}
+                    onPress={() => setShowPasswordModal(false)}
+                  >
+                    <Text style={{ fontWeight: "600", color: theme.text }}>Hủy</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: COLORS.primary, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 6 }}
+                    onPress={handleChangePassword}
+                    disabled={isChangingPass}
+                  >
+                    {isChangingPass && <ActivityIndicator size="small" color="#fff" />}
                     <Text style={{ fontWeight: "600", color: "#fff" }}>Lưu</Text>
                   </TouchableOpacity>
                 </View>

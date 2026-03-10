@@ -105,7 +105,37 @@ const updateProfile = async (req, res, next) => {
     }
 };
 
+// PUT /api/profile/password
+const changePassword = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { oldPassword, newPassword } = req.body;
+
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({ message: 'Vui lòng cung cấp mật khẩu cũ và mới' });
+        }
+
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const isMatch = await user.comparePassword(oldPassword);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Mật khẩu cũ không chính xác' });
+        }
+
+        user.password_hash = newPassword; // Hook will secure it
+        await user.save();
+
+        res.status(200).json({ message: 'Đổi mật khẩu thành công' });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getProfile,
-    updateProfile
+    updateProfile,
+    changePassword
 };

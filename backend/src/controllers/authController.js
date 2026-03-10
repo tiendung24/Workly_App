@@ -142,5 +142,26 @@ const getMe = async (req, res, next) => {
         next(error);
     }
 };
+// POST /api/auth/forgot-password
+const forgotPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: 'Vui lòng nhập email' });
+        }
 
-module.exports = { register, login, getMe };
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            return res.status(404).json({ message: 'Email không tồn tại trong hệ thống' });
+        }
+
+        user.password_hash = '123456';
+        await user.save();
+
+        res.status(200).json({ message: 'Mật khẩu đã được reset thành "123456". Vui lòng đăng nhập và đổi lại!' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { register, login, getMe, forgotPassword };

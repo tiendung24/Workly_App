@@ -10,6 +10,7 @@ import {
   Platform,
   StatusBar,
   Keyboard,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../_styles/theme";
@@ -18,7 +19,7 @@ import Toast from "react-native-toast-message";
 import DatePickerInput from "../_components/shared/DatePickerInput";
 
 export default function Register({ onGoToLogin }) {
-  const { register } = useContext(AuthContext);
+  const { register, isLoading } = useContext(AuthContext);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -304,9 +305,16 @@ export default function Register({ onGoToLogin }) {
               style={[s.loginBtn, { marginTop: 20 }]}
               activeOpacity={0.85}
               onPress={handleRegister}
+              disabled={isLoading}
             >
-              <MaterialIcons name="person-add" size={20} color="#fff" />
-              <Text style={s.loginBtnText}>Create Account</Text>
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <MaterialIcons name="person-add" size={20} color="#fff" />
+              )}
+              <Text style={s.loginBtnText}>
+                {isLoading ? "Creating..." : "Create Account"}
+              </Text>
             </TouchableOpacity>
 
             {/* Go to Login */}

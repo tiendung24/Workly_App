@@ -328,16 +328,8 @@ function AdminTabs({ onLogout }) {
 
 /* ─── Navigation Wrapper ─── */
 function RootNavigation() {
-  const { userToken, userInfo, logout, isLoading } = useContext(AuthContext);
+  const { userToken, userInfo, logout } = useContext(AuthContext);
   const [authScreen, setAuthScreen] = React.useState("login");
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </View>
-    );
-  }
 
   return (
     <NavigationContainer>
