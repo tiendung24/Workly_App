@@ -29,7 +29,8 @@ export default function AdminUsers() {
     full_name: "",
     email: "",
     password: "",
-    department_id: "",
+    department_name: "",
+    position_name: "",
     role: "Employee",
     is_active: true,
   });
@@ -62,7 +63,8 @@ export default function AdminUsers() {
         full_name: user.full_name,
         email: user.email,
         password: "", // leave blank if editing
-        department_id: user.department_id ? user.department_id.toString() : "",
+        department_name: user.department?.name || "",
+        position_name: user.position?.name || "",
         role: user.role,
         is_active: user.is_active,
       });
@@ -73,7 +75,8 @@ export default function AdminUsers() {
         full_name: "",
         email: "",
         password: "",
-        department_id: "",
+        department_name: "",
+        position_name: "",
         role: "Employee",
         is_active: true,
       });
@@ -87,7 +90,7 @@ export default function AdminUsers() {
         Toast.show({ type: "error", text1: "Lỗi", text2: "Vui lòng nhập đủ thông tin bắt buộc" });
         return;
       }
-      const payload = { ...formData, department_id: formData.department_id || null };
+      const payload = { ...formData };
 
       if (editingId) {
         await adminService.updateUser(editingId, payload);
@@ -179,7 +182,7 @@ export default function AdminUsers() {
 
                  <ScrollView style={{ marginBottom: 20 }}>
                     <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Mã NV (*)</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="VD: NV001" placeholderTextColor={theme.sub} value={formData.employee_code} onChangeText={t => setFormData({...formData, employee_code: t})} editable={!editingId} />
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="VD: NV001" placeholderTextColor={theme.sub} value={formData.employee_code} onChangeText={t => setFormData({...formData, employee_code: t})} />
 
                     <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Họ Tên (*)</Text>
                     <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="Nguyễn Văn A" placeholderTextColor={theme.sub} value={formData.full_name} onChangeText={t => setFormData({...formData, full_name: t})} />
@@ -194,8 +197,11 @@ export default function AdminUsers() {
                       </>
                     )}
 
-                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Phòng Ban ID (Tuỳ chọn)</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="Nhập ID, VD: 1" placeholderTextColor={theme.sub} keyboardType="numeric" value={formData.department_id} onChangeText={t => setFormData({...formData, department_id: t})} />
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Phòng Ban (Tuỳ chọn)</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="VD: IT Department" placeholderTextColor={theme.sub} value={formData.department_name} onChangeText={t => setFormData({...formData, department_name: t})} />
+
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Vị trí làm việc (Tuỳ chọn)</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="VD: Developer" placeholderTextColor={theme.sub} value={formData.position_name} onChangeText={t => setFormData({...formData, position_name: t})} />
 
                     <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Vai trò (Role)</Text>
                     <View style={{ flexDirection: 'row', gap: 10 }}>

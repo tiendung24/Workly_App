@@ -74,3 +74,15 @@ export async function apiPatch(path, body) {
   if (!res.ok) throw new Error(data.message || "Request failed");
   return data;
 }
+
+// Generic DELETE request
+export async function apiDelete(path) {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'DELETE',
+    headers,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Request failed");
+  return data;
+}

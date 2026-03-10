@@ -1,36 +1,36 @@
-import api from './api';
+import { apiGet, apiPost, apiPut, apiDelete } from './api';
 
 export const adminService = {
   // Departments
-  getDepartments: () => api.get('/admin/departments'),
-  createDepartment: (data) => api.post('/admin/departments', data),
-  updateDepartment: (id, data) => api.put(`/admin/departments/${id}`, data),
-  deleteDepartment: (id) => api.delete(`/admin/departments/${id}`),
+  getDepartments: () => apiGet('/admin/departments'),
+  createDepartment: (data) => apiPost('/admin/departments', data),
+  updateDepartment: (id, data) => apiPut(`/admin/departments/${id}`, data),
+  deleteDepartment: (id) => apiDelete(`/admin/departments/${id}`),
 
   // Positions
-  getPositions: () => api.get('/admin/positions'),
-  createPosition: (data) => api.post('/admin/positions', data),
-  updatePosition: (id, data) => api.put(`/admin/positions/${id}`, data),
-  deletePosition: (id) => api.delete(`/admin/positions/${id}`),
+  getPositions: () => apiGet('/admin/positions'),
+  createPosition: (data) => apiPost('/admin/positions', data),
+  updatePosition: (id, data) => apiPut(`/admin/positions/${id}`, data),
+  deletePosition: (id) => apiDelete(`/admin/positions/${id}`),
 
   // Shifts
-  getShifts: () => api.get('/admin/shifts'),
-  createShift: (data) => api.post('/admin/shifts', data),
-  updateShift: (id, data) => api.put(`/admin/shifts/${id}`, data),
-  deleteShift: (id) => api.delete(`/admin/shifts/${id}`),
+  getShifts: () => apiGet('/admin/shifts'),
+  createShift: (data) => apiPost('/admin/shifts', data),
+  updateShift: (id, data) => apiPut(`/admin/shifts/${id}`, data),
+  deleteShift: (id) => apiDelete(`/admin/shifts/${id}`),
 
   // Leave Types
-  getLeaveTypes: () => api.get('/admin/leaves'),
-  createLeaveType: (data) => api.post('/admin/leaves', data),
-  updateLeaveType: (id, data) => api.put(`/admin/leaves/${id}`, data),
-  deleteLeaveType: (id) => api.delete(`/admin/leaves/${id}`),
+  getLeaveTypes: () => apiGet('/admin/leaves'),
+  createLeaveType: (data) => apiPost('/admin/leaves', data),
+  updateLeaveType: (id, data) => apiPut(`/admin/leaves/${id}`, data),
+  deleteLeaveType: (id) => apiDelete(`/admin/leaves/${id}`),
 
   // Users
-  getUsers: () => api.get('/admin/users'),
-  createUser: (data) => api.post('/admin/users', data),
-  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
-  deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  getUsers: () => apiGet('/admin/users'),
+  createUser: (data) => apiPost('/admin/users', data),
+  updateUser: (id, data) => apiPut(`/admin/users/${id}`, data),
+  deleteUser: (id) => apiDelete(`/admin/users/${id}`),
   
   // Timesheet
-  getTimesheet: (year, month) => api.get(`/admin/timesheet?year=${year}&month=${month}`),
+  getTimesheet: (year, month) => apiGet(`/admin/timesheet?year=${year}&month=${month}`),
 };
