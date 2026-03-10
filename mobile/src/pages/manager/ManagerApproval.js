@@ -101,8 +101,9 @@ export default function Approval({ navigation }) {
           )}
           {type === 'overtime' && (
              <>
-               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Date:</Text> {req.date}</Text>
-               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Hours:</Text> {req.hours}</Text>
+               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Date:</Text> {req.date ? new Date(req.date).toLocaleDateString("vi-VN") : "N/A"}</Text>
+               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Time:</Text> {req.start_time} - {req.end_time}</Text>
+               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Total Hours:</Text> {req.total_hours}h</Text>
              </>
           )}
           {type === 'correction' && (

@@ -343,7 +343,7 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
       iconBg: "#FEF3C7",
       iconColor: "#92400E",
       label: "Leave Type",
-      value: leave.type === "annual" ? "Nghỉ phép năm" : leave.type === "sick" ? "Nghỉ ốm" : "Nghỉ",
+      value: leave.type === "annual" ? "Nghỉ phép tháng" : leave.type === "sick" ? "Nghỉ ốm" : "Nghỉ",
     });
     if (leave.reason) {
       rows.push({

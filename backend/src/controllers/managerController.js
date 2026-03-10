@@ -94,7 +94,7 @@ const updateRequestStatus = async (req, res, next) => {
         if (modelClass === LeaveRequest && status === 'Approved') {
              // Lấy chi tiết phép
              const leaveDetail = await LeaveRequest.findByPk(id, { include: [{ model: LeaveType, as: 'leaveType' }] });
-             if (leaveDetail && leaveDetail.leaveType && leaveDetail.leaveType.name.includes('Phép Năm')) {
+             if (leaveDetail && leaveDetail.leaveType && leaveDetail.leaveType.name.includes('Phép Tháng')) {
                   const start = moment(leaveDetail.start_date);
                   const end = moment(leaveDetail.end_date);
                   const diffDays = end.diff(start, 'days') + 1;

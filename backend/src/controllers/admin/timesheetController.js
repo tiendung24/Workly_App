@@ -59,7 +59,9 @@ const getTimesheet = async (req, res, next) => {
                  department: u.department ? u.department.name : 'N/A',
                  present_days: 0,
                  late_days: 0,
+                 absent_days: 0,
                  ot_hours: 0,
+                 total_working_days: 0
              }
         });
 
@@ -67,8 +69,12 @@ const getTimesheet = async (req, res, next) => {
              if (userMap[a.user_id]) {
                  if (a.status === 'Present' || a.status === 'EarlyLeave') {
                      userMap[a.user_id].present_days += 1;
+                     userMap[a.user_id].total_working_days += 1;
                  } else if (a.status === 'Late') {
                      userMap[a.user_id].late_days += 1;
+                     userMap[a.user_id].total_working_days += 1;
+                 } else if (a.status === 'Absent') {
+                     userMap[a.user_id].absent_days += 1;
                  }
              }
         });
@@ -82,8 +88,8 @@ const getTimesheet = async (req, res, next) => {
         leaves.forEach(lv => {
              if (userMap[lv.user_id] && lv.leaveType) {
                  const typeName = lv.leaveType.name.toLowerCase();
-                 // Phép năm và công tác vẫn được tính là 1 ngày công
-                 if (typeName.includes('phép năm') || typeName.includes('công tác')) {
+                 // Phép tháng và công tác vẫn được tính là 1 ngày công
+                 if (typeName.includes('phép tháng') || typeName.includes('công tác')) {
                      let curr = moment(lv.start_date);
                      const end = moment(lv.end_date);
                      while (curr.isSameOrBefore(end)) {
@@ -94,6 +100,7 @@ const getTimesheet = async (req, res, next) => {
                              dateStr <= moment(endDate).format('YYYY-MM-DD') && 
                              dow !== 0) {
                              userMap[lv.user_id].present_days += 1;
+                             userMap[lv.user_id].total_working_days += 1;
                          }
                          curr.add(1, 'days');
                      }

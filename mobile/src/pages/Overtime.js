@@ -66,6 +66,30 @@ export default function Overtime({ navigation }) {
     }
   };
 
+  // Calculate total approved hours for current month
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  let monthlyTotalHours = 0;
+
+  otRequests.forEach(req => {
+    if (req.status === 'Approved' && req.date) {
+      const d = new Date(req.date);
+      if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+         let hrs = req.total_hours ?? req.hours;
+         if (!hrs && req.start_time && req.end_time) {
+             const safeStart = req.start_time.substring(0, 5);
+             const safeEnd = req.end_time.substring(0, 5);
+             const [h1, m1] = safeStart.split(":");
+             const [h2, m2] = safeEnd.split(":");
+             const d1 = new Date(); d1.setHours(h1, m1, 0);
+             const d2 = new Date(); d2.setHours(h2, m2, 0);
+             hrs = Math.max(0, (d2 - d1) / 3600000);
+         }
+         monthlyTotalHours += parseFloat(hrs || 0);
+      }
+    }
+  });
+
   return (
     <Layout>
       {({ theme, isDark, insets, isWeb, webPadding }) => {
@@ -82,7 +106,7 @@ export default function Overtime({ navigation }) {
               ]}
             >
               <View style={styles.content}>
-                <OvertimeSummary styles={styles} theme={theme} />
+                <OvertimeSummary styles={styles} theme={theme} totalHours={monthlyTotalHours.toFixed(1)} />
 
                 <StatusTabs
                   styles={styles}
@@ -94,7 +118,7 @@ export default function Overtime({ navigation }) {
                 <OvertimeList
                   styles={styles}
                   theme={theme}
-                  items={otRequests}
+                  items={otRequests.filter(r => tab === 'all' || r.status.toLowerCase() === tab)}
                 />
               </View>
             </ScrollView>

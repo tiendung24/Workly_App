@@ -3,7 +3,7 @@ import { View, Text } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../../_styles/theme";
 
-export default function OvertimeSummary({ styles, theme }) {
+export default function OvertimeSummary({ styles, theme, totalHours = 0 }) {
   return (
     <View style={{ marginBottom: 14 }}>
       <View style={styles.sectionRow}>
@@ -23,7 +23,7 @@ export default function OvertimeSummary({ styles, theme }) {
       >
         <View style={styles.summaryRow}>
           <View>
-            <Text style={[styles.summaryValue, { color: "#fff" }]}>—</Text>
+            <Text style={[styles.summaryValue, { color: "#fff" }]}>{totalHours}h</Text>
             <Text style={[styles.summaryLabel, { color: "rgba(255,255,255,0.85)" }]}>
               Total Hours
             </Text>

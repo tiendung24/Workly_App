@@ -32,6 +32,7 @@ export default function AdminUsers() {
     department_name: "",
     position_name: "",
     role: "Employee",
+    manager_id: null,
     is_active: true,
   });
 
@@ -66,6 +67,7 @@ export default function AdminUsers() {
         department_name: user.department?.name || "",
         position_name: user.position?.name || "",
         role: user.role,
+        manager_id: user.manager_id || null,
         is_active: user.is_active,
       });
     } else {
@@ -78,6 +80,7 @@ export default function AdminUsers() {
         department_name: "",
         position_name: "",
         role: "Employee",
+        manager_id: null,
         is_active: true,
       });
     }
@@ -211,6 +214,25 @@ export default function AdminUsers() {
                           </TouchableOpacity>
                         ))}
                     </View>
+
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Quản lý trực tiếp (Tuỳ chọn)</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row', paddingBottom: 5 }}>
+                        <TouchableOpacity
+                          style={[s.badge, { backgroundColor: formData.manager_id === null ? COLORS.primary : theme.bg, borderWidth: formData.manager_id === null ? 0 : 1, borderColor: theme.navBorder, marginRight: 8 }]}
+                          onPress={() => setFormData({...formData, manager_id: null})}
+                        >
+                           <Text style={{ color: formData.manager_id === null ? '#fff' : theme.text, fontWeight: 'bold' }}>Không có</Text>
+                        </TouchableOpacity>
+                        {users.filter(u => u.role === 'Manager').map(m => (
+                          <TouchableOpacity
+                            key={m.id}
+                            style={[s.badge, { backgroundColor: formData.manager_id === m.id ? COLORS.primary : theme.bg, borderWidth: formData.manager_id === m.id ? 0 : 1, borderColor: theme.navBorder, marginRight: 8 }]}
+                            onPress={() => setFormData({...formData, manager_id: m.id})}
+                          >
+                             <Text style={{ color: formData.manager_id === m.id ? '#fff' : theme.text, fontWeight: 'bold' }}>{m.full_name}</Text>
+                          </TouchableOpacity>
+                        ))}
+                    </ScrollView>
 
                     {editingId && (
                       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 }}>
