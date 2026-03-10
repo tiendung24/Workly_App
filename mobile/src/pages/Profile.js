@@ -6,7 +6,12 @@ import {
   TouchableOpacity,
   Image,
   Platform,
+  Modal,
+  TextInput,
+  ActivityIndicator,
 } from "react-native";
+import Toast from "react-native-toast-message";
+import DatePickerInput from "../_components/shared/DatePickerInput";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../_styles/theme";
 import { profileStyles as s } from "../_styles/pages/profileStyles";
@@ -25,6 +30,8 @@ const DEFAULT_EMPLOYEE = {
   address: "—",
   startDate: "—",
   position: "—",
+  manager: "—",
+  avatarUrl: null,
 };
 
 function getInfoItems(emp) {
@@ -41,12 +48,30 @@ function getInfoItems(emp) {
 function getWorkItems(emp) {
   return [
     { icon: "work", label: "Phòng ban", value: emp.department, color: "#0EA5E9" },
-    { icon: "person", label: "Chức vụ", value: emp.role, color: "#EC4899" },
+    { icon: "person", label: "Quyền hạn", value: emp.role, color: "#EC4899" },
+    { icon: "supervisor-account", label: "Quản lý trực tiếp", value: emp.manager, color: "#F97316" },
   ];
 }
 
 export default function Profile({ onLogout, avatarUrl }) {
   const [employeeData, setEmployeeData] = useState(null);
+  
+  // Edit logic
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editPhone, setEditPhone] = useState("");
+  const [editAddress, setEditAddress] = useState("");
+  const [editAvatar, setEditAvatar] = useState("");
+  const [editFullName, setEditFullName] = useState("");
+  const [editCode, setEditCode] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editDept, setEditDept] = useState("");
+  const [editPos, setEditPos] = useState("");
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  const mockTheme = { bg: "#FAFAFA", card: "#fff", text: "#1F2937", sub: "#9CA3AF", navBorder: "#E5E7EB" };
+
 
   useEffect(() => {
     loadProfile();
@@ -65,7 +90,7 @@ export default function Profile({ onLogout, avatarUrl }) {
 
   const emp = employeeData ? {
     name: employeeData.full_name || "—",
-    role: employeeData.position ? employeeData.position.name : "—",
+    role: employeeData.role || "—",
     department: employeeData.department ? employeeData.department.name : "—",
     employeeId: employeeData.employee_code || "—",
     email: employeeData.email || "—",
@@ -73,9 +98,43 @@ export default function Profile({ onLogout, avatarUrl }) {
     address: employeeData.address || "—",
     startDate: employeeData.start_date ? new Date(employeeData.start_date).toLocaleDateString("en-GB") : "—",
     position: employeeData.position ? employeeData.position.name : "—",
+    manager: employeeData.manager ? employeeData.manager.full_name : "—",
+    avatarUrl: employeeData.avatar_url || null,
   } : DEFAULT_EMPLOYEE;
   const INFO_ITEMS = getInfoItems(emp);
   const WORK_ITEMS = getWorkItems(emp);
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    try {
+      const payload = {};
+      if (editPhone !== employeeData?.phone) payload.phone = editPhone;
+      if (editAddress !== employeeData?.address) payload.address = editAddress;
+      if (editAvatar !== (employeeData?.avatar_url || "")) payload.avatar_url = editAvatar;
+      if (editFullName !== employeeData?.full_name) payload.full_name = editFullName;
+      if (editCode !== employeeData?.employee_code) payload.employee_code = editCode;
+      if (editEmail !== employeeData?.email) payload.email = editEmail;
+      if (editDept !== (employeeData?.department?.name || "")) payload.department_name = editDept;
+      if (editPos !== (employeeData?.position?.name || "")) payload.position_name = editPos;
+      
+      const oldStartDate = employeeData?.start_date ? new Date(employeeData.start_date).toLocaleDateString("en-GB") : "";
+      if (editStartDate !== oldStartDate) {
+        payload.start_date = editStartDate ? editStartDate.split("/").reverse().join("-") : "";
+      }
+
+      if (Object.keys(payload).length > 0) {
+        const res = await profileService.updateMe(payload);
+        Toast.show({ type: "success", text1: "Thành công", text2: "Cập nhật hồ sơ thành công" });
+        loadProfile(); // reload data
+      }
+      setShowEditModal(false);
+    } catch (err) {
+      console.log("Save error", err);
+      Toast.show({ type: "error", text1: "Lỗi", text2: "Không thể lưu hồ sơ" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <Layout>
@@ -96,8 +155,8 @@ export default function Profile({ onLogout, avatarUrl }) {
             style={s.topSection}
           >
             <View style={s.avatarWrap}>
-              {avatarUrl ? (
-                <Image source={{ uri: avatarUrl }} style={s.avatar} />
+              {emp.avatarUrl ? (
+                <Image source={{ uri: emp.avatarUrl }} style={s.avatar} />
               ) : (
                 <View style={s.avatarFallback}>
                   <Text style={s.avatarInitial}>
@@ -108,7 +167,22 @@ export default function Profile({ onLogout, avatarUrl }) {
             </View>
             <Text style={s.userName}>{emp.name}</Text>
             <Text style={s.userRole}>{emp.role} • {emp.department}</Text>
-            <TouchableOpacity style={s.editBtn} activeOpacity={0.8}>
+            <TouchableOpacity 
+              style={s.editBtn} 
+              activeOpacity={0.8}
+              onPress={() => {
+                setEditFullName(employeeData?.full_name || "");
+                setEditCode(employeeData?.employee_code || "");
+                setEditEmail(employeeData?.email || "");
+                setEditDept(employeeData?.department?.name || "");
+                setEditPos(employeeData?.position?.name || "");
+                setEditStartDate(employeeData?.start_date ? new Date(employeeData.start_date).toLocaleDateString("en-GB") : "");
+                setEditPhone(employeeData?.phone || "");
+                setEditAddress(employeeData?.address || "");
+                setEditAvatar(employeeData?.avatar_url || "");
+                setShowEditModal(true);
+              }}
+            >
               <MaterialIcons name="edit" size={14} color="#fff" />
               <Text style={s.editBtnText}>Edit Profile</Text>
             </TouchableOpacity>
@@ -204,6 +278,123 @@ export default function Profile({ onLogout, avatarUrl }) {
               <Text style={[s.logoutText, { color: "#EF4444" }]}>Đăng xuất</Text>
             </TouchableOpacity>
           )}
+
+          {/* ─── Edit Modal ─── */}
+          <Modal
+            visible={showEditModal}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setShowEditModal(false)}
+          >
+            <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" }}>
+              <View style={{ width: "90%", maxHeight: "85%", backgroundColor: theme.card, borderRadius: 16, padding: 20, elevation: 5 }}>
+                <Text style={{ fontSize: 18, fontWeight: "700", color: theme.text, marginBottom: 16 }}>Chỉnh sửa hồ sơ</Text>
+                
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
+                  {/* Full Name */}
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Họ và tên</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 12 }}>
+                    <MaterialIcons name="person" size={18} color={theme.sub} />
+                    <TextInput style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }} value={editFullName} onChangeText={setEditFullName} placeholder="Nguyễn Văn A" placeholderTextColor={theme.sub} />
+                  </View>
+
+                  {/* Employee Code */}
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Mã nhân viên</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 12 }}>
+                    <MaterialIcons name="badge" size={18} color={theme.sub} />
+                    <TextInput style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }} value={editCode} onChangeText={setEditCode} placeholder="EMP001" placeholderTextColor={theme.sub} />
+                  </View>
+
+                  {/* Email */}
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Email</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 12 }}>
+                    <MaterialIcons name="email" size={18} color={theme.sub} />
+                    <TextInput style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }} value={editEmail} onChangeText={setEditEmail} keyboardType="email-address" autoCapitalize="none" placeholder="email@ext.com" placeholderTextColor={theme.sub} />
+                  </View>
+
+                  {/* Department */}
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Phòng ban</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 12 }}>
+                    <MaterialIcons name="work" size={18} color={theme.sub} />
+                    <TextInput style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }} value={editDept} onChangeText={setEditDept} placeholder="Nhập tên phòng ban" placeholderTextColor={theme.sub} />
+                  </View>
+
+                  {/* Position */}
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Vị trí làm việc</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 12 }}>
+                    <MaterialIcons name="business" size={18} color={theme.sub} />
+                    <TextInput style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }} value={editPos} onChangeText={setEditPos} placeholder="Nhập tên chức vụ/vị trí" placeholderTextColor={theme.sub} />
+                  </View>
+
+                  {/* Start Date */}
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Ngày bắt đầu</Text>
+                  <View style={{ marginBottom: 12 }}>
+                    <DatePickerInput value={editStartDate} onChangeText={setEditStartDate} placeholder="DD/MM/YYYY" theme={mockTheme} />
+                  </View>
+
+                  {/* Phone */}
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Số điện thoại</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 12 }}>
+                    <MaterialIcons name="phone" size={18} color={theme.sub} />
+                    <TextInput
+                      style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }}
+                      value={editPhone}
+                      onChangeText={setEditPhone}
+                      keyboardType="phone-pad"
+                      placeholder="09xx xxx xxx"
+                      placeholderTextColor={theme.sub}
+                    />
+                  </View>
+
+                  {/* Address */}
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Địa chỉ</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 12 }}>
+                    <MaterialIcons name="location-pin" size={18} color={theme.sub} />
+                    <TextInput
+                      style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }}
+                      value={editAddress}
+                      onChangeText={setEditAddress}
+                      placeholder="Nhập địa chỉ"
+                      placeholderTextColor={theme.sub}
+                    />
+                  </View>
+
+                  {/* Avatar URL */}
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Link URL Avatar</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 16 }}>
+                    <MaterialIcons name="image" size={18} color={theme.sub} />
+                    <TextInput
+                      style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }}
+                      value={editAvatar}
+                      onChangeText={setEditAvatar}
+                      placeholder="https://..."
+                      placeholderTextColor={theme.sub}
+                      autoCapitalize="none"
+                    />
+                  </View>
+                </ScrollView>
+
+                <View style={{ flexDirection: "row", gap: 12, marginTop: 4 }}>
+                  <TouchableOpacity 
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: theme.navBorder, alignItems: "center" }}
+                    onPress={() => setShowEditModal(false)}
+                  >
+                    <Text style={{ fontWeight: "600", color: theme.text }}>Hủy</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: COLORS.primary, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 6 }}
+                    onPress={handleSaveProfile}
+                    disabled={isSaving}
+                  >
+                    {isSaving && <ActivityIndicator size="small" color="#fff" />}
+                    <Text style={{ fontWeight: "600", color: "#fff" }}>Lưu</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+            </View>
+          </Modal>
+
         </ScrollView>
       )}
     </Layout>
