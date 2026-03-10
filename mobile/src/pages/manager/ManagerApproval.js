@@ -9,9 +9,9 @@ import {
   Image
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { COLORS } from "../_styles/theme";
-import Layout from "../_components/layout/Layout";
-import { managerService } from "../_utils/managerService";
+import { COLORS } from "../../_styles/theme";
+import Layout from "../../_components/layout/Layout";
+import { managerService } from "../../_utils/managerService";
 
 const TABS = [
   { key: "leave", label: "Leave" },

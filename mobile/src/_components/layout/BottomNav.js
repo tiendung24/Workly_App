@@ -86,8 +86,8 @@ export default function BottomNav({
 
       {userRole === 'Manager' && (
         <NavBtn
-          label="Approvals"
-          icon="verified-user"
+          label="Manager"
+          icon="supervisor-account"
           active={activeTab === "Approval"}
           onPress={() => onTabChange("Approval")}
           isDark={isDark}

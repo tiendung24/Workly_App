@@ -10,4 +10,8 @@ router.use(requireRole('Manager', 'Admin'));
 router.get('/requests', managerController.getTeamRequests);
 router.patch('/approve/:type/:id', managerController.updateRequestStatus);
 
+router.get('/team', managerController.getTeamMembers);
+router.get('/team/schedule', managerController.getTeamSchedule);
+router.get('/team/attendance', managerController.getTeamAttendance);
+
 module.exports = router;

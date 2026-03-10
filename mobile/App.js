@@ -37,7 +37,9 @@ import Leave from "./src/pages/Leave";
 import Overtime from "./src/pages/Overtime";
 import Schedule from "./src/pages/Schedule";
 import Profile from "./src/pages/Profile";
-import Approval from "./src/pages/Approval";
+import ManagerHome from "./src/pages/manager/ManagerHome";
+import ManagerApproval from "./src/pages/manager/ManagerApproval";
+import ManagerTeam from "./src/pages/manager/ManagerTeam";
 import AdminDashboard from "./src/pages/admin/AdminDashboard";
 import AdminUsers from "./src/pages/admin/AdminUsers";
 import AdminConfig from "./src/pages/admin/AdminConfig";
@@ -46,6 +48,7 @@ import AdminOrgs from "./src/pages/admin/AdminOrgs";
 
 import BottomNav from "./src/_components/layout/BottomNav";
 import AdminBottomNav from "./src/_components/layout/AdminBottomNav";
+import ManagerBottomNav from "./src/_components/layout/ManagerBottomNav";
 import { getTheme, COLORS } from "./src/_styles/theme";
 
 const Tab = createBottomTabNavigator();
@@ -55,7 +58,7 @@ const LeaveStack = createNativeStackNavigator();
 const OvertimeStack = createNativeStackNavigator();
 const ScheduleStack = createNativeStackNavigator();
 const ProfileStack = createNativeStackNavigator();
-const ApprovalStack = createNativeStackNavigator();
+const ManagerStack = createNativeStackNavigator();
 const AdminStack = createNativeStackNavigator();
 
 /* ─── Custom Tab Bar using BottomNav ─── */
@@ -115,6 +118,32 @@ function AdminTabBar({ state, navigation }) {
 
   return (
     <AdminBottomNav
+      theme={theme}
+      isDark={isDark}
+      activeTab={activeTab}
+      onTabChange={(tab) => {
+        navigation.navigate(tab);
+      }}
+      bottomInset={safeBottomInset}
+    />
+  );
+}
+
+/* ─── Custom Tab Bar for Manager ─── */
+
+function ManagerTabBar({ state, navigation }) {
+  const scheme = useColorScheme();
+  const isWeb = Platform.OS === "web";
+  const isDark = isWeb ? false : scheme === "dark";
+  const theme = useMemo(() => getTheme({ isDark }), [isDark]);
+  const insets = useSafeAreaInsets();
+  const safeBottomInset = typeof insets.bottom === "number" ? insets.bottom : 0;
+
+  const tabNames = state.routes.map((r) => r.name);
+  const activeTab = tabNames[state.index];
+
+  return (
+    <ManagerBottomNav
       theme={theme}
       isDark={isDark}
       activeTab={activeTab}
@@ -238,15 +267,25 @@ function ProfileStackScreen({ onLogout }) {
   );
 }
 
-function ApprovalStackScreen() {
+function ManagerStackScreen() {
   return (
-    <ApprovalStack.Navigator screenOptions={defaultStackScreenOptions}>
-      <ApprovalStack.Screen
-        name="ApprovalScreen"
-        component={Approval}
-        options={{ title: "Approvals" }}
+    <ManagerStack.Navigator screenOptions={defaultStackScreenOptions}>
+      <ManagerStack.Screen
+        name="ManagerHomeScreen"
+        component={ManagerHome}
+        options={{ title: "Manager" }}
       />
-    </ApprovalStack.Navigator>
+      <ManagerStack.Screen
+        name="ManagerApprovalScreen"
+        component={ManagerApproval}
+        options={{ title: "Phê duyệt" }}
+      />
+      <ManagerStack.Screen
+        name="ManagerTeamScreen"
+        component={ManagerTeam}
+        options={{ title: "Đội nhóm" }}
+      />
+    </ManagerStack.Navigator>
   );
 }
 
@@ -307,9 +346,6 @@ function MainTabs({ onLogout, role }) {
       <Tab.Screen name="Overtime" component={OvertimeStackScreen} />
       <Tab.Screen name="Schedule" component={ScheduleStackScreen} />
       <Tab.Screen name="Profile" component={ProfileScreenWithLogout} />
-      {(role === 'Manager') && (
-        <Tab.Screen name="Approval" component={ApprovalStackScreen} />
-      )}
     </Tab.Navigator>
   );
 }
@@ -332,6 +368,24 @@ function AdminTabs({ onLogout }) {
   );
 }
 
+function ManagerTabs({ onLogout }) {
+  const ProfileScreenWithLogout = useCallback(
+    () => <ProfileStackScreen onLogout={onLogout} />,
+    [onLogout]
+  );
+  return (
+    <Tab.Navigator
+      tabBar={(props) => <ManagerTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Tab.Screen name="Manager" component={ManagerStackScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreenWithLogout} />
+    </Tab.Navigator>
+  );
+}
+
 /* ─── Navigation Wrapper ─── */
 function RootNavigation() {
   const { userToken, userInfo, logout } = useContext(AuthContext);
@@ -342,8 +396,10 @@ function RootNavigation() {
       {userToken ? (
         userInfo?.role === 'Admin' || userInfo?.role?.name === 'Admin' ? (
            <AdminTabs onLogout={logout} />
+        ) : userInfo?.role === 'Manager' || userInfo?.role?.name === 'Manager' ? (
+           <ManagerTabs onLogout={logout} />
         ) : (
-           <MainTabs onLogout={logout} role={userInfo?.role?.name || userInfo?.role} />
+           <MainTabs onLogout={logout} />
         )
       ) : (
         authScreen === "register" ? (
