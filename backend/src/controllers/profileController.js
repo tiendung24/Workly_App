@@ -1,5 +1,6 @@
-const { User, Department, Position } = require('../models');
+const { User, Department, Position, Attendance, OvertimeRequest, UserLeaveBalance, LeaveType } = require('../models');
 const { Op } = require('sequelize');
+const moment = require('moment');
 
 // GET /api/profile/me
 const getProfile = async (req, res, next) => {
@@ -134,8 +135,73 @@ const changePassword = async (req, res, next) => {
     }
 };
 
+// GET /api/profile/dashboard
+const getDashboard = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const now = moment();
+        const currentYear = now.year();
+        const startOfMonth = now.clone().startOf('month').format('YYYY-MM-DD');
+        const endOfMonth = now.clone().endOf('month').format('YYYY-MM-DD');
+        const startOfWeek = now.clone().startOf('isoWeek').format('YYYY-MM-DD');
+        const endOfWeek = now.clone().endOf('isoWeek').format('YYYY-MM-DD');
+
+        // 1. Worked Days in Current Month
+        const workedDays = await Attendance.count({
+            where: {
+                user_id: userId,
+                date: { [Op.between]: [startOfMonth, endOfMonth] },
+                status: { [Op.in]: ['Present', 'Late', 'EarlyLeave'] }
+            }
+        });
+
+        // 2. OT Hours in Current Week
+        const otRequests = await OvertimeRequest.findAll({
+            where: {
+                user_id: userId,
+                date: { [Op.between]: [startOfWeek, endOfWeek] },
+                status: 'Approved'
+            }
+        });
+        const otHoursWeek = otRequests.reduce((sum, req) => sum + (Number(req.total_hours) || 0), 0);
+
+        // 3. Paid Leave (Annual Leave)
+        // Find Annual Leave type (Assuming name includes 'Phép')
+        const annualLeaveType = await LeaveType.findOne({
+            where: { name: { [Op.like]: '%Phép%' } }
+        });
+
+        let paidLeavePerMonth = 12; // Default
+        let usedPaidLeave = 0;
+
+        if (annualLeaveType) {
+            const balance = await UserLeaveBalance.findOne({
+                where: { user_id: userId, leave_type_id: annualLeaveType.id, year: currentYear }
+            });
+            if (balance) {
+                paidLeavePerMonth = balance.total_days;
+                usedPaidLeave = balance.used_days;
+            }
+        }
+
+        res.status(200).json({
+            data: {
+                workedDays,
+                standardDays: 22, // Typically 22 working days in a month
+                otHoursWeek,
+                paidLeavePerMonth,
+                usedPaidLeave
+            }
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getProfile,
     updateProfile,
-    changePassword
+    changePassword,
+    getDashboard
 };

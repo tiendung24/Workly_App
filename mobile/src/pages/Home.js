@@ -17,6 +17,7 @@ import { formatTime } from "../_utils/dateTime";
 import { getQuickActions } from "../_utils/homeConfig";
 import { attendanceService } from "../_utils/attendanceService";
 import { AuthContext } from "../_utils/AuthContext";
+import { apiGet } from "../_utils/api";
 import Toast from "react-native-toast-message";
 
 const AVATAR_URL =
@@ -39,6 +40,7 @@ export default function Home({ navigation }) {
   const [activeCheck, setActiveCheck] = useState(null); // 'IN' or 'OUT'
   const [attendanceLabel, setAttendanceLabel] = useState("Chưa Check-in");
   const [loadingAction, setLoadingAction] = useState(false);
+  const [dashboardData, setDashboardData] = useState(null);
 
   // Time ticker
   useEffect(() => {
@@ -50,6 +52,7 @@ export default function Home({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       loadTodayStatus();
+      loadDashboard();
     }, [])
   );
 
@@ -70,6 +73,17 @@ export default function Home({ navigation }) {
       }
     } catch (error) {
       console.log("Error loading today status", error);
+    }
+  };
+
+  const loadDashboard = async () => {
+    try {
+      const res = await apiGet('/profile/dashboard');
+      if (res && res.data) {
+        setDashboardData(res.data);
+      }
+    } catch (error) {
+      console.log("Error loading dashboard data", error);
     }
   };
 
@@ -144,7 +158,7 @@ export default function Home({ navigation }) {
                 },
               ]}
             >
-              <SummaryCards styles={styles} theme={theme} />
+              <SummaryCards styles={styles} theme={theme} {...(dashboardData || {})} />
               <View style={{ marginTop: 12 }}>
                 <QuickActionsGrid
                   styles={styles}
