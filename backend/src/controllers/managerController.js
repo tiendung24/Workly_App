@@ -111,7 +111,38 @@ const updateRequestStatus = async (req, res, next) => {
              }
         }
 
-        item.status = status;
+         // Process specific hook for Correction Approval
+         if (modelClass === CorrectionRequest && status === 'Approved') {
+             try {
+                 const reqDate = item.date;
+                 let attendance = await Attendance.findOne({
+                     where: { user_id: item.user_id, date: reqDate }
+                 });
+
+                 if (!attendance) {
+                     attendance = await Attendance.create({
+                         user_id: item.user_id,
+                         date: reqDate,
+                         status: 'Present',
+                         check_in_time: item.requested_check_in,
+                         check_out_time: item.requested_check_out
+                     });
+                 } else {
+                     if (item.requested_check_in) attendance.check_in_time = item.requested_check_in;
+                     if (item.requested_check_out) attendance.check_out_time = item.requested_check_out;
+                     
+                     // If both check-in and check-out exist, mark as Present automatically
+                     if (attendance.check_in_time && attendance.check_out_time) {
+                         attendance.status = 'Present';
+                     }
+                     await attendance.save();
+                 }
+             } catch (err) {
+                 console.error("Lỗi khi cập nhật Attendance sau khi duyệt Correction:", err);
+             }
+         }
+
+         item.status = status;
         item.approver_id = managerId;
         await item.save();
 

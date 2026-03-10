@@ -108,9 +108,10 @@ export default function Approval({ navigation }) {
           )}
           {type === 'correction' && (
              <>
-               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Type:</Text> {req.correction_type}</Text>
-               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Date:</Text> {req.date}</Text>
-               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Target Time:</Text> {req.correct_time}</Text>
+               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Date:</Text> {req.date ? new Date(req.date).toLocaleDateString("vi-VN") : "N/A"}</Text>
+               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Type:</Text> {req.type?.replace('_', ' ')}</Text>
+               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Requested In:</Text> {req.requested_check_in ? new Date(req.requested_check_in).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : 'N/A'}</Text>
+               <Text style={[s.detailText, { color: theme.text }]}><Text style={s.bold}>Requested Out:</Text> {req.requested_check_out ? new Date(req.requested_check_out).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : 'N/A'}</Text>
              </>
           )}
           <Text style={[s.detailText, { color: theme.text, marginTop: 4 }]}><Text style={s.bold}>Reason:</Text> {req.reason}</Text>

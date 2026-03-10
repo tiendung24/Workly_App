@@ -84,7 +84,7 @@ function getDayData(year, month, day, apiData) {
           type = "off"; timeRange = "";
       }
       
-      // Populate Checkin Data (Late, etc)
+      // Populate Checkin Data (Late, etc) if ANY times exist
       if (record.checkIn || record.checkOut || record.status === 'Present' || record.status === 'Late' || record.status === 'EarlyLeave') {
           let actualHoursLabel = '—';
           let lateMins = 0;
@@ -130,8 +130,8 @@ function getDayData(year, month, day, apiData) {
           }
 
           checkin = {
-              checkIn: cInDate ? cInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}) : '—',
-              checkOut: cOutDate ? cOutDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}) : '—',
+              checkIn: cInDate ? `${padTwo(cInDate.getHours())}:${padTwo(cInDate.getMinutes())}` : '—',
+              checkOut: cOutDate ? `${padTwo(cOutDate.getHours())}:${padTwo(cOutDate.getMinutes())}` : '—',
               hoursLabel: actualHoursLabel,
               late: record.status === 'Late' || lateMins > 0,
               lateMins,

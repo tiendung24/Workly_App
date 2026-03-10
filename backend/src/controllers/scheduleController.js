@@ -69,8 +69,8 @@ const getMonthly = async (req, res, next) => {
                 dayOfWeek: currentDay.format('ddd'), // Thu, Fri, vv..
                 status: finalStatus,
                 shift: shiftDisplay,
-                checkIn: attendanceRecord?.check_in_time || null,
-                checkOut: attendanceRecord?.check_out_time || null
+                checkIn: attendanceRecord?.check_in_time ? moment(attendanceRecord.check_in_time).toISOString() : null,
+                checkOut: attendanceRecord?.check_out_time ? moment(attendanceRecord.check_out_time).toISOString() : null
             });
             
             currentDay.add(1, 'day');
