@@ -42,6 +42,7 @@ import AdminDashboard from "./src/pages/admin/AdminDashboard";
 import AdminUsers from "./src/pages/admin/AdminUsers";
 import AdminConfig from "./src/pages/admin/AdminConfig";
 import AdminTimesheet from "./src/pages/admin/AdminTimesheet";
+import AdminOrgs from "./src/pages/admin/AdminOrgs";
 
 import BottomNav from "./src/_components/layout/BottomNav";
 import AdminBottomNav from "./src/_components/layout/AdminBottomNav";
@@ -266,6 +267,11 @@ function AdminStackScreen() {
         name="AdminConfigScreen"
         component={AdminConfig}
         options={{ title: "Config" }}
+      />
+      <AdminStack.Screen
+        name="AdminOrgsScreen"
+        component={AdminOrgs}
+        options={{ title: "Organizations" }}
       />
       <AdminStack.Screen
         name="AdminTimesheetScreen"

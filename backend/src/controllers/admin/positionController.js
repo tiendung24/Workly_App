@@ -46,6 +46,9 @@ const deletePosition = async (req, res, next) => {
         await position.destroy();
         res.status(200).json({ message: 'Xoá chức vụ thành công' });
     } catch (error) {
+        if (error.name === 'SequelizeForeignKeyConstraintError') {
+            return res.status(400).json({ message: 'Không thể xoá vì đang có nhân sự mang chức vụ này' });
+        }
         next(error);
     }
 };

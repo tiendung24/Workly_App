@@ -4,7 +4,11 @@ const { LeaveType } = require('../../models');
 const getLeaveTypes = async (req, res, next) => {
     try {
         const types = await LeaveType.findAll();
-        res.status(200).json({ data: types });
+        const mappedTypes = types.map(t => ({
+            ...t.toJSON(),
+            default_days: t.days_allowed_per_year
+        }));
+        res.status(200).json({ data: mappedTypes });
     } catch (error) {
         next(error);
     }
@@ -13,8 +17,8 @@ const getLeaveTypes = async (req, res, next) => {
 // POST /api/admin/leaves
 const createLeaveType = async (req, res, next) => {
     try {
-        const { name, days_allowed_per_year, is_paid } = req.body;
-        const type = await LeaveType.create({ name, days_allowed_per_year, is_paid });
+        const { name, default_days, is_paid, description } = req.body;
+        const type = await LeaveType.create({ name, days_allowed_per_year: default_days, is_paid, description });
         res.status(201).json({ message: 'Tạo loại phép thành công', data: type });
     } catch (error) {
         next(error);
@@ -25,12 +29,12 @@ const createLeaveType = async (req, res, next) => {
 const updateLeaveType = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, days_allowed_per_year, is_paid } = req.body;
+        const { name, default_days, is_paid, description } = req.body;
         const type = await LeaveType.findByPk(id);
         if (!type) return res.status(404).json({ message: 'Không tìm thấy loại phép' });
         
-        await type.update({ name, days_allowed_per_year, is_paid });
-        res.status(200).json({ message: 'Cập nhật chức vụ thành công', data: type });
+        await type.update({ name, days_allowed_per_year: default_days, is_paid, description });
+        res.status(200).json({ message: 'Cập nhật loại phép thành công', data: type });
     } catch (error) {
         next(error);
     }

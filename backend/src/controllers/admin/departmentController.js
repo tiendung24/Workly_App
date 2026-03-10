@@ -46,6 +46,9 @@ const deleteDepartment = async (req, res, next) => {
         await department.destroy();
         res.status(200).json({ message: 'Xoá phòng ban thành công' });
     } catch (error) {
+        if (error.name === 'SequelizeForeignKeyConstraintError') {
+            return res.status(400).json({ message: 'Không thể xoá vì đang có nhân sự thuộc phòng ban này' });
+        }
         next(error);
     }
 };

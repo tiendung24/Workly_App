@@ -49,14 +49,6 @@ export default function AdminBottomNav({
       />
 
       <NavBtn
-        label="Users"
-        icon="people"
-        active={activeTab === "AdminUsers"}
-        onPress={() => onTabChange("AdminUsers")}
-        isDark={isDark}
-      />
-
-      <NavBtn
         label="Account"
         icon="person"
         active={activeTab === "Profile"}

@@ -35,12 +35,15 @@ const checkIn = async (req, res, next) => {
 
         const now = new Date();
         const checkInTimeStr = moment(now).format('HH:mm:ss');
-        const shiftStartTimeStr = shift.start_time; // '08:00:00'
+        
+        // Tính Toán Giờ Trễ Tối Đa Cho Phép (đã cộng biên độ muộn)
+        const shiftStartTime = moment(shift.start_time, 'HH:mm:ss');
+        const allowedTimeStr = shiftStartTime.add(shift.grace_period_minutes || 0, 'minutes').format('HH:mm:ss');
 
         let status = 'Present'; // Default
 
-        // Biến đổi string hours để so sánh (VD: 08:00:00)
-        if (checkInTimeStr > shiftStartTimeStr) {
+        // Nếu check-in muộn hơn khoảng châm chước thì ghi nhận đi muộn
+        if (checkInTimeStr > allowedTimeStr) {
             status = 'Late';
         }
 

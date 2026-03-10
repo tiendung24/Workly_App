@@ -85,7 +85,7 @@ export default function AdminDashboard({ navigation }) {
                     if (item.id === "AdminUsers") navigation.navigate("AdminUsersScreen");
                     else if (item.id === "AdminTimesheet") navigation.navigate("AdminTimesheetScreen");
                     else if (item.id === "AdminConfig") navigation.navigate("AdminConfigScreen");
-                    else alert("Chức năng Cơ cấu tổ chức đang phát triển");
+                    else if (item.id === "AdminOrgs") navigation.navigate("AdminOrgsScreen");
                   }}
                 >
                   <View style={s.row}>

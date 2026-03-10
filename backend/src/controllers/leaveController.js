@@ -15,7 +15,7 @@ const getBalance = async (req, res, next) => {
         // 2. Nếu chưa có, tự động cấp phát dựa trên cấu hình LeaveType
         if (!balance) {
             const leaveType = await LeaveType.findOne({
-                where: { name: 'Nghỉ Phép Năm' }
+                where: { name: 'Nghỉ Phép Tháng' }
             });
 
             if (leaveType) {

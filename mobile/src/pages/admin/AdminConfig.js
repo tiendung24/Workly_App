@@ -14,6 +14,7 @@ import { adminStyles as s } from "../../_styles/pages/adminStyles";
 import { COLORS } from "../../_styles/theme";
 import { adminService } from "../../_utils/adminService";
 import Toast from "react-native-toast-message";
+import TimePickerInput from "../../_components/shared/TimePickerInput";
 
 export default function AdminConfig() {
   const [shifts, setShifts] = useState([]);
@@ -165,9 +166,9 @@ export default function AdminConfig() {
 
                 {/* Leave Types Section */}
                 <View style={[s.row, { borderBottomWidth: 0, marginBottom: 12, marginTop: 20 }]}>
-                    <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Cấu Hình Loại Nghỉ Phép</Text>
+                    <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Cấu Hình Nghỉ Phép Tháng</Text>
                     <TouchableOpacity style={[s.btn, { backgroundColor: '#8B5CF6' }]} activeOpacity={0.8} onPress={() => handleOpenForm('leave')}>
-                    <Text style={s.btnText}>+ Thêm Phép</Text>
+                    <Text style={s.btnText}>+ Thêm Phép Tháng</Text>
                     </TouchableOpacity>
                 </View>
                 <View style={[s.card, { backgroundColor: theme.card, padding: 0, overflow: 'hidden' }]}>
@@ -179,7 +180,7 @@ export default function AdminConfig() {
                         ]}>
                             <View style={{ flex: 1 }}>
                                 <Text style={[s.rowTitle, { color: theme.text }]}>{item.name}</Text>
-                                <Text style={[s.rowSubtitle, { color: theme.sub }]}>Mặc định: {item.default_days} ngày • {item.description}</Text>
+                                <Text style={[s.rowSubtitle, { color: theme.sub }]}>Mặc định: {item.default_days} lần / tháng • {item.description}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', gap: 10 }}>
                                 <TouchableOpacity onPress={() => handleOpenForm('leave', item)}>
@@ -201,7 +202,7 @@ export default function AdminConfig() {
                <View style={[{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '90%' }]}>
                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
                     <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>
-                      {editingId ? "Sửa" : "Thêm"} {formType === 'shift' ? 'Ca Làm Việc' : 'Loại Nghỉ Phép'}
+                      {editingId ? "Sửa" : "Thêm"} {formType === 'shift' ? 'Ca Làm Việc' : 'Nghỉ Phép Tháng'}
                     </Text>
                     <TouchableOpacity onPress={() => setModalVisible(false)}>
                       <MaterialIcons name="close" size={24} color={theme.sub} />
@@ -220,11 +221,11 @@ export default function AdminConfig() {
                             <View style={{ flexDirection: 'row', gap: 10, marginTop: 15 }}>
                                 <View style={{ flex: 1 }}>
                                     <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Giờ Vào (*)</Text>
-                                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="08:00:00" placeholderTextColor={theme.sub} value={formData.start_time} onChangeText={t => setFormData({...formData, start_time: t})} />
+                                    <TimePickerInput theme={theme} value={formData.start_time?.substring(0, 5)} onChangeText={t => setFormData({...formData, start_time: t.includes(':') && t.length === 5 ? t + ":00" : t})} />
                                 </View>
                                 <View style={{ flex: 1 }}>
                                     <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Giờ Ra (*)</Text>
-                                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="17:00:00" placeholderTextColor={theme.sub} value={formData.end_time} onChangeText={t => setFormData({...formData, end_time: t})} />
+                                    <TimePickerInput theme={theme} value={formData.end_time?.substring(0, 5)} onChangeText={t => setFormData({...formData, end_time: t.includes(':') && t.length === 5 ? t + ":00" : t})} />
                                 </View>
                             </View>
                             <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Biên độ muộn (Phút)</Text>
@@ -232,7 +233,7 @@ export default function AdminConfig() {
                         </>
                     ) : (
                         <>
-                            <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Số ngày mặc định hằng năm</Text>
+                            <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Số lần nghỉ phép mặc định mỗi tháng</Text>
                             <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="12" placeholderTextColor={theme.sub} keyboardType="numeric" value={formData.default_days} onChangeText={t => setFormData({...formData, default_days: t})} />
                         </>
                     )}
