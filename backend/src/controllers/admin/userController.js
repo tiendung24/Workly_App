@@ -82,7 +82,7 @@ const createUser = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { full_name, phone, address, department_name, position_name, role, manager_id, is_active, employee_code } = req.body;
+        const { full_name, phone, address, department_name, position_name, role, manager_id, is_active, employee_code, email } = req.body;
         
         const user = await User.findByPk(id);
         if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
@@ -114,8 +114,16 @@ const updateUser = async (req, res, next) => {
             user.employee_code = employee_code;
         }
 
+        // Email uniqueness check
+        if (email && email !== user.email) {
+            const existingEmail = await User.findOne({ where: { email, id: { [Op.ne]: id } } });
+            if (existingEmail) return res.status(400).json({ message: 'Email đã tồn tại' });
+            user.email = email;
+        }
+
         await user.update({
             employee_code: user.employee_code,
+            email: user.email,
             full_name,
             phone,
             address,

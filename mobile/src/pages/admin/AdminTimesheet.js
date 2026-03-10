@@ -103,7 +103,7 @@ export default function AdminTimesheet() {
             <View style={[s.card, { backgroundColor: theme.card, padding: 0, overflow: 'hidden' }]}>
               {data.map((item, index) => (
                 <View
-                  key={item.user_id}
+                  key={item.user_id || index.toString()}
                   style={[
                     { paddingHorizontal: 16, paddingVertical: 14, borderBottomColor: theme.navBorder },
                     index !== data.length - 1 && { borderBottomWidth: 1 }

@@ -157,7 +157,7 @@ CREATE TABLE CorrectionRequests (
 );
 
 UPDATE Users SET role = 'Admin' WHERE email = 'admin@gmail.com';
+UPDATE Users SET role = 'Manager' WHERE email = 'manager@gmail.com';
 
 
-
-select * from Users ;
+select * from LeaveTypes ;
