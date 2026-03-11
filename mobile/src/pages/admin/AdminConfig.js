@@ -80,7 +80,7 @@ export default function AdminConfig() {
   const handleSave = async () => {
     try {
       if (!formData.name) {
-        Toast.show({ type: "error", text1: "Lỗi", text2: "Tên không được để trống" });
+        Toast.show({ type: "error", text1: "Error", text2: "Name cannot be empty" });
         return;
       }
 
@@ -99,11 +99,11 @@ export default function AdminConfig() {
           else await adminService.createLeaveType(payload);
       }
       
-      Toast.show({ type: "success", text1: "Thành công", text2: "Cập nhật thành công" });
+      Toast.show({ type: "success", text1: "Success", text2: "Updated successfully" });
       setModalVisible(false);
       loadData();
     } catch (error) {
-      Toast.show({ type: "error", text1: "Lỗi", text2: error.response?.data?.message || "Có lỗi xảy ra" });
+      Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "An error occurred" });
     }
   };
 
@@ -112,10 +112,10 @@ export default function AdminConfig() {
       try {
           if (type === 'shift') await adminService.deleteShift(id);
           else await adminService.deleteLeaveType(id);
-          Toast.show({ type: "success", text1: "Thành công", text2: "Xoá thành công" });
+          Toast.show({ type: "success", text1: "Success", text2: "Deleted successfully" });
           loadData();
       } catch (error) {
-          Toast.show({ type: "error", text1: "Lỗi", text2: "Không thể xoá vì đang có dữ liệu liên kết" });
+          Toast.show({ type: "error", text1: "Error", text2: "Cannot delete linked data" });
       }
   };
 
@@ -136,9 +136,9 @@ export default function AdminConfig() {
             <>
                 {/* Shifts Section */}
                 <View style={[s.row, { borderBottomWidth: 0, marginBottom: 12, marginTop: 10 }]}>
-                    <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Cấu Hình Ca Làm Việc</Text>
+                    <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Work Shift Config</Text>
                     <TouchableOpacity style={[s.btn, { backgroundColor: '#10B981' }]} activeOpacity={0.8} onPress={() => handleOpenForm('shift')}>
-                    <Text style={s.btnText}>+ Thêm Ca</Text>
+                    <Text style={s.btnText}>+ Add Shift</Text>
                     </TouchableOpacity>
                 </View>
                 <View style={[s.card, { backgroundColor: theme.card, padding: 0, overflow: 'hidden' }]}>
@@ -166,9 +166,9 @@ export default function AdminConfig() {
 
                 {/* Leave Types Section */}
                 <View style={[s.row, { borderBottomWidth: 0, marginBottom: 12, marginTop: 20 }]}>
-                    <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Cấu Hình Nghỉ Phép Tháng</Text>
+                    <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Leave Types Config</Text>
                     <TouchableOpacity style={[s.btn, { backgroundColor: '#8B5CF6' }]} activeOpacity={0.8} onPress={() => handleOpenForm('leave')}>
-                    <Text style={s.btnText}>+ Thêm Phép Tháng</Text>
+                    <Text style={s.btnText}>+ Add Leave Type</Text>
                     </TouchableOpacity>
                 </View>
                 <View style={[s.card, { backgroundColor: theme.card, padding: 0, overflow: 'hidden' }]}>
@@ -180,7 +180,7 @@ export default function AdminConfig() {
                         ]}>
                             <View style={{ flex: 1 }}>
                                 <Text style={[s.rowTitle, { color: theme.text }]}>{item.name}</Text>
-                                <Text style={[s.rowSubtitle, { color: theme.sub }]}>Mặc định: {item.default_days} lần / tháng • {item.description}</Text>
+                                <Text style={[s.rowSubtitle, { color: theme.sub }]}>Default: {item.default_days} days / month • {item.description}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', gap: 10 }}>
                                 <TouchableOpacity onPress={() => handleOpenForm('leave', item)}>
@@ -202,7 +202,7 @@ export default function AdminConfig() {
                <View style={[{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '90%' }]}>
                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
                     <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>
-                      {editingId ? "Sửa" : "Thêm"} {formType === 'shift' ? 'Ca Làm Việc' : 'Nghỉ Phép Tháng'}
+                      {editingId ? "Edit" : "Add"} {formType === 'shift' ? 'Shift' : 'Leave Type'}
                     </Text>
                     <TouchableOpacity onPress={() => setModalVisible(false)}>
                       <MaterialIcons name="close" size={24} color={theme.sub} />
@@ -210,37 +210,37 @@ export default function AdminConfig() {
                  </View>
 
                  <ScrollView style={{ marginBottom: 20 }}>
-                    <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Tên (*)</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="VD: Ca Sáng" placeholderTextColor={theme.sub} value={formData.name} onChangeText={t => setFormData({...formData, name: t})} />
+                    <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Name (*)</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="e.g. Morning Shift" placeholderTextColor={theme.sub} value={formData.name} onChangeText={t => setFormData({...formData, name: t})} />
 
-                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Mô tả bổ sung</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="Dành cho..." placeholderTextColor={theme.sub} value={formData.description} onChangeText={t => setFormData({...formData, description: t})} />
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Description</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="Used for..." placeholderTextColor={theme.sub} value={formData.description} onChangeText={t => setFormData({...formData, description: t})} />
 
                     {formType === 'shift' ? (
                         <>
                             <View style={{ flexDirection: 'row', gap: 10, marginTop: 15 }}>
                                 <View style={{ flex: 1 }}>
-                                    <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Giờ Vào (*)</Text>
+                                    <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Start Time (*)</Text>
                                     <TimePickerInput theme={theme} value={formData.start_time?.substring(0, 5)} onChangeText={t => setFormData({...formData, start_time: t.includes(':') && t.length === 5 ? t + ":00" : t})} />
                                 </View>
                                 <View style={{ flex: 1 }}>
-                                    <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Giờ Ra (*)</Text>
+                                    <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>End Time (*)</Text>
                                     <TimePickerInput theme={theme} value={formData.end_time?.substring(0, 5)} onChangeText={t => setFormData({...formData, end_time: t.includes(':') && t.length === 5 ? t + ":00" : t})} />
                                 </View>
                             </View>
-                            <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Biên độ muộn (Phút)</Text>
+                            <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Late Grace Period (Mins)</Text>
                             <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="15" placeholderTextColor={theme.sub} keyboardType="numeric" value={formData.grace_period_minutes} onChangeText={t => setFormData({...formData, grace_period_minutes: t})} />
                         </>
                     ) : (
                         <>
-                            <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Số lần nghỉ phép mặc định mỗi tháng</Text>
+                            <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Default leave days</Text>
                             <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="12" placeholderTextColor={theme.sub} keyboardType="numeric" value={formData.default_days} onChangeText={t => setFormData({...formData, default_days: t})} />
                         </>
                     )}
                  </ScrollView>
 
                  <TouchableOpacity style={[s.btn, { paddingVertical: 14 }]} onPress={handleSave}>
-                    <Text style={s.btnText}>Lưu Cấu Hình</Text>
+                    <Text style={s.btnText}>Save Config</Text>
                  </TouchableOpacity>
                </View>
             </View>

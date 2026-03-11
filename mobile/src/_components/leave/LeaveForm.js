@@ -37,9 +37,9 @@ export default function LeaveForm({ visible, onClose, onSubmit, theme }) {
           let color = "#6B7280";
           const name = (t.name || "").toLowerCase();
           
-          if (name.includes("phép tháng") || name.includes("phép năm") || name.includes("annual")) { color = COLORS.primary; icon = "calendar-month"; }
-          else if (name.includes("ốm") || name.includes("thái sản") || name.includes("sick")) { color = "#EA580C"; icon = "medical-services"; }
-          else if (name.includes("cá nhân") || name.includes("personal")) { color = "#2563EB"; icon = "person"; }
+          if (name.includes("annual")) { color = COLORS.primary; icon = "calendar-month"; }
+          else if (name.includes("sick")) { color = "#EA580C"; icon = "medical-services"; }
+          else if (name.includes("personal")) { color = "#2563EB"; icon = "person"; }
           else { color = "#6B7280"; icon = "money-off"; }
           
           return {

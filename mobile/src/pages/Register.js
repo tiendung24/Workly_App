@@ -45,11 +45,11 @@ export default function Register({ onGoToLogin }) {
 
   const handleRegister = async () => {
     if (!canSubmit) {
-      if (fullName.trim().length === 0) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Vui lòng nhập họ tên.' });
-      if (email.trim().length === 0) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Vui lòng nhập email.' });
-      if (!employeeCode || employeeCode.trim().length === 0) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Vui lòng nhập mã nhân viên.' });
-      if (password.trim().length < 6) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Mật khẩu phải từ 6 ký tự.' });
-      if (!passwordsMatch) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Mật khẩu không khớp.' });
+      if (fullName.trim().length === 0) return Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter your full name.' });
+      if (email.trim().length === 0) return Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter your email.' });
+      if (!employeeCode || employeeCode.trim().length === 0) return Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter your employee code.' });
+      if (password.trim().length < 6) return Toast.show({ type: 'error', text1: 'Error', text2: 'Password must be at least 6 characters.' });
+      if (!passwordsMatch) return Toast.show({ type: 'error', text1: 'Error', text2: 'Passwords do not match.' });
       return;
     }
     Keyboard.dismiss();
@@ -66,7 +66,7 @@ export default function Register({ onGoToLogin }) {
     });
     
     if (!result.success) {
-      Toast.show({ type: 'error', text1: 'Lỗi', text2: result.message || "Registration failed" });
+      Toast.show({ type: 'error', text1: 'Error', text2: result.message || "Registration failed" });
     }
   };
 

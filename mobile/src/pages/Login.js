@@ -37,32 +37,30 @@ export default function Login({ onGoToRegister }) {
 
   const handleLogin = async () => {
     if (!canSubmit) {
-      if (email.trim().length === 0) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Please enter your email.' });
-      if (password.trim().length === 0) return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Please enter your password.' });
+      if (email.trim().length === 0) return Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter your email.' });
+      if (password.trim().length === 0) return Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter your password.' });
       return;
     }
     Keyboard.dismiss();
     const result = await login(email, password);
-    if (!result.success) {
-      Toast.show({ type: 'error', text1: 'Lỗi', text2: result.message || "Login failed" });
-    }
+      Toast.show({ type: 'error', text1: 'Error', text2: result.message || "Login failed" });
   };
 
   const handleForgotPassword = async () => {
     if (forgotEmail.trim().length === 0) {
-      return Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Vui lòng nhập email của bạn.' });
+      return Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter your email.' });
     }
     Keyboard.dismiss();
     setIsForgotLoading(true);
     try {
       const res = await authService.forgotPassword(forgotEmail);
-      Toast.show({ type: 'success', text1: 'Thành công', text2: res.message || "Đã gửi yêu cầu cấp lại mật khẩu" });
+      Toast.show({ type: 'success', text1: 'Success', text2: res.message || "Password reset request sent" });
       setShowForgotModal(false);
       setForgotEmail("");
     } catch (err) {
       console.log("Forgot password err:", err);
-      const msg = err.response?.data?.message || "Không thể yêu cầu lấy lại mật khẩu";
-      Toast.show({ type: 'error', text1: 'Lỗi', text2: msg });
+      const msg = err.response?.data?.message || "Cannot request password reset";
+      Toast.show({ type: 'error', text1: 'Error', text2: msg });
     } finally {
       setIsForgotLoading(false);
     }
@@ -205,8 +203,8 @@ export default function Login({ onGoToRegister }) {
       >
         <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" }}>
           <View style={{ width: "85%", backgroundColor: mockTheme.card, borderRadius: 16, padding: 24, elevation: 5 }}>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: mockTheme.text, marginBottom: 8 }}>Quên mật khẩu</Text>
-            <Text style={{ fontSize: 14, color: mockTheme.sub, marginBottom: 16 }}>Nhập email dùng để đăng ký tài khoản. Hệ thống sẽ cấp lại một mật khẩu mặc định cho bạn.</Text>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: mockTheme.text, marginBottom: 8 }}>Forgot password</Text>
+            <Text style={{ fontSize: 14, color: mockTheme.sub, marginBottom: 16 }}>Enter the email address associated with your account. We will issue a default password for you.</Text>
             
             <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: mockTheme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 24 }}>
               <MaterialIcons name="mail-outline" size={18} color={mockTheme.sub} />
@@ -214,7 +212,7 @@ export default function Login({ onGoToRegister }) {
                 style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: mockTheme.text, fontSize: 14 }}
                 value={forgotEmail}
                 onChangeText={setForgotEmail}
-                placeholder="Nhập email của bạn"
+                placeholder="Enter your email"
                 placeholderTextColor={mockTheme.sub}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -226,7 +224,7 @@ export default function Login({ onGoToRegister }) {
                 style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: mockTheme.navBorder, alignItems: "center" }}
                 onPress={() => setShowForgotModal(false)}
               >
-                <Text style={{ fontWeight: "600", color: mockTheme.text }}>Hủy</Text>
+                <Text style={{ fontWeight: "600", color: mockTheme.text }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: COLORS.primary, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 6 }}
@@ -234,7 +232,7 @@ export default function Login({ onGoToRegister }) {
                 disabled={isForgotLoading}
               >
                 {isForgotLoading && <ActivityIndicator size="small" color="#fff" />}
-                <Text style={{ fontWeight: "600", color: "#fff" }}>Lấy lại MK</Text>
+                <Text style={{ fontWeight: "600", color: "#fff" }}>Reset Password</Text>
               </TouchableOpacity>
             </View>
           </View>

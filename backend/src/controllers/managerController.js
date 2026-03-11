@@ -94,7 +94,7 @@ const updateRequestStatus = async (req, res, next) => {
         if (modelClass === LeaveRequest && status === 'Approved') {
              // Lấy chi tiết phép
              const leaveDetail = await LeaveRequest.findByPk(id, { include: [{ model: LeaveType, as: 'leaveType' }] });
-             if (leaveDetail && leaveDetail.leaveType && leaveDetail.leaveType.name.includes('Phép Tháng')) {
+             if (leaveDetail && leaveDetail.leaveType && leaveDetail.leaveType.name.toLowerCase().includes('annual')) {
                   const start = moment(leaveDetail.start_date);
                   const end = moment(leaveDetail.end_date);
                   const diffDays = end.diff(start, 'days') + 1;
@@ -286,7 +286,7 @@ const getTeamAttendance = async (req, res, next) => {
              if (userMap[lv.user_id] && lv.leaveType) {
                  const typeName = lv.leaveType.name.toLowerCase();
                  // Phép sinh tính 1 ngày làm việc
-                 if (typeName.includes('phép tháng') || typeName.includes('công tác')) {
+                 if (typeName.includes('annual') || typeName.includes('trip')) {
                      let curr = moment(lv.start_date);
                      const end = moment(lv.end_date);
                      while (curr.isSameOrBefore(end)) {

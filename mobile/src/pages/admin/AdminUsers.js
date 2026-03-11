@@ -90,22 +90,22 @@ export default function AdminUsers() {
   const handleSave = async () => {
     try {
       if (!formData.employee_code || !formData.full_name || !formData.email) {
-        Toast.show({ type: "error", text1: "Lỗi", text2: "Vui lòng nhập đủ thông tin bắt buộc" });
+        Toast.show({ type: "error", text1: "Error", text2: "Please enter all required information" });
         return;
       }
       const payload = { ...formData };
 
       if (editingId) {
         await adminService.updateUser(editingId, payload);
-        Toast.show({ type: "success", text1: "Thành công", text2: "Cập nhật nhân viên thành công" });
+        Toast.show({ type: "success", text1: "Success", text2: "Employee updated successfully" });
       } else {
         await adminService.createUser(payload);
-        Toast.show({ type: "success", text1: "Thành công", text2: "Tạo nhân viên thành công" });
+        Toast.show({ type: "success", text1: "Success", text2: "Employee created successfully" });
       }
       setModalVisible(false);
       loadData();
     } catch (error) {
-      Toast.show({ type: "error", text1: "Lỗi", text2: error.response?.data?.message || "Có lỗi xảy ra" });
+      Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "An error occurred" });
     }
   };
 
@@ -127,9 +127,9 @@ export default function AdminUsers() {
           ]}
         >
           <View style={[s.row, { borderBottomWidth: 0, marginBottom: 12 }]}>
-            <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Danh sách Nhân Sự</Text>
+            <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Employee Roster</Text>
             <TouchableOpacity style={s.btn} activeOpacity={0.8} onPress={() => handleOpenForm()}>
-              <Text style={s.btnText}>+ Thêm Mới</Text>
+              <Text style={s.btnText}>+ Add New</Text>
             </TouchableOpacity>
           </View>
 
@@ -154,7 +154,7 @@ export default function AdminUsers() {
                       {item.full_name} <Text style={{ fontSize: 13, color: theme.sub, fontWeight: 'normal' }}>({item.employee_code})</Text>
                     </Text>
                     <Text style={[s.rowSubtitle, { color: theme.sub }]}>
-                      {item.department ? item.department.name : "Chưa có phòng ban"} • {item.position ? item.position.name : "Chưa có chức vụ"}
+                      {item.department ? item.department.name : "No department"} • {item.position ? item.position.name : "No position"}
                     </Text>
                   </View>
                   <View style={{ alignItems: "flex-end", marginLeft: 10 }}>
@@ -162,7 +162,7 @@ export default function AdminUsers() {
                        <Text style={[s.badgeText, { color: getRoleColor(item.role) }]}>{item.role}</Text>
                      </View>
                      <Text style={{ fontSize: 12, color: theme.sub, marginTop: 4 }}>
-                       {item.is_active ? "Hoạt động" : "Đã khóa"}
+                       {item.is_active ? "Active" : "Locked"}
                      </Text>
                   </View>
                 </TouchableOpacity>
@@ -176,7 +176,7 @@ export default function AdminUsers() {
                <View style={[{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '90%' }]}>
                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
                     <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>
-                      {editingId ? "Sửa Nhân Viên" : "Thêm Nhân Viên"}
+                      {editingId ? "Edit Employee" : "Add Employee"}
                     </Text>
                     <TouchableOpacity onPress={() => setModalVisible(false)}>
                       <MaterialIcons name="close" size={24} color={theme.sub} />
@@ -184,29 +184,29 @@ export default function AdminUsers() {
                  </View>
 
                  <ScrollView style={{ marginBottom: 20 }}>
-                    <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Mã NV (*)</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="VD: NV001" placeholderTextColor={theme.sub} value={formData.employee_code} onChangeText={t => setFormData({...formData, employee_code: t})} />
+                    <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Emp Code (*)</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="e.g. NV001" placeholderTextColor={theme.sub} value={formData.employee_code} onChangeText={t => setFormData({...formData, employee_code: t})} />
 
-                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Họ Tên (*)</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="Nguyễn Văn A" placeholderTextColor={theme.sub} value={formData.full_name} onChangeText={t => setFormData({...formData, full_name: t})} />
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Full Name (*)</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="John Doe" placeholderTextColor={theme.sub} value={formData.full_name} onChangeText={t => setFormData({...formData, full_name: t})} />
 
                     <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Email (*)</Text>
                     <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="a@workly.com" placeholderTextColor={theme.sub} keyboardType="email-address" value={formData.email} onChangeText={t => setFormData({...formData, email: t})} />
 
                     {!editingId && (
                       <>
-                        <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Mật khẩu (*)</Text>
+                        <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Password (*)</Text>
                         <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="123456" placeholderTextColor={theme.sub} secureTextEntry value={formData.password} onChangeText={t => setFormData({...formData, password: t})} />
                       </>
                     )}
 
-                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Phòng Ban (Tuỳ chọn)</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="VD: IT Department" placeholderTextColor={theme.sub} value={formData.department_name} onChangeText={t => setFormData({...formData, department_name: t})} />
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Department (Optional)</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="e.g. IT Department" placeholderTextColor={theme.sub} value={formData.department_name} onChangeText={t => setFormData({...formData, department_name: t})} />
 
-                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Vị trí làm việc (Tuỳ chọn)</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="VD: Developer" placeholderTextColor={theme.sub} value={formData.position_name} onChangeText={t => setFormData({...formData, position_name: t})} />
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Position (Optional)</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="e.g. Developer" placeholderTextColor={theme.sub} value={formData.position_name} onChangeText={t => setFormData({...formData, position_name: t})} />
 
-                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Vai trò (Role)</Text>
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Role</Text>
                     <View style={{ flexDirection: 'row', gap: 10 }}>
                         {['Employee', 'Manager', 'Admin'].map(r => (
                           <TouchableOpacity key={r} style={[s.badge, { backgroundColor: formData.role === r ? getRoleColor(r) : theme.bg, borderWidth: formData.role === r ? 0 : 1, borderColor: theme.navBorder }]} onPress={() => setFormData({...formData, role: r})}>
@@ -215,13 +215,13 @@ export default function AdminUsers() {
                         ))}
                     </View>
 
-                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Quản lý trực tiếp (Tuỳ chọn)</Text>
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Line Manager (Optional)</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row', paddingBottom: 5 }}>
                         <TouchableOpacity
                           style={[s.badge, { backgroundColor: formData.manager_id === null ? COLORS.primary : theme.bg, borderWidth: formData.manager_id === null ? 0 : 1, borderColor: theme.navBorder, marginRight: 8 }]}
                           onPress={() => setFormData({...formData, manager_id: null})}
                         >
-                           <Text style={{ color: formData.manager_id === null ? '#fff' : theme.text, fontWeight: 'bold' }}>Không có</Text>
+                           <Text style={{ color: formData.manager_id === null ? '#fff' : theme.text, fontWeight: 'bold' }}>None</Text>
                         </TouchableOpacity>
                         {users.filter(u => u.role === 'Manager').map(m => (
                           <TouchableOpacity
@@ -236,14 +236,14 @@ export default function AdminUsers() {
 
                     {editingId && (
                       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 }}>
-                        <Text style={{ color: theme.text, fontWeight: 'bold' }}>Tài khoản Đang hoạt động</Text>
+                        <Text style={{ color: theme.text, fontWeight: 'bold' }}>Account Active</Text>
                         <Switch value={formData.is_active} onValueChange={v => setFormData({...formData, is_active: v})} trackColor={{ false: "#767577", true: COLORS.primary }} />
                       </View>
                     )}
                  </ScrollView>
 
                  <TouchableOpacity style={[s.btn, { paddingVertical: 14 }]} onPress={handleSave}>
-                    <Text style={s.btnText}>Lưu Thông Tin</Text>
+                    <Text style={s.btnText}>Save Details</Text>
                  </TouchableOpacity>
                </View>
             </View>

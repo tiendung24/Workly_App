@@ -59,11 +59,11 @@ export default function Leave({ navigation }) {
       });
       if (res.data) {
         setShowForm(false);
-        Toast.show({ type: 'success', text1: 'Thành công', text2: 'Tạo đơn phép thành công!' });
+        Toast.show({ type: 'success', text1: 'Success', text2: 'Leave request created successfully!' });
         loadData(); // Refresh list 
       }
     } catch (error) {
-      Toast.show({ type: 'error', text1: 'Lỗi', text2: error.message || 'Không thể tạo đơn' });
+      Toast.show({ type: 'error', text1: 'Error', text2: error.message || 'Cannot create request' });
     } finally {
       setLoading(false);
     }

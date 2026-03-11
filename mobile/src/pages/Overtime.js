@@ -56,11 +56,11 @@ export default function Overtime({ navigation }) {
       });
       if (res && res.data) {
         setShowForm(false);
-        Toast.show({ type: "success", text1: "Thành công", text2: "Ghi nhận đơn làm thêm giờ thành công!" });
+        Toast.show({ type: "success", text1: "Success", text2: "Overtime request submitted successfully!" });
         loadData(); // Refresh list
       }
     } catch (error) {
-       Toast.show({ type: "error", text1: "Lỗi", text2: error.response?.data?.message || error.message || "Có lỗi xảy ra" });
+       Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || error.message || "An error occurred" });
     } finally {
       setLoading(false);
     }

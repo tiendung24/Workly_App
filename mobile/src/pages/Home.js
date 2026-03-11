@@ -38,7 +38,7 @@ export default function Home({ navigation }) {
 
   const [now, setNow] = useState(new Date());
   const [activeCheck, setActiveCheck] = useState(null); // 'IN' or 'OUT'
-  const [attendanceLabel, setAttendanceLabel] = useState("Chưa Check-in");
+  const [attendanceLabel, setAttendanceLabel] = useState("Not Checked In");
   const [loadingAction, setLoadingAction] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
 
@@ -62,14 +62,14 @@ export default function Home({ navigation }) {
       if (res && res.attendance) {
         if (res.attendance.check_out_time) {
           setActiveCheck("OUT");
-          setAttendanceLabel("Đã Check-out");
+          setAttendanceLabel("Checked Out");
         } else if (res.attendance.check_in_time) {
           setActiveCheck("IN");
-          setAttendanceLabel("Đang làm việc");
+          setAttendanceLabel("Working");
         }
       } else {
         setActiveCheck(null);
-        setAttendanceLabel("Chưa Check-in");
+        setAttendanceLabel("Not Checked In");
       }
     } catch (error) {
       console.log("Error loading today status", error);
@@ -93,14 +93,14 @@ export default function Home({ navigation }) {
     try {
       if (type === "IN") {
         await attendanceService.checkIn();
-        Toast.show({ type: 'success', text1: 'Thành công', text2: 'Check-in thành công!' });
+        Toast.show({ type: 'success', text1: 'Success', text2: 'Checked in successfully!' });
       } else if (type === "OUT") {
         await attendanceService.checkOut();
-        Toast.show({ type: 'success', text1: 'Thành công', text2: 'Check-out thành công!' });
+        Toast.show({ type: 'success', text1: 'Success', text2: 'Checked out successfully!' });
       }
       await loadTodayStatus();
     } catch (error) {
-      Toast.show({ type: 'error', text1: 'Lỗi', text2: error.message || 'Có lỗi xảy ra' });
+      Toast.show({ type: 'error', text1: 'Error', text2: error.message || 'An error occurred' });
     } finally {
       setLoadingAction(false);
     }

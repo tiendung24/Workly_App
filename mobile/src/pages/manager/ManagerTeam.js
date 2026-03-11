@@ -66,7 +66,7 @@ export default function ManagerTeam() {
   };
 
   const renderMembers = (theme) => {
-     if (members.length === 0) return <Text style={{ color: theme.sub, textAlign: 'center', marginTop: 20 }}>Không có nhân viên nào</Text>;
+     if (members.length === 0) return <Text style={{ color: theme.sub, textAlign: 'center', marginTop: 20 }}>No members found</Text>;
      return members.map(m => (
         <View key={m.id} style={[s.card, { backgroundColor: theme.card, borderColor: theme.navBorder }]}>
            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -79,8 +79,8 @@ export default function ManagerTeam() {
              )}
              <View style={{ flex: 1 }}>
                 <Text style={[s.userName, { color: theme.text }]}>{m.full_name} <Text style={{ fontSize: 13, color: theme.sub, fontWeight: 'normal' }}>({m.employee_code})</Text></Text>
-                <Text style={{ color: theme.sub, fontSize: 13, marginTop: 4 }}>{m.position?.name || 'Chưa định chức vụ'} • {m.department?.name || 'Chưa định PB'}</Text>
-                <Text style={{ color: theme.sub, fontSize: 13, marginTop: 2 }}>{m.email} | {m.phone || 'Chưa có SĐT'}</Text>
+                <Text style={{ color: theme.sub, fontSize: 13, marginTop: 4 }}>{m.position?.name || 'No position'} • {m.department?.name || 'No department'}</Text>
+                <Text style={{ color: theme.sub, fontSize: 13, marginTop: 2 }}>{m.email} | {m.phone || 'No phone number'}</Text>
              </View>
            </View>
         </View>
@@ -88,7 +88,7 @@ export default function ManagerTeam() {
   };
 
   const renderAttendanceStats = (theme) => {
-     if (attendanceStats.length === 0) return <Text style={{ color: theme.sub, textAlign: 'center', marginTop: 20 }}>Không có dữ liệu</Text>;
+     if (attendanceStats.length === 0) return <Text style={{ color: theme.sub, textAlign: 'center', marginTop: 20 }}>No data available</Text>;
      return attendanceStats.map((item, index) => (
        <View key={item.id} style={[s.card, { backgroundColor: theme.card, borderColor: theme.navBorder }]}>
           <Text style={{ fontSize: 16, fontWeight: 'bold', color: theme.text, marginBottom: 10 }}>
@@ -96,19 +96,19 @@ export default function ManagerTeam() {
           </Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
              <View style={{ backgroundColor: theme.bg, padding: 8, borderRadius: 8, minWidth: '48%' }}>
-                <Text style={{ fontSize: 12, color: theme.sub }}>Ngày công</Text>
+                <Text style={{ fontSize: 12, color: theme.sub }}>Working Days</Text>
                 <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#10B981' }}>{item.total_working_days}</Text>
              </View>
              <View style={{ backgroundColor: theme.bg, padding: 8, borderRadius: 8, minWidth: '48%' }}>
-                <Text style={{ fontSize: 12, color: theme.sub }}>Đi muộn</Text>
+                <Text style={{ fontSize: 12, color: theme.sub }}>Late Days</Text>
                 <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#F59E0B' }}>{item.late_days}</Text>
              </View>
              <View style={{ backgroundColor: theme.bg, padding: 8, borderRadius: 8, minWidth: '48%' }}>
-                <Text style={{ fontSize: 12, color: theme.sub }}>Làm thêm (Giờ)</Text>
+                <Text style={{ fontSize: 12, color: theme.sub }}>OT (Hours)</Text>
                 <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#8B5CF6' }}>{item.ot_hours}</Text>
              </View>
              <View style={{ backgroundColor: theme.bg, padding: 8, borderRadius: 8, minWidth: '48%' }}>
-                <Text style={{ fontSize: 12, color: theme.sub }}>Vắng mặt</Text>
+                <Text style={{ fontSize: 12, color: theme.sub }}>Absent Days</Text>
                 <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#EF4444' }}>{item.absent_days}</Text>
              </View>
           </View>
@@ -140,8 +140,8 @@ export default function ManagerTeam() {
                   id: `lv_${l.id}_${curr.format('DD')}`,
                   type: 'leave',
                   user: l.user,
-                  status: 'Nghỉ phép',
-                  time: l.leaveType?.name || 'Phép'
+                  status: 'Leave',
+                  time: l.leaveType?.name || 'Leave'
               });
               curr.add(1, 'days');
           }
@@ -149,7 +149,7 @@ export default function ManagerTeam() {
 
       const sortedDates = Object.keys(datesMap).sort((a,b) => moment(a, 'DD/MM/YYYY').valueOf() - moment(b, 'DD/MM/YYYY').valueOf());
       
-      if (sortedDates.length === 0) return <Text style={{ color: theme.sub, textAlign: 'center', marginTop: 20 }}>Không có lịch nào được ghi nhận</Text>;
+      if (sortedDates.length === 0) return <Text style={{ color: theme.sub, textAlign: 'center', marginTop: 20 }}>No schedule recorded</Text>;
 
       return sortedDates.map(date => (
           <View key={date} style={{ marginBottom: 20 }}>
@@ -211,7 +211,7 @@ export default function ManagerTeam() {
           {(tab === 'schedule' || tab === 'attendance') && (
               <View style={[s.monthSelector, { backgroundColor: theme.card, borderColor: theme.navBorder }]}>
                  <TouchableOpacity onPress={handlePrevMonth} style={{ padding: 5 }}><MaterialIcons name="chevron-left" size={24} color={theme.text} /></TouchableOpacity>
-                 <Text style={{ fontSize: 16, fontWeight: 'bold', color: theme.text }}>Tháng {month < 10 ? `0${month}` : month} / {year}</Text>
+                 <Text style={{ fontSize: 16, fontWeight: 'bold', color: theme.text }}>Month {month < 10 ? `0${month}` : month} / {year}</Text>
                  <TouchableOpacity onPress={handleNextMonth} style={{ padding: 5 }}><MaterialIcons name="chevron-right" size={24} color={theme.text} /></TouchableOpacity>
               </View>
           )}

@@ -68,7 +68,7 @@ export default function OvertimeList({ styles, theme, items = [] }) {
              <View style={styles.historyRow}>
                <View>
                  <Text style={[styles.historyType, { color: theme.text }]}>
-                   Làm thêm giờ ({hoursRender}h)
+                   Overtime ({hoursRender}h)
                  </Text>
                  <Text style={[styles.historyDates, { color: theme.sub }]}>
                    {dateStr} ({safeStartTime} - {safeEndTime})
@@ -90,7 +90,7 @@ export default function OvertimeList({ styles, theme, items = [] }) {
                <View style={[styles.managerCommentBox, { backgroundColor: theme.bg }]}>
                  <MaterialIcons name="forum" size={14} color={theme.sub} style={{ marginRight: 6 }} />
                  <Text style={[styles.managerCommentText, { color: theme.text }]} numberOfLines={2}>
-                   Phản hồi: {it.manager_comment}
+                   Feedback: {it.manager_comment}
                  </Text>
                </View>
              )}

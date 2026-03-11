@@ -8,7 +8,7 @@ export default function LeaveBalance({ styles, theme, balance }) {
   return (
     <View style={{ marginBottom: 14 }}>
       <View style={styles.sectionRow}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Quỹ Phép Của Tôi</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>My Leave Balance</Text>
       </View>
 
       <View
@@ -42,7 +42,7 @@ export default function LeaveBalance({ styles, theme, balance }) {
                 { color: "rgba(255,255,255,0.85)" },
               ]}
             >
-              Số phép tháng còn lại
+              Remaining annual leave
             </Text>
           </View>
         </View>

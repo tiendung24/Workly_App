@@ -15,10 +15,10 @@ import DatePickerInput from "../shared/DatePickerInput";
 import TimePickerInput from "../shared/TimePickerInput";
 
 const CORRECTION_TYPES = [
-  { key: "Forgot_CheckOut", label: "Quên Check-out", icon: "logout", color: "#EF4444" },
-  { key: "Forgot_CheckIn", label: "Quên Check-in", icon: "login", color: "#F59E0B" },
-  { key: "Wrong_Time", label: "Sai giờ ghi nhận", icon: "edit-calendar", color: "#2563EB" },
-  { key: "Work_Outside", label: "Làm việc ngoài", icon: "location-on", color: "#10B981" },
+  { key: "Forgot_CheckOut", label: "Forgot Check-out", icon: "logout", color: "#EF4444" },
+  { key: "Forgot_CheckIn", label: "Forgot Check-in", icon: "login", color: "#F59E0B" },
+  { key: "Wrong_Time", label: "Wrong Time", icon: "edit-calendar", color: "#2563EB" },
+  { key: "Work_Outside", label: "Work Outside", icon: "location-on", color: "#10B981" },
 ];
 
 export default function CorrectionForm({ visible, onClose, onSubmit, theme }) {
@@ -91,7 +91,7 @@ export default function CorrectionForm({ visible, onClose, onSubmit, theme }) {
         <View style={[fs.sheet, { backgroundColor: theme.card }]}>
           <View style={fs.sheetHeader}>
             <Text style={[fs.sheetTitle, { color: theme.text }]}>
-              Gửi giải trình
+              Submit Correction
             </Text>
             <TouchableOpacity onPress={handleClose} activeOpacity={0.7}>
               <MaterialIcons name="close" size={24} color={theme.sub} />
@@ -100,7 +100,7 @@ export default function CorrectionForm({ visible, onClose, onSubmit, theme }) {
 
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={fs.formBody}>
             {/* Correction Type */}
-            <Text style={[fs.label, { color: theme.text }]}>Loại giải trình</Text>
+            <Text style={[fs.label, { color: theme.text }]}>Correction Type</Text>
             <View style={fs.typeGrid}>
               {CORRECTION_TYPES.map((t) => {
                 const selected = corrType === t.key;
@@ -127,18 +127,18 @@ export default function CorrectionForm({ visible, onClose, onSubmit, theme }) {
             </View>
 
             {/* Date */}
-            <Text style={[fs.label, { color: theme.text }]}>Ngày cần giải trình</Text>
+            <Text style={[fs.label, { color: theme.text }]}>Date</Text>
             <DatePickerInput value={date} onChangeText={setDate} placeholder="DD/MM/YYYY" theme={theme} />
 
             {/* Conditional Corrected Time */}
             {corrType === "Work_Outside" ? (
               <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
                 <View style={{ flex: 1 }}>
-                   <Text style={[fs.label, { color: theme.text, marginTop: 0 }]}>Từ giờ</Text>
+                   <Text style={[fs.label, { color: theme.text, marginTop: 0 }]}>From</Text>
                    <TimePickerInput value={offsiteStartTime} onChangeText={setOffsiteStartTime} placeholder="08:00" theme={theme} />
                 </View>
                 <View style={{ flex: 1 }}>
-                   <Text style={[fs.label, { color: theme.text, marginTop: 0 }]}>Đến giờ</Text>
+                   <Text style={[fs.label, { color: theme.text, marginTop: 0 }]}>To</Text>
                    <TimePickerInput value={offsiteEndTime} onChangeText={setOffsiteEndTime} placeholder="17:00" theme={theme} />
                 </View>
               </View>
@@ -150,17 +150,17 @@ export default function CorrectionForm({ visible, onClose, onSubmit, theme }) {
                        <View style={{ width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: wrongTimeOption === 'check_in' ? COLORS.primary : theme.sub, alignItems: 'center', justifyContent: 'center' }}>
                           {wrongTimeOption === 'check_in' && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: COLORS.primary }} />}
                        </View>
-                       <Text style={{ marginLeft: 8, color: theme.text, fontSize: 13, fontWeight: '600' }}>Sửa Check-in</Text>
+                       <Text style={{ marginLeft: 8, color: theme.text, fontSize: 13, fontWeight: '600' }}>Correct Check-in</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={{flex: 1, flexDirection: 'row', alignItems: 'center'}} onPress={() => setWrongTimeOption('check_out')}>
                        <View style={{ width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: wrongTimeOption === 'check_out' ? COLORS.primary : theme.sub, alignItems: 'center', justifyContent: 'center' }}>
                           {wrongTimeOption === 'check_out' && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: COLORS.primary }} />}
                        </View>
-                       <Text style={{ marginLeft: 8, color: theme.text, fontSize: 13, fontWeight: '600' }}>Sửa Check-out</Text>
+                       <Text style={{ marginLeft: 8, color: theme.text, fontSize: 13, fontWeight: '600' }}>Correct Check-out</Text>
                     </TouchableOpacity>
                   </View>
                 )}
-                <Text style={[fs.label, { color: theme.text }]}>Giờ đề nghị ghi nhận</Text>
+                <Text style={[fs.label, { color: theme.text }]}>Suggested Time</Text>
                 <TimePickerInput
                   value={correctedTime}
                   onChangeText={setCorrectedTime}
@@ -171,14 +171,14 @@ export default function CorrectionForm({ visible, onClose, onSubmit, theme }) {
             )}
 
             {/* Reason */}
-            <Text style={[fs.label, { color: theme.text }]}>Lý do</Text>
+            <Text style={[fs.label, { color: theme.text }]}>Reason</Text>
             <TextInput
               style={[
                 fs.input,
                 fs.textArea,
                 { backgroundColor: theme.bg, color: theme.text, borderColor: theme.navBorder },
               ]}
-              placeholder="VD: Quên check-out, xin ghi nhận giờ về là 17:30..."
+              placeholder="e.g. Forgot to check out, please record out time as 17:30..."
               placeholderTextColor={theme.sub}
               value={reason}
               onChangeText={setReason}
@@ -191,7 +191,7 @@ export default function CorrectionForm({ visible, onClose, onSubmit, theme }) {
             <View style={[fs.hintCard, { backgroundColor: theme.bg }]}>
               <MaterialIcons name="info-outline" size={16} color={COLORS.primary} />
               <Text style={[fs.hintText, { color: theme.sub }]}>
-                Yêu cầu sẽ được gửi đến quản lý để phê duyệt. Bạn sẽ nhận thông báo khi có kết quả.
+                The request will be sent to your manager for approval. You will receive a notification when there is a result.
               </Text>
             </View>
           </ScrollView>
@@ -202,7 +202,7 @@ export default function CorrectionForm({ visible, onClose, onSubmit, theme }) {
               activeOpacity={0.85}
               onPress={handleClose}
             >
-              <Text style={[fs.cancelText, { color: theme.sub }]}>Hủy</Text>
+              <Text style={[fs.cancelText, { color: theme.sub }]}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[fs.submitBtn, { backgroundColor: canSubmit ? COLORS.primary : "#D1D5DB" }]}
@@ -211,7 +211,7 @@ export default function CorrectionForm({ visible, onClose, onSubmit, theme }) {
               disabled={!canSubmit}
             >
               <MaterialIcons name="send" size={18} color="#fff" />
-              <Text style={fs.submitText}>Gửi</Text>
+              <Text style={fs.submitText}>Submit</Text>
             </TouchableOpacity>
           </View>
         </View>

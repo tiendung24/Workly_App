@@ -64,7 +64,7 @@ export default function AdminOrgs() {
   const handleSave = async () => {
     try {
       if (!formData.name) {
-        Toast.show({ type: "error", text1: "Lỗi", text2: "Tên không được để trống" });
+        Toast.show({ type: "error", text1: "Error", text2: "Name cannot be empty" });
         return;
       }
 
@@ -76,11 +76,11 @@ export default function AdminOrgs() {
           else await adminService.createPosition(formData);
       }
       
-      Toast.show({ type: "success", text1: "Thành công", text2: "Cập nhật thành công" });
+      Toast.show({ type: "success", text1: "Success", text2: "Updated successfully" });
       setModalVisible(false);
       loadData();
     } catch (error) {
-      Toast.show({ type: "error", text1: "Lỗi", text2: error.response?.data?.message || "Có lỗi xảy ra" });
+      Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "An error occurred" });
     }
   };
 
@@ -88,10 +88,10 @@ export default function AdminOrgs() {
       try {
           if (type === 'dept') await adminService.deleteDepartment(id);
           else await adminService.deletePosition(id);
-          Toast.show({ type: "success", text1: "Thành công", text2: "Xoá thành công" });
+          Toast.show({ type: "success", text1: "Success", text2: "Deleted successfully" });
           loadData();
       } catch (error) {
-          Toast.show({ type: "error", text1: "Lỗi", text2: error.response?.data?.message || "Lỗi khi xoá" });
+          Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "Delete failed" });
       }
   };
 
@@ -112,9 +112,9 @@ export default function AdminOrgs() {
             <>
                 {/* Departments Section */}
                 <View style={[s.row, { borderBottomWidth: 0, marginBottom: 12, marginTop: 10 }]}>
-                    <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Danh Sách Phòng Ban</Text>
+                    <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Departments</Text>
                     <TouchableOpacity style={[s.btn, { backgroundColor: '#3B82F6' }]} activeOpacity={0.8} onPress={() => handleOpenForm('dept')}>
-                    <Text style={s.btnText}>+ Phòng Ban</Text>
+                    <Text style={s.btnText}>+ Department</Text>
                     </TouchableOpacity>
                 </View>
                 <View style={[s.card, { backgroundColor: theme.card, padding: 0, overflow: 'hidden' }]}>
@@ -126,7 +126,7 @@ export default function AdminOrgs() {
                         ]}>
                             <View style={{ flex: 1 }}>
                                 <Text style={[s.rowTitle, { color: theme.text }]}>{item.name}</Text>
-                                <Text style={[s.rowSubtitle, { color: theme.sub }]}>{item.description || "Chưa có mô tả"}</Text>
+                                <Text style={[s.rowSubtitle, { color: theme.sub }]}>{item.description || "No description"}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', gap: 10 }}>
                                 <TouchableOpacity onPress={() => handleOpenForm('dept', item)}>
@@ -139,15 +139,15 @@ export default function AdminOrgs() {
                         </View>
                     ))}
                     {departments.length === 0 && (
-                        <Text style={{ padding: 16, color: theme.sub, textAlign: 'center' }}>Chưa có phòng ban nào</Text>
+                        <Text style={{ padding: 16, color: theme.sub, textAlign: 'center' }}>No departments found</Text>
                     )}
                 </View>
 
                 {/* Positions Section */}
                 <View style={[s.row, { borderBottomWidth: 0, marginBottom: 12, marginTop: 20 }]}>
-                    <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Danh Sách Chức Vụ</Text>
+                    <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Positions</Text>
                     <TouchableOpacity style={[s.btn, { backgroundColor: '#F59E0B' }]} activeOpacity={0.8} onPress={() => handleOpenForm('pos')}>
-                    <Text style={s.btnText}>+ Chức Vụ</Text>
+                    <Text style={s.btnText}>+ Position</Text>
                     </TouchableOpacity>
                 </View>
                 <View style={[s.card, { backgroundColor: theme.card, padding: 0, overflow: 'hidden' }]}>
@@ -159,7 +159,7 @@ export default function AdminOrgs() {
                         ]}>
                             <View style={{ flex: 1 }}>
                                 <Text style={[s.rowTitle, { color: theme.text }]}>{item.name}</Text>
-                                <Text style={[s.rowSubtitle, { color: theme.sub }]}>{item.description || "Chưa có mô tả"}</Text>
+                                <Text style={[s.rowSubtitle, { color: theme.sub }]}>{item.description || "No description"}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', gap: 10 }}>
                                 <TouchableOpacity onPress={() => handleOpenForm('pos', item)}>
@@ -172,7 +172,7 @@ export default function AdminOrgs() {
                         </View>
                     ))}
                     {positions.length === 0 && (
-                        <Text style={{ padding: 16, color: theme.sub, textAlign: 'center' }}>Chưa có chức vụ nào</Text>
+                        <Text style={{ padding: 16, color: theme.sub, textAlign: 'center' }}>No positions found</Text>
                     )}
                 </View>
             </>
@@ -184,7 +184,7 @@ export default function AdminOrgs() {
                <View style={[{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '90%' }]}>
                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
                     <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>
-                      {editingId ? "Sửa" : "Thêm"} {formType === 'dept' ? 'Phòng Ban' : 'Chức Vụ'}
+                      {editingId ? "Edit" : "Add"} {formType === 'dept' ? 'Department' : 'Position'}
                     </Text>
                     <TouchableOpacity onPress={() => setModalVisible(false)}>
                       <MaterialIcons name="close" size={24} color={theme.sub} />
@@ -192,15 +192,15 @@ export default function AdminOrgs() {
                  </View>
 
                  <ScrollView style={{ marginBottom: 20 }}>
-                    <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Tên (*)</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="Nhập tên..." placeholderTextColor={theme.sub} value={formData.name} onChangeText={t => setFormData({...formData, name: t})} />
+                    <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Name (*)</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="Enter name..." placeholderTextColor={theme.sub} value={formData.name} onChangeText={t => setFormData({...formData, name: t})} />
 
-                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Mô tả bổ sung</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text, minHeight: 80, textAlignVertical: 'top' }]} placeholder="Mô tả ngắn gọn..." placeholderTextColor={theme.sub} multiline value={formData.description} onChangeText={t => setFormData({...formData, description: t})} />
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Description</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text, minHeight: 80, textAlignVertical: 'top' }]} placeholder="Short description..." placeholderTextColor={theme.sub} multiline value={formData.description} onChangeText={t => setFormData({...formData, description: t})} />
                  </ScrollView>
 
                  <TouchableOpacity style={[s.btn, { paddingVertical: 14 }]} onPress={handleSave}>
-                    <Text style={s.btnText}>Lưu Thay Đổi</Text>
+                    <Text style={s.btnText}>Save Changes</Text>
                  </TouchableOpacity>
                </View>
             </View>

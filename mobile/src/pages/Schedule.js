@@ -75,8 +75,8 @@ function getDayData(year, month, day, apiData) {
       } else if (record.status === 'Leave') {
           type = "leave"; timeRange = "";
           leave = { 
-              type: record.leaveInfo?.type?.toLowerCase().includes("ốm") ? 'sick' : 'annual', 
-              reason: `${record.leaveInfo?.type || 'Nghỉ'} - ${record.leaveInfo?.reason || ''}` 
+              type: record.leaveInfo?.type?.toLowerCase().includes("sick") ? 'sick' : 'annual', 
+              reason: `${record.leaveInfo?.type || 'Leave'} - ${record.leaveInfo?.reason || ''}` 
           };
       } else if (record.status === 'Holiday') {
           type = "holiday"; timeRange = "";
@@ -98,7 +98,7 @@ function getDayData(year, month, day, apiData) {
               const diffMins = Math.floor(diffMs / 60000);
               
               if (diffMins < 60) {
-                  actualHoursLabel = `${diffMins} phút`;
+                  actualHoursLabel = `${diffMins} mins`;
               } else {
                   const hrs = Math.floor(diffMins / 60);
                   const mns = diffMins % 60;
@@ -192,7 +192,7 @@ function DayCell({ day, year, month, theme, onPress, filter, apiData }) {
 
         {type === "leave" && (
           <Text style={[s.dayLeaveText, { color: "#92400E" }]} numberOfLines={2}>
-            {data.leave?.type === "annual" ? "Phép" : "Nghỉ"}
+            {data.leave?.type === "annual" ? "Annual" : "Leave"}
           </Text>
         )}
 
@@ -219,7 +219,7 @@ function DayCell({ day, year, month, theme, onPress, filter, apiData }) {
             {/* Late indicator */}
             {checkin?.late && (
               <View style={[s.dayOtBadge, { backgroundColor: "#FEE2E2" }]}>
-                <Text style={[s.dayOtText, { color: "#EF4444" }]}>Trễ</Text>
+                <Text style={[s.dayOtText, { color: "#EF4444" }]}>Late</Text>
               </View>
             )}
           </>
@@ -245,7 +245,7 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
   let statusBg = "#E0E7FF";
   let statusColor = "#4338CA";
   if (type === "off" || type === "holiday") { statusLabel = type === "holiday" ? "Holiday" : "Day Off"; statusBg = "#F3F4F6"; statusColor = "#6B7280"; }
-  else if (type === "leave") { statusLabel = leave?.type === "annual" ? "Nghỉ phép" : "Nghỉ ốm"; statusBg = "#FEF3C7"; statusColor = "#92400E"; }
+  else if (type === "leave") { statusLabel = leave?.type === "annual" ? "Annual Leave" : "Sick Leave"; statusBg = "#FEF3C7"; statusColor = "#92400E"; }
   else if (checkin) { statusLabel = "Checked In"; statusBg = "#D1FAE5"; statusColor = "#059669"; }
   else if (isToday_) { statusLabel = "Today"; statusBg = COLORS.primary + "18"; statusColor = COLORS.primary; }
 
@@ -286,34 +286,34 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
     if (checkin.lateMins > 0) {
       const h = Math.floor(checkin.lateMins / 60);
       const m = checkin.lateMins % 60;
-      const lateStr = h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m} phút`;
+      const lateStr = h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m} mins`;
       rows.push({
         icon: "warning",
         iconBg: "#FEF3C7",
         iconColor: "#D97706",
         label: "Late Arrival",
-        value: `Trễ ${lateStr}`,
+        value: `Late ${lateStr}`,
       });
     } else if (checkin.late) {
-       // Fallback to simple "Đi trễ" if lateMins = 0 but status was somehow Late
+       // Fallback to simple "Late" if lateMins = 0 but status was somehow Late
        rows.push({
         icon: "warning",
         iconBg: "#FEF3C7",
         iconColor: "#D97706",
         label: "Status",
-        value: "Đi trễ",
+        value: "Late",
       });
     }
     if (checkin.earlyMins > 0) {
       const h2 = Math.floor(checkin.earlyMins / 60);
       const m2 = checkin.earlyMins % 60;
-      const earlyStr = h2 > 0 ? (m2 > 0 ? `${h2}h ${m2}m` : `${h2}h`) : `${m2} phút`;
+      const earlyStr = h2 > 0 ? (m2 > 0 ? `${h2}h ${m2}m` : `${h2}h`) : `${m2} mins`;
       rows.push({
         icon: "run-circle",
         iconBg: "#FEF3C7",
         iconColor: "#D97706",
         label: "Early Leave",
-        value: `Sớm ${earlyStr}`,
+        value: `Early ${earlyStr}`,
       });
     }
   }
@@ -343,7 +343,7 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
       iconBg: "#FEF3C7",
       iconColor: "#92400E",
       label: "Leave Type",
-      value: leave.type === "annual" ? "Nghỉ phép tháng" : leave.type === "sick" ? "Nghỉ ốm" : "Nghỉ",
+      value: leave.type === "annual" ? "Annual Leave" : leave.type === "sick" ? "Sick Leave" : "Leave",
     });
     if (leave.reason) {
       rows.push({
@@ -362,7 +362,7 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
       iconBg: "#F3F4F6",
       iconColor: "#6B7280",
       label: "Type",
-      value: "Ngày nghỉ hàng tuần",
+      value: "Weekly day off",
     });
   }
 
@@ -372,7 +372,7 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
       iconBg: "#FEE2E2",
       iconColor: "#EF4444",
       label: "Type",
-      value: "Ngày lễ",
+      value: "Holiday",
     });
   }
 

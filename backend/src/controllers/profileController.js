@@ -166,9 +166,9 @@ const getDashboard = async (req, res, next) => {
         const otHoursWeek = otRequests.reduce((sum, req) => sum + (Number(req.total_hours) || 0), 0);
 
         // 3. Paid Leave (Annual Leave)
-        // Find Annual Leave type (Assuming name includes 'Phép')
+        // Find Annual Leave type 
         const annualLeaveType = await LeaveType.findOne({
-            where: { name: { [Op.like]: '%Phép%' } }
+            where: { name: { [Op.substring]: 'annual' } } // Fallback to includes instead of like for case insensitivity safely or substring
         });
 
         let paidLeavePerMonth = 12; // Default

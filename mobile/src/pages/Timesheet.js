@@ -25,10 +25,10 @@ const STATUS_COLORS = {
 };
 
 const TYPE_ICONS = {
-  Forgot_CheckOut: { icon: "logout", color: "#EF4444", dir: "OUT", label: "Quên Check-out" },
-  Forgot_CheckIn: { icon: "login", color: "#F59E0B", dir: "IN", label: "Quên Check-in" },
-  Wrong_Time: { icon: "edit-calendar", color: "#2563EB", dir: "IN/OUT", label: "Sai giờ ghi nhận" },
-  Work_Outside: { icon: "location-on", color: "#10B981", dir: "IN", label: "Làm việc ngoài" },
+  Forgot_CheckOut: { icon: "logout", color: "#EF4444", dir: "OUT", label: "Forgot Check-out" },
+  Forgot_CheckIn: { icon: "login", color: "#F59E0B", dir: "IN", label: "Forgot Check-in" },
+  Wrong_Time: { icon: "edit-calendar", color: "#2563EB", dir: "IN/OUT", label: "Wrong Time" },
+  Work_Outside: { icon: "location-on", color: "#10B981", dir: "IN", label: "Work Outside" },
 };
 
 const DIR_COLORS = {

@@ -7,9 +7,10 @@ async function addMissingLeaveTypes() {
     const existingNames = existing.map(l => l.name);
     
     const requiredTypes = [
-      { name: 'Nghỉ Ốm', description: 'Có giấy bác sĩ', default_days: 10 },
-      { name: 'Việc Cá Nhân', description: 'Giải quyết việc riêng', default_days: 5 },
-      { name: 'Công Tác', description: 'Đi làm việc tại đối tác', default_days: 30 }
+      { name: 'Sick Leave', description: 'Medical certificate', default_days: 10 },
+      { name: 'Personal Leave', description: 'Personal affairs', default_days: 5 },
+      { name: 'Business Trip', description: 'Working on-site elsewhere', default_days: 30 },
+      { name: 'Annual Leave', description: 'Paid time off', default_days: 12 }
     ];
 
     for (const type of requiredTypes) {

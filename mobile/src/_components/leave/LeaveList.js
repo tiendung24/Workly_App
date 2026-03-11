@@ -53,7 +53,7 @@ export default function LeaveList({ styles, theme, items = [] }) {
             <View style={styles.historyRow}>
               <View>
                 <Text style={[styles.historyType, { color: theme.text }]}>
-                  {item.leaveType?.name || "Nghỉ"}
+                  {item.leaveType?.name || "Leave"}
                 </Text>
                 <Text style={[styles.historyDates, { color: theme.sub }]}>
                   {dateRange}
@@ -75,7 +75,7 @@ export default function LeaveList({ styles, theme, items = [] }) {
               <View style={[styles.managerCommentBox, { backgroundColor: theme.bg }]}>
                 <MaterialIcons name="forum" size={14} color={theme.sub} style={{ marginRight: 6 }} />
                 <Text style={[styles.managerCommentText, { color: theme.text }]} numberOfLines={2}>
-                  Phản hồi: {item.manager_comment}
+                  Feedback: {item.manager_comment}
                 </Text>
               </View>
             )}

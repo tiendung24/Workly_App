@@ -53,10 +53,10 @@ export default function AdminDashboard({ navigation }) {
   };
 
   const navItems = [
-    { id: "AdminUsers", label: "Quản lý nhân sự", icon: "people", count: stats.users, desc: "Tài khoản & Phân quyền" },
-    { id: "AdminOrgs", label: "Phòng ban & Chức vụ", icon: "business", count: stats.departments + stats.positions, desc: "Cơ cấu tổ chức" },
-    { id: "AdminTimesheet", label: "Báo cáo công mạng", icon: "assessment", count: null, desc: "Tính lương & Tổng hợp" },
-    { id: "AdminConfig", label: "Cấu hình hệ thống", icon: "settings", count: stats.shifts + stats.leaves, desc: "Ca làm & Phép" },
+    { id: "AdminUsers", label: "User Management", icon: "people", count: stats.users, desc: "Accounts & Roles" },
+    { id: "AdminOrgs", label: "Departments & Positions", icon: "business", count: stats.departments + stats.positions, desc: "Organization Structure" },
+    { id: "AdminTimesheet", label: "Timesheet Report", icon: "assessment", count: null, desc: "Payroll & Aggregation" },
+    { id: "AdminConfig", label: "System Config", icon: "settings", count: stats.shifts + stats.leaves, desc: "Shifts & Leaves" },
   ];
 
   return (

@@ -16,7 +16,7 @@ export default function SummaryCards({ styles, theme, workedDays = 0, standardDa
       <View style={[styles.summaryCard, { backgroundColor: theme.card, borderColor: theme.navBorder }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 }}>
           <MaterialIcons name="event-available" size={16} color="#10B981" />
-          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>Công tháng</Text>
+          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>Working Days</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "baseline" }}>
           <Text style={[styles.summaryValue, { color: "#10B981" }]}>
@@ -32,7 +32,7 @@ export default function SummaryCards({ styles, theme, workedDays = 0, standardDa
       <View style={[styles.summaryCard, { backgroundColor: theme.card, borderColor: theme.navBorder }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 }}>
           <MaterialIcons name="more-time" size={16} color={COLORS.primary} />
-          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>OT tuần</Text>
+          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>Weekly OT</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "baseline" }}>
           <Text style={[styles.summaryValue, { color: COLORS.primary }]}>
@@ -48,14 +48,14 @@ export default function SummaryCards({ styles, theme, workedDays = 0, standardDa
       <View style={[styles.summaryCard, { backgroundColor: theme.card, borderColor: theme.navBorder }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 }}>
           <MaterialIcons name="beach-access" size={16} color="#F59E0B" />
-          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>Phép còn</Text>
+          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>Leave Bal</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "baseline" }}>
           <Text style={[styles.summaryValue, { color: "#F59E0B" }]}>
             {remainingLeave}
           </Text>
           <Text style={{ fontSize: 13, fontWeight: "700", color: theme.sub }}>
-            {" "} / {paidLeavePerMonth} buổi
+            {" "} / {paidLeavePerMonth} days
           </Text>
         </View>
       </View>

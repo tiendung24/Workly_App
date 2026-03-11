@@ -89,7 +89,7 @@ const getTimesheet = async (req, res, next) => {
              if (userMap[lv.user_id] && lv.leaveType) {
                  const typeName = lv.leaveType.name.toLowerCase();
                  // Phép tháng và công tác vẫn được tính là 1 ngày công
-                 if (typeName.includes('phép tháng') || typeName.includes('công tác')) {
+                 if (typeName.includes('annual') || typeName.includes('trip')) {
                      let curr = moment(lv.start_date);
                      const end = moment(lv.end_date);
                      while (curr.isSameOrBefore(end)) {

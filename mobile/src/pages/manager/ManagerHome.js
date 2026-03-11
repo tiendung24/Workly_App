@@ -28,8 +28,8 @@ export default function ManagerHome({ navigation }) {
                  <MaterialIcons name="fact-check" size={32} color="#F59E0B" />
                </View>
                <View style={s.cardText}>
-                 <Text style={[s.cardTitle, { color: theme.text }]}>Phê duyệt Đơn</Text>
-                 <Text style={[s.cardDesc, { color: theme.sub }]}>Duyệt đơn nghỉ phép, làm thêm, giải trình của nhân viên.</Text>
+                 <Text style={[s.cardTitle, { color: theme.text }]}>Approve Requests</Text>
+                 <Text style={[s.cardDesc, { color: theme.sub }]}>Approve leave, overtime, and correction requests.</Text>
                </View>
                <MaterialIcons name="chevron-right" size={24} color={theme.sub} />
             </TouchableOpacity>
@@ -43,8 +43,8 @@ export default function ManagerHome({ navigation }) {
                  <MaterialIcons name="groups" size={32} color="#3B82F6" />
                </View>
                <View style={s.cardText}>
-                 <Text style={[s.cardTitle, { color: theme.text }]}>Quản lý Đội nhóm</Text>
-                 <Text style={[s.cardDesc, { color: theme.sub }]}>Xem danh sách team, lịch làm việc và tình hình chuyên cần.</Text>
+                 <Text style={[s.cardTitle, { color: theme.text }]}>Team Management</Text>
+                 <Text style={[s.cardDesc, { color: theme.sub }]}>View team members, schedules, and attendance stats.</Text>
                </View>
                <MaterialIcons name="chevron-right" size={24} color={theme.sub} />
             </TouchableOpacity>

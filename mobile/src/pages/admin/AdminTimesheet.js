@@ -33,7 +33,7 @@ export default function AdminTimesheet() {
       if (res.data) setData(res.data);
     } catch (error) {
       console.error(error);
-      Toast.show({ type: "error", text1: "Lỗi", text2: "Không thể lấy dữ liệu chấm công" });
+      Toast.show({ type: "error", text1: "Error", text2: "Cannot fetch timesheet data" });
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ export default function AdminTimesheet() {
             </TouchableOpacity>
             
             <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 16, color: theme.sub }}>Bảng công tháng</Text>
+              <Text style={{ fontSize: 16, color: theme.sub }}>Monthly Timesheet</Text>
               <Text style={{ fontSize: 20, fontWeight: 'bold', color: theme.text }}>
                 {month < 10 ? `0${month}` : month} / {year}
               </Text>
@@ -88,9 +88,9 @@ export default function AdminTimesheet() {
 
           {/* Export Button */}
            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 15 }}>
-              <TouchableOpacity style={[s.btn, { backgroundColor: '#10B981', flexDirection: 'row', alignItems: 'center', gap: 5 }]} onPress={() => Toast.show({type: 'info', text1: 'Xuất Excel', text2: 'Chức năng đang phát triển lúc publish'})}>
+              <TouchableOpacity style={[s.btn, { backgroundColor: '#10B981', flexDirection: 'row', alignItems: 'center', gap: 5 }]} onPress={() => Toast.show({type: 'info', text1: 'Export Excel', text2: 'Feature under development'})}>
                  <MaterialIcons name="file-download" size={18} color="#fff" />
-                 <Text style={s.btnText}>Xuất Excel</Text>
+                 <Text style={s.btnText}>Export Excel</Text>
               </TouchableOpacity>
            </View>
 
@@ -98,7 +98,7 @@ export default function AdminTimesheet() {
           {loading ? (
              <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
           ) : data.length === 0 ? (
-             <Text style={{ textAlign: 'center', color: theme.sub, marginTop: 40 }}>Không có dữ liệu chấm công cho tháng này</Text>
+             <Text style={{ textAlign: 'center', color: theme.sub, marginTop: 40 }}>No timesheet data for this month</Text>
           ) : (
             <View style={[s.card, { backgroundColor: theme.card, padding: 0, overflow: 'hidden' }]}>
               {data.map((item, index) => (
@@ -115,26 +115,26 @@ export default function AdminTimesheet() {
                     </Text>
                     <View style={[s.badge, { backgroundColor: COLORS.primary + "20" }]}>
                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: COLORS.primary }}>
-                         Công chuẩn: {item.present_days}
+                         Standard: {item.present_days}
                        </Text>
                     </View>
                   </View>
 
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
                      <View style={{ backgroundColor: theme.bg, padding: 8, borderRadius: 8, minWidth: '48%' }}>
-                        <Text style={{ fontSize: 12, color: theme.sub }}>Đi muộn (Lần)</Text>
+                        <Text style={{ fontSize: 12, color: theme.sub }}>Late (Times)</Text>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#F59E0B' }}>{item.late_days}</Text>
                      </View>
                      <View style={{ backgroundColor: theme.bg, padding: 8, borderRadius: 8, minWidth: '48%' }}>
-                        <Text style={{ fontSize: 12, color: theme.sub }}>Nghỉ không phép</Text>
+                        <Text style={{ fontSize: 12, color: theme.sub }}>Unapproved Leave</Text>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#EF4444' }}>{item.absent_days}</Text>
                      </View>
                      <View style={{ backgroundColor: theme.bg, padding: 8, borderRadius: 8, minWidth: '48%' }}>
-                        <Text style={{ fontSize: 12, color: theme.sub }}>Làm thêm (Giờ)</Text>
+                        <Text style={{ fontSize: 12, color: theme.sub }}>OT (Hours)</Text>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#8B5CF6' }}>{item.overtime_hours}</Text>
                      </View>
                      <View style={{ backgroundColor: theme.bg, padding: 8, borderRadius: 8, minWidth: '48%' }}>
-                        <Text style={{ fontSize: 12, color: theme.sub }}>Ngày công</Text>
+                        <Text style={{ fontSize: 12, color: theme.sub }}>Working Days</Text>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#10B981' }}>{item.total_working_days}</Text>
                      </View>
                   </View>
