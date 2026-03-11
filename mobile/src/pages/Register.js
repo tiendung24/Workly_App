@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../_utils/AuthContext";
 import {
   View,
   Text,
@@ -8,12 +9,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Keyboard,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../_styles/theme";
 import { loginStyles as s } from "../_styles/pages/loginStyles";
+import Toast from "react-native-toast-message";
+import DatePickerInput from "../_components/shared/DatePickerInput";
 
-export default function Register({ onRegister, onGoToLogin }) {
+export default function Register({ onGoToLogin }) {
+  const { register, isLoading } = useContext(AuthContext);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -21,7 +27,14 @@ export default function Register({ onRegister, onGoToLogin }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [employeeCode, setEmployeeCode] = useState("");
+  const [workLocation, setWorkLocation] = useState("");
+  const [department, setDepartment] = useState("");
+  const [position, setPosition] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [focusedField, setFocusedField] = useState(null);
+
+  const mockTheme = { bg: "#FAFAFA", card: "#fff", text: "#1F2937", sub: "#9CA3AF", navBorder: "#E5E7EB" };
 
   const passwordsMatch = password === confirmPassword;
   const canSubmit =
@@ -30,9 +43,31 @@ export default function Register({ onRegister, onGoToLogin }) {
     password.trim().length >= 6 &&
     passwordsMatch;
 
-  const handleRegister = () => {
-    if (!canSubmit) return;
-    onRegister({ fullName, email, phone, password });
+  const handleRegister = async () => {
+    if (!canSubmit) {
+      if (fullName.trim().length === 0) return Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter your full name.' });
+      if (email.trim().length === 0) return Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter your email.' });
+      if (!employeeCode || employeeCode.trim().length === 0) return Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter your employee code.' });
+      if (password.trim().length < 6) return Toast.show({ type: 'error', text1: 'Error', text2: 'Password must be at least 6 characters.' });
+      if (!passwordsMatch) return Toast.show({ type: 'error', text1: 'Error', text2: 'Passwords do not match.' });
+      return;
+    }
+    Keyboard.dismiss();
+    const result = await register({ 
+      full_name: fullName, 
+      email, 
+      phone, 
+      password,
+      employee_code: employeeCode,
+      address: workLocation || "",
+      department_name: department,
+      position_name: position,
+      start_date: startDate ? startDate.split("/").reverse().join("-") : undefined
+    });
+    
+    if (!result.success) {
+      Toast.show({ type: 'error', text1: 'Error', text2: result.message || "Registration failed" });
+    }
   };
 
   return (
@@ -115,6 +150,13 @@ export default function Register({ onRegister, onGoToLogin }) {
               />
             </View>
 
+            {/* Employee Code */}
+            <Text style={s.fieldLabel}>Employee Code</Text>
+            <View style={[s.inputRow, focusedField === "empCode" && s.inputRowFocused]}>
+              <MaterialIcons name="badge" size={20} color={focusedField === "empCode" ? COLORS.primary : "#9CA3AF"}/>
+              <TextInput style={s.input} placeholder="e.g. EMP001" placeholderTextColor="#9CA3AF" value={employeeCode} onChangeText={setEmployeeCode} autoCapitalize="characters" onFocus={() => setFocusedField("empCode")} onBlur={() => setFocusedField(null)} />
+            </View>
+
             {/* Phone */}
             <Text style={s.fieldLabel}>Phone number</Text>
             <View
@@ -139,6 +181,36 @@ export default function Register({ onRegister, onGoToLogin }) {
                 onBlur={() => setFocusedField(null)}
               />
             </View>
+
+            {/* Work Location */}
+            <Text style={s.fieldLabel}>Work Location</Text>
+            <View style={[s.inputRow, focusedField === "workLoc" && s.inputRowFocused]}>
+              <MaterialIcons name="business" size={20} color={focusedField === "workLoc" ? COLORS.primary : "#9CA3AF"}/>
+              <TextInput style={s.input} placeholder="Office or Branch" placeholderTextColor="#9CA3AF" value={workLocation} onChangeText={setWorkLocation} onFocus={() => setFocusedField("workLoc")} onBlur={() => setFocusedField(null)} />
+            </View>
+
+            {/* Department */}
+            <Text style={s.fieldLabel}>Department</Text>
+            <View style={[s.inputRow, focusedField === "dept" && s.inputRowFocused]}>
+              <MaterialIcons name="corporate-fare" size={20} color={focusedField === "dept" ? COLORS.primary : "#9CA3AF"}/>
+              <TextInput style={s.input} placeholder="e.g. IT Department" placeholderTextColor="#9CA3AF" value={department} onChangeText={setDepartment} onFocus={() => setFocusedField("dept")} onBlur={() => setFocusedField(null)} />
+            </View>
+
+            {/* Position */}
+            <Text style={s.fieldLabel}>Position</Text>
+            <View style={[s.inputRow, focusedField === "pos" && s.inputRowFocused]}>
+              <MaterialIcons name="work-outline" size={20} color={focusedField === "pos" ? COLORS.primary : "#9CA3AF"}/>
+              <TextInput style={s.input} placeholder="e.g. Developer" placeholderTextColor="#9CA3AF" value={position} onChangeText={setPosition} onFocus={() => setFocusedField("pos")} onBlur={() => setFocusedField(null)} />
+            </View>
+
+            {/* Start Date */}
+            <Text style={s.fieldLabel}>Start Date</Text>
+            <DatePickerInput
+              value={startDate}
+              onChangeText={setStartDate}
+              placeholder="DD/MM/YYYY"
+              theme={mockTheme}
+            />
 
             {/* Password */}
             <Text style={s.fieldLabel}>Password</Text>
@@ -230,13 +302,19 @@ export default function Register({ onRegister, onGoToLogin }) {
 
             {/* Register Button */}
             <TouchableOpacity
-              style={[s.loginBtn, !canSubmit && { opacity: 0.6 }, { marginTop: 20 }]}
+              style={[s.loginBtn, { marginTop: 20 }]}
               activeOpacity={0.85}
               onPress={handleRegister}
-              disabled={!canSubmit}
+              disabled={isLoading}
             >
-              <MaterialIcons name="person-add" size={20} color="#fff" />
-              <Text style={s.loginBtnText}>Create Account</Text>
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <MaterialIcons name="person-add" size={20} color="#fff" />
+              )}
+              <Text style={s.loginBtnText}>
+                {isLoading ? "Creating..." : "Create Account"}
+              </Text>
             </TouchableOpacity>
 
             {/* Go to Login */}

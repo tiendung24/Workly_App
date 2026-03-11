@@ -1,7 +1,7 @@
 import "react-native-gesture-handler";
 import { enableScreens } from "react-native-screens";
 enableScreens(false);
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useContext } from "react";
 import {
   Platform,
   useColorScheme,
@@ -9,12 +9,25 @@ import {
   View,
   Text,
   StyleSheet,
+  ActivityIndicator,
+  LogBox
 } from "react-native";
+
+// Ignore third-party deprecation warnings on Web
+LogBox.ignoreLogs([
+  "props.pointerEvents is deprecated",
+  "Warning: props.pointerEvents is deprecated"
+]);
+
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { MaterialIcons } from "@expo/vector-icons";
+
+// Auth Context
+import { AuthProvider, AuthContext } from "./src/_utils/AuthContext";
+import Toast from "react-native-toast-message";
 
 import Login from "./src/pages/Login";
 import Register from "./src/pages/Register";
@@ -23,8 +36,19 @@ import Timesheet from "./src/pages/Timesheet";
 import Leave from "./src/pages/Leave";
 import Overtime from "./src/pages/Overtime";
 import Schedule from "./src/pages/Schedule";
+import Profile from "./src/pages/Profile";
+import ManagerHome from "./src/pages/manager/ManagerHome";
+import ManagerApproval from "./src/pages/manager/ManagerApproval";
+import ManagerTeam from "./src/pages/manager/ManagerTeam";
+import AdminDashboard from "./src/pages/admin/AdminDashboard";
+import AdminUsers from "./src/pages/admin/AdminUsers";
+import AdminConfig from "./src/pages/admin/AdminConfig";
+import AdminTimesheet from "./src/pages/admin/AdminTimesheet";
+import AdminOrgs from "./src/pages/admin/AdminOrgs";
 
 import BottomNav from "./src/_components/layout/BottomNav";
+import AdminBottomNav from "./src/_components/layout/AdminBottomNav";
+import ManagerBottomNav from "./src/_components/layout/ManagerBottomNav";
 import { getTheme, COLORS } from "./src/_styles/theme";
 
 const Tab = createBottomTabNavigator();
@@ -33,6 +57,9 @@ const TimesheetStack = createNativeStackNavigator();
 const LeaveStack = createNativeStackNavigator();
 const OvertimeStack = createNativeStackNavigator();
 const ScheduleStack = createNativeStackNavigator();
+const ProfileStack = createNativeStackNavigator();
+const ManagerStack = createNativeStackNavigator();
+const AdminStack = createNativeStackNavigator();
 
 /* ─── Custom Tab Bar using BottomNav ─── */
 
@@ -57,12 +84,70 @@ function CustomTabBar({ state, navigation }) {
           return;
         }
         if (tab === "Profile") {
+          navigation.navigate("Profile");
           return;
         }
         if (tab === "Requests") {
           navigation.navigate("Leave");
           return;
         }
+        if (tab === "Approval") {
+          navigation.navigate("Approval");
+          return;
+        }
+        navigation.navigate(tab);
+      }}
+      bottomInset={safeBottomInset}
+      userRole={state.routes.find(r => r.name === 'Admin') ? 'Admin' : state.routes.find(r => r.name === 'Approval') ? 'Manager' : 'Employee'} // Hacky but works for BottomNav
+    />
+  );
+}
+
+/* ─── Custom Tab Bar for Admin ─── */
+
+function AdminTabBar({ state, navigation }) {
+  const scheme = useColorScheme();
+  const isWeb = Platform.OS === "web";
+  const isDark = isWeb ? false : scheme === "dark";
+  const theme = useMemo(() => getTheme({ isDark }), [isDark]);
+  const insets = useSafeAreaInsets();
+  const safeBottomInset = typeof insets.bottom === "number" ? insets.bottom : 0;
+
+  const tabNames = state.routes.map((r) => r.name);
+  const activeTab = tabNames[state.index];
+
+  return (
+    <AdminBottomNav
+      theme={theme}
+      isDark={isDark}
+      activeTab={activeTab}
+      onTabChange={(tab) => {
+        navigation.navigate(tab);
+      }}
+      bottomInset={safeBottomInset}
+    />
+  );
+}
+
+/* ─── Custom Tab Bar for Manager ─── */
+
+function ManagerTabBar({ state, navigation }) {
+  const scheme = useColorScheme();
+  const isWeb = Platform.OS === "web";
+  const isDark = isWeb ? false : scheme === "dark";
+  const theme = useMemo(() => getTheme({ isDark }), [isDark]);
+  const insets = useSafeAreaInsets();
+  const safeBottomInset = typeof insets.bottom === "number" ? insets.bottom : 0;
+
+  const tabNames = state.routes.map((r) => r.name);
+  const activeTab = tabNames[state.index];
+
+  return (
+    <ManagerBottomNav
+      theme={theme}
+      isDark={isDark}
+      activeTab={activeTab}
+      onTabChange={(tab) => {
         navigation.navigate(tab);
       }}
       bottomInset={safeBottomInset}
@@ -166,11 +251,85 @@ function ScheduleStackScreen() {
   );
 }
 
+function ProfileStackScreen({ onLogout }) {
+  const ProfileWithLogout = React.useCallback(
+    () => <Profile onLogout={onLogout} />,
+    [onLogout]
+  );
+  return (
+    <ProfileStack.Navigator screenOptions={defaultStackScreenOptions}>
+      <ProfileStack.Screen
+        name="ProfileScreen"
+        component={ProfileWithLogout}
+        options={{ title: "Profile" }}
+      />
+    </ProfileStack.Navigator>
+  );
+}
+
+function ManagerStackScreen() {
+  return (
+    <ManagerStack.Navigator screenOptions={defaultStackScreenOptions}>
+      <ManagerStack.Screen
+        name="ManagerHomeScreen"
+        component={ManagerHome}
+        options={{ title: "Manager" }}
+      />
+      <ManagerStack.Screen
+        name="ManagerApprovalScreen"
+        component={ManagerApproval}
+        options={{ title: "Phê duyệt" }}
+      />
+      <ManagerStack.Screen
+        name="ManagerTeamScreen"
+        component={ManagerTeam}
+        options={{ title: "Đội nhóm" }}
+      />
+    </ManagerStack.Navigator>
+  );
+}
+
+function AdminStackScreen() {
+  return (
+    <AdminStack.Navigator screenOptions={defaultStackScreenOptions}>
+      <AdminStack.Screen
+        name="AdminDashboardScreen"
+        component={AdminDashboard}
+        options={{ title: "Admin Portal" }}
+      />
+      <AdminStack.Screen
+        name="AdminUsersScreen"
+        component={AdminUsers}
+        options={{ title: "Users" }}
+      />
+      <AdminStack.Screen
+        name="AdminConfigScreen"
+        component={AdminConfig}
+        options={{ title: "Config" }}
+      />
+      <AdminStack.Screen
+        name="AdminOrgsScreen"
+        component={AdminOrgs}
+        options={{ title: "Organizations" }}
+      />
+      <AdminStack.Screen
+        name="AdminTimesheetScreen"
+        component={AdminTimesheet}
+        options={{ title: "Timesheet" }}
+      />
+    </AdminStack.Navigator>
+  );
+}
+
 /* ─── Main Tabs (authenticated) ─── */
 
-function MainTabs({ onLogout }) {
+function MainTabs({ onLogout, role }) {
   const HomeScreenWithLogout = useCallback(
     () => <HomeStackScreen onLogout={onLogout} />,
+    [onLogout]
+  );
+  const ProfileScreenWithLogout = useCallback(
+    () => <ProfileStackScreen onLogout={onLogout} />,
     [onLogout]
   );
 
@@ -186,50 +345,83 @@ function MainTabs({ onLogout }) {
       <Tab.Screen name="Leave" component={LeaveStackScreen} />
       <Tab.Screen name="Overtime" component={OvertimeStackScreen} />
       <Tab.Screen name="Schedule" component={ScheduleStackScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreenWithLogout} />
     </Tab.Navigator>
   );
 }
 
+function AdminTabs({ onLogout }) {
+  const ProfileScreenWithLogout = useCallback(
+    () => <ProfileStackScreen onLogout={onLogout} />,
+    [onLogout]
+  );
+  return (
+    <Tab.Navigator
+      tabBar={(props) => <AdminTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Tab.Screen name="Admin" component={AdminStackScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreenWithLogout} />
+    </Tab.Navigator>
+  );
+}
+
+function ManagerTabs({ onLogout }) {
+  const ProfileScreenWithLogout = useCallback(
+    () => <ProfileStackScreen onLogout={onLogout} />,
+    [onLogout]
+  );
+  return (
+    <Tab.Navigator
+      tabBar={(props) => <ManagerTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Tab.Screen name="Manager" component={ManagerStackScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreenWithLogout} />
+    </Tab.Navigator>
+  );
+}
+
+/* ─── Navigation Wrapper ─── */
+function RootNavigation() {
+  const { userToken, userInfo, logout } = useContext(AuthContext);
+  const [authScreen, setAuthScreen] = React.useState("login");
+
+  return (
+    <NavigationContainer>
+      {userToken ? (
+        userInfo?.role === 'Admin' || userInfo?.role?.name === 'Admin' ? (
+           <AdminTabs onLogout={logout} />
+        ) : userInfo?.role === 'Manager' || userInfo?.role?.name === 'Manager' ? (
+           <ManagerTabs onLogout={logout} />
+        ) : (
+           <MainTabs onLogout={logout} />
+        )
+      ) : (
+        authScreen === "register" ? (
+          <Register onGoToLogin={() => setAuthScreen("login")} />
+        ) : (
+          <Login onGoToRegister={() => setAuthScreen("register")} />
+        )
+      )}
+    </NavigationContainer>
+  );
+}
+
+
 /* ─── App ─── */
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authScreen, setAuthScreen] = useState("login"); // 'login' | 'register'
-
-  const handleLogin = useCallback((credentials) => {
-    // TODO: call real auth API
-    console.log("Login:", credentials.email);
-    setIsLoggedIn(true);
-  }, []);
-
-  const handleRegister = useCallback((data) => {
-    // TODO: call real register API
-    console.log("Register:", data.email);
-    setIsLoggedIn(true);
-  }, []);
-
-  const handleLogout = useCallback(() => {
-    setIsLoggedIn(false);
-    setAuthScreen("login");
-  }, []);
-
   return (
     <SafeAreaProvider>
-      {isLoggedIn ? (
-        <NavigationContainer>
-          <MainTabs onLogout={handleLogout} />
-        </NavigationContainer>
-      ) : authScreen === "register" ? (
-        <Register
-          onRegister={handleRegister}
-          onGoToLogin={() => setAuthScreen("login")}
-        />
-      ) : (
-        <Login
-          onLogin={handleLogin}
-          onGoToRegister={() => setAuthScreen("register")}
-        />
-      )}
+      <AuthProvider>
+        <RootNavigation />
+        <Toast />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

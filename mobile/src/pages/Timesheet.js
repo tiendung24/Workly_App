@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -10,6 +11,7 @@ import { COLORS } from "../_styles/theme";
 import Layout from "../_components/layout/Layout";
 import { timesheetStyles as styles } from "../_styles/pages/timesheetStyles";
 import CorrectionForm from "../_components/timesheet/CorrectionForm";
+import { correctionService } from "../_utils/requestService";
 
 const MONTH_SHORT = [
   "Jan","Feb","Mar","Apr","May","Jun",
@@ -23,53 +25,20 @@ const STATUS_COLORS = {
 };
 
 const TYPE_ICONS = {
-  missed_checkout: { icon: "logout", color: "#EF4444", dir: "OUT" },
-  missed_checkin: { icon: "login", color: "#F59E0B", dir: "IN" },
-  wrong_time: { icon: "edit-calendar", color: "#2563EB", dir: "IN" },
-  offsite: { icon: "location-on", color: "#10B981", dir: "IN" },
+  Forgot_CheckOut: { icon: "logout", color: "#EF4444", dir: "OUT", label: "Forgot Check-out" },
+  Forgot_CheckIn: { icon: "login", color: "#F59E0B", dir: "IN", label: "Forgot Check-in" },
+  Wrong_Time: { icon: "edit-calendar", color: "#2563EB", dir: "IN/OUT", label: "Wrong Time" },
+  Work_Outside: { icon: "location-on", color: "#10B981", dir: "IN", label: "Work Outside" },
 };
 
 const DIR_COLORS = {
   IN: { bg: "#D1FAE5", text: "#059669" },
   OUT: { bg: "#FEE2E2", text: "#EF4444" },
+  "IN/OUT": { bg: "#DBEAFE", text: "#2563EB" },
 };
 
-// Sample requests
-const SAMPLE_REQUESTS = [
-  {
-    id: "1",
-    type: "missed_checkout",
-    typeLabel: "Quên Check-out",
-    date: "04/03/2026",
-    day: 4, month: 2,
-    correctedTime: "17:30",
-    reason: "Quên bấm check-out do đang gọi điện cho khách hàng",
-    status: "approved",
-    createdAt: "04/03/2026",
-  },
-  {
-    id: "2",
-    type: "offsite",
-    typeLabel: "Làm việc ngoài",
-    date: "03/03/2026",
-    day: 3, month: 2,
-    correctedTime: "08:15",
-    reason: "Đi gặp khách hàng tại văn phòng đối tác buổi sáng",
-    status: "approved",
-    createdAt: "03/03/2026",
-  },
-  {
-    id: "3",
-    type: "wrong_time",
-    typeLabel: "Sai giờ ghi nhận",
-    date: "28/02/2026",
-    day: 28, month: 1,
-    correctedTime: "08:05",
-    reason: "Máy chấm công bị lỗi, ghi nhận check-in 09:30 thay vì 08:05",
-    status: "pending",
-    createdAt: "01/03/2026",
-  },
-];
+// TODO: fetch from API
+const INITIAL_REQUESTS = [];
 
 const TABS = [
   { key: "all", label: "All" },
@@ -81,7 +50,70 @@ const TABS = [
 export default function Timesheet({ navigation }) {
   const [tab, setTab] = useState("all");
   const [showForm, setShowForm] = useState(false);
-  const [requests, setRequests] = useState(SAMPLE_REQUESTS);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
+
+  const loadData = async () => {
+    try {
+      const res = await correctionService.getRequests();
+      if (res && res.data) {
+        // Map backend to UI shape
+        const mapped = res.data.map(r => {
+          const d = new Date(r.date);
+          const crt = new Date(r.createdAt || r.created_at || new Date());
+          
+          let timeStr = "";
+          let computedDir = "IN";
+
+          if (r.type === "Wrong_Time") {
+              if (r.requested_check_in) {
+                  computedDir = "IN";
+                  timeStr = new Date(r.requested_check_in).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+              } else if (r.requested_check_out) {
+                  computedDir = "OUT";
+                  timeStr = new Date(r.requested_check_out).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+              }
+          } else if (r.type === "Work_Outside") {
+              computedDir = "IN/OUT";
+              if (r.requested_check_in && r.requested_check_out) {
+                  const start = new Date(r.requested_check_in).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+                  const end = new Date(r.requested_check_out).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+                  timeStr = `${start} - ${end}`;
+              }
+          } else {
+             computedDir = TYPE_ICONS[r.type]?.dir || "IN";
+             if (r.requested_check_in) {
+                 timeStr = new Date(r.requested_check_in).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+             } else if (r.requested_check_out) {
+                 timeStr = new Date(r.requested_check_out).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+             }
+          }
+
+          return {
+            id: r.id.toString(),
+            day: d.getDate(),
+            month: d.getMonth(), 
+            type: r.type, 
+            typeLabel: TYPE_ICONS[r.type]?.label || r.type,
+            reason: r.reason,
+            status: r.status.toLowerCase(), 
+            correctedTime: timeStr, 
+            dir: computedDir,
+            createdAt: crt.toLocaleDateString("en-GB")
+          };
+        });
+        setRequests(mapped);
+      }
+    } catch (error) {
+      console.log("Error loading corrections:", error);
+    }
+  };
 
   const filteredRequests = tab === "all"
     ? requests
@@ -89,18 +121,35 @@ export default function Timesheet({ navigation }) {
 
   const pendingCount = requests.filter((r) => r.status === "pending").length;
 
-  const handleSubmit = (data) => {
-    const parts = data.date.split("/");
-    const newReq = {
-      id: String(Date.now()),
-      ...data,
-      day: parseInt(parts[0], 10),
-      month: parseInt(parts[1], 10) - 1,
-      status: "pending",
-      createdAt: new Date().toLocaleDateString("en-GB"),
-    };
-    setRequests((prev) => [newReq, ...prev]);
-    setShowForm(false);
+  const handleSubmit = async (data) => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      // Assuming data from form is { date: "YYYY-MM-DD", type: "missed_checkout", correctedTime: "17:00", reason: "..." }
+      // The old mock code had "DD/MM/YYYY" but API wants YYYY-MM-DD usually. Let's assume standard YYYY-MM-DD from a DatePicker
+      // We'll normalize if needed below, but just pass raw for now.
+      let dt = data.date;
+      if (dt.includes("/")) {
+          const p = dt.split("/");
+          dt = `${p[2]}-${p[1]}-${p[0]}`;
+      }
+      
+      const res = await correctionService.createRequest({
+        date: dt,
+        type: data.type,
+        requested_check_in: data.requested_check_in,
+        requested_check_out: data.requested_check_out,
+        reason: data.reason
+      });
+      if (res && res.data) {
+        setShowForm(false);
+        loadData();
+      }
+    } catch (error) {
+      alert("Error: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -198,8 +247,8 @@ export default function Timesheet({ navigation }) {
                             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                               <Text style={[styles.requestDetailValue, { color: theme.text }]}>{req.correctedTime}</Text>
                               {(() => {
-                                const dir = ti.dir || "IN";
-                                const dc = DIR_COLORS[dir];
+                                const dir = req.dir || ti.dir || "IN";
+                                const dc = DIR_COLORS[dir] || DIR_COLORS["IN"];
                                 return (
                                   <View style={{ backgroundColor: dc.bg, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
                                     <Text style={{ fontSize: 9, fontWeight: "900", color: dc.text }}>{dir}</Text>

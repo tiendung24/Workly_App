@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -10,8 +11,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../_styles/theme";
 import { scheduleStyles as s } from "../_styles/pages/scheduleStyles";
 import Layout from "../_components/layout/Layout";
-
-
+import { scheduleService } from "../_utils/scheduleService";
 
 const DAYS_HEADER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTH_NAMES = [
@@ -39,75 +39,106 @@ function getCalendarDays(year, month) {
   return cells;
 }
 
-/* ═══════════════════════════════════════════
-   SAMPLE DATA (replace with API later)
-   ═══════════════════════════════════════════ */
-
+/* ─── dynamic loading ─── */
 const today = new Date();
-const Y = today.getFullYear();
-const M = today.getMonth(); // 0-indexed
 
-// Public holidays
-const HOLIDAYS = new Set([`${Y}-${padTwo(M+1)}-01`]); // e.g. 1st of this month
-
-// Leave days
-const LEAVE_DAYS = {
-  [`${Y}-${padTwo(M+1)}-${padTwo(7)}`]: { type: "annual", reason: "Nghỉ phép năm" },
-  [`${Y}-${padTwo(M+1)}-${padTwo(20)}`]: { type: "sick", reason: "Nghỉ ốm" },
-};
-
-// Overtime days
-const OT_DAYS = {
-  [`${Y}-${padTwo(M+1)}-${padTwo(3)}`]: { hours: 2, reason: "Deadline project A" },
-  [`${Y}-${padTwo(M+1)}-${padTwo(5)}`]: { hours: 2.5, reason: "Client demo prep" },
-  [`${Y}-${padTwo(M+1)}-${padTwo(12)}`]: { hours: 3, reason: "Server migration" },
-};
-
-// Check-in records (past working days that were checked in)
-const CHECKIN_RECORDS = {};
-// Auto-generate for past working days this month
-for (let d = 1; d < today.getDate(); d++) {
-  const dt = new Date(Y, M, d);
-  const dow = dt.getDay(); // 0=Sun
-  const key = `${Y}-${padTwo(M+1)}-${padTwo(d)}`;
-  if (dow === 0) continue; // Sunday off
-  if (dow === 6) {
-    // Saturday: morning only if not on leave
-    if (!LEAVE_DAYS[key] && !HOLIDAYS.has(key)) {
-      CHECKIN_RECORDS[key] = { checkIn: "08:02", checkOut: "12:05", hours: 4, late: false };
-    }
-  } else {
-    if (!LEAVE_DAYS[key] && !HOLIDAYS.has(key)) {
-      const late = d === 4; // one day was late
-      CHECKIN_RECORDS[key] = {
-        checkIn: late ? "08:22" : "07:5" + (d % 9),
-        checkOut: "17:0" + (d % 8),
-        hours: 8,
-        late,
-      };
-    }
-  }
-}
-
-function getDayData(year, month, day) {
+function getDayData(year, month, day, apiData) {
   const key = `${year}-${padTwo(month + 1)}-${padTwo(day)}`;
   const dt = new Date(year, month, day);
   const dow = dt.getDay(); // 0=Sun
   const isSunday = dow === 0;
   const isSaturday = dow === 6;
-  const isHol = HOLIDAYS.has(key);
-  const leave = LEAVE_DAYS[key] || null;
-  const ot = OT_DAYS[key] || null;
-  const checkin = CHECKIN_RECORDS[key] || null;
   const isPast = dt < new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const isToday_ = isSameDay(dt, today);
 
   let type = "work"; // work, half, off, leave, holiday
   let timeRange = "08:00-17:00";
+  let leave = null;
+  let ot = null;
+  let checkin = null;
+  
   if (isSunday) { type = "off"; timeRange = ""; }
-  else if (isHol) { type = "holiday"; timeRange = ""; }
-  else if (leave) { type = "leave"; timeRange = ""; }
   else if (isSaturday) { type = "half"; timeRange = "08:00-12:00"; }
+  
+  // Apply API data overrides
+  if (apiData && apiData[key]) {
+      const record = apiData[key];
+      
+      // Override timeRange if shift exists
+      if (record.shift && record.shift !== 'Không có ca') {
+          timeRange = record.shift;
+      }
+      
+      if (record.status === 'Absent') {
+          type = isPast ? (isSunday ? 'off' : 'work') : type;
+          // Could leave as work and it just has no checkin
+      } else if (record.status === 'Leave') {
+          type = "leave"; timeRange = "";
+          leave = { 
+              type: record.leaveInfo?.type?.toLowerCase().includes("sick") ? 'sick' : 'annual', 
+              reason: `${record.leaveInfo?.type || 'Leave'} - ${record.leaveInfo?.reason || ''}` 
+          };
+      } else if (record.status === 'Holiday') {
+          type = "holiday"; timeRange = "";
+      } else if (record.status === 'Off') {
+          type = "off"; timeRange = "";
+      }
+      
+      // Populate Checkin Data (Late, etc) if ANY times exist
+      if (record.checkIn || record.checkOut || record.status === 'Present' || record.status === 'Late' || record.status === 'EarlyLeave') {
+          let actualHoursLabel = '—';
+          let lateMins = 0;
+          let earlyMins = 0;
+
+          const cInDate = record.checkIn ? new Date(record.checkIn) : null;
+          const cOutDate = record.checkOut ? new Date(record.checkOut) : null;
+
+          if (cInDate && cOutDate) {
+              const diffMs = cOutDate - cInDate;
+              const diffMins = Math.floor(diffMs / 60000);
+              
+              if (diffMins < 60) {
+                  actualHoursLabel = `${diffMins} mins`;
+              } else {
+                  const hrs = Math.floor(diffMins / 60);
+                  const mns = diffMins % 60;
+                  actualHoursLabel = mns > 0 ? `${hrs}h ${mns}m` : `${hrs}h`;
+              }
+          }
+
+          // Calculate Late/Early based on Time Range (e.g., "08:00-17:00")
+          if (timeRange && timeRange.includes("-")) {
+              const [sTr, eTr] = timeRange.split("-");
+              if (sTr && eTr && cInDate) {
+                  const expectedIn = new Date(cInDate);
+                  const [inH, inM] = sTr.split(":");
+                  expectedIn.setHours(parseInt(inH, 10), parseInt(inM, 10), 0, 0);
+                  
+                  if (cInDate > expectedIn) {
+                      lateMins = Math.floor((cInDate - expectedIn) / 60000);
+                  }
+              }
+              if (sTr && eTr && cOutDate) {
+                  const expectedOut = new Date(cOutDate);
+                  const [outH, outM] = eTr.split(":");
+                  expectedOut.setHours(parseInt(outH, 10), parseInt(outM, 10), 0, 0);
+
+                  if (cOutDate < expectedOut) {
+                      earlyMins = Math.floor((expectedOut - cOutDate) / 60000);
+                  }
+              }
+          }
+
+          checkin = {
+              checkIn: cInDate ? `${padTwo(cInDate.getHours())}:${padTwo(cInDate.getMinutes())}` : '—',
+              checkOut: cOutDate ? `${padTwo(cOutDate.getHours())}:${padTwo(cOutDate.getMinutes())}` : '—',
+              hoursLabel: actualHoursLabel,
+              late: record.status === 'Late' || lateMins > 0,
+              lateMins,
+              earlyMins
+          };
+      }
+  }
 
   return { key, dt, dow, type, timeRange, leave, ot, checkin, isPast, isToday: isToday_, isSunday, isSaturday };
 }
@@ -116,10 +147,10 @@ function getDayData(year, month, day) {
    DAY CELL COMPONENT
    ═══════════════════════════════════════════ */
 
-function DayCell({ day, year, month, theme, onPress, filter }) {
+function DayCell({ day, year, month, theme, onPress, filter, apiData }) {
   if (day === null) return <View style={s.dayCell} />;
 
-  const data = getDayData(year, month, day);
+  const data = getDayData(year, month, day, apiData);
   const { type, timeRange, ot, checkin, isPast, isToday: isToday_, isSunday } = data;
 
   // Filter logic
@@ -161,7 +192,7 @@ function DayCell({ day, year, month, theme, onPress, filter }) {
 
         {type === "leave" && (
           <Text style={[s.dayLeaveText, { color: "#92400E" }]} numberOfLines={2}>
-            {data.leave?.type === "annual" ? "Phép" : "Nghỉ"}
+            {data.leave?.type === "annual" ? "Annual" : "Leave"}
           </Text>
         )}
 
@@ -188,7 +219,7 @@ function DayCell({ day, year, month, theme, onPress, filter }) {
             {/* Late indicator */}
             {checkin?.late && (
               <View style={[s.dayOtBadge, { backgroundColor: "#FEE2E2" }]}>
-                <Text style={[s.dayOtText, { color: "#EF4444" }]}>Trễ</Text>
+                <Text style={[s.dayOtText, { color: "#EF4444" }]}>Late</Text>
               </View>
             )}
           </>
@@ -214,7 +245,7 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
   let statusBg = "#E0E7FF";
   let statusColor = "#4338CA";
   if (type === "off" || type === "holiday") { statusLabel = type === "holiday" ? "Holiday" : "Day Off"; statusBg = "#F3F4F6"; statusColor = "#6B7280"; }
-  else if (type === "leave") { statusLabel = leave?.type === "annual" ? "Nghỉ phép" : "Nghỉ ốm"; statusBg = "#FEF3C7"; statusColor = "#92400E"; }
+  else if (type === "leave") { statusLabel = leave?.type === "annual" ? "Annual Leave" : "Sick Leave"; statusBg = "#FEF3C7"; statusColor = "#92400E"; }
   else if (checkin) { statusLabel = "Checked In"; statusBg = "#D1FAE5"; statusColor = "#059669"; }
   else if (isToday_) { statusLabel = "Today"; statusBg = COLORS.primary + "18"; statusColor = COLORS.primary; }
 
@@ -250,15 +281,39 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
       iconBg: "#E0E7FF",
       iconColor: "#4338CA",
       label: "Actual Hours",
-      value: `${checkin.hours}h`,
+      value: checkin.hoursLabel,
     });
-    if (checkin.late) {
+    if (checkin.lateMins > 0) {
+      const h = Math.floor(checkin.lateMins / 60);
+      const m = checkin.lateMins % 60;
+      const lateStr = h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m} mins`;
       rows.push({
         icon: "warning",
         iconBg: "#FEF3C7",
         iconColor: "#D97706",
+        label: "Late Arrival",
+        value: `Late ${lateStr}`,
+      });
+    } else if (checkin.late) {
+       // Fallback to simple "Late" if lateMins = 0 but status was somehow Late
+       rows.push({
+        icon: "warning",
+        iconBg: "#FEF3C7",
+        iconColor: "#D97706",
         label: "Status",
-        value: "Đi trễ",
+        value: "Late",
+      });
+    }
+    if (checkin.earlyMins > 0) {
+      const h2 = Math.floor(checkin.earlyMins / 60);
+      const m2 = checkin.earlyMins % 60;
+      const earlyStr = h2 > 0 ? (m2 > 0 ? `${h2}h ${m2}m` : `${h2}h`) : `${m2} mins`;
+      rows.push({
+        icon: "run-circle",
+        iconBg: "#FEF3C7",
+        iconColor: "#D97706",
+        label: "Early Leave",
+        value: `Early ${earlyStr}`,
       });
     }
   }
@@ -288,7 +343,7 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
       iconBg: "#FEF3C7",
       iconColor: "#92400E",
       label: "Leave Type",
-      value: leave.type === "annual" ? "Nghỉ phép năm" : leave.type === "sick" ? "Nghỉ ốm" : "Nghỉ",
+      value: leave.type === "annual" ? "Annual Leave" : leave.type === "sick" ? "Sick Leave" : "Leave",
     });
     if (leave.reason) {
       rows.push({
@@ -307,7 +362,7 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
       iconBg: "#F3F4F6",
       iconColor: "#6B7280",
       label: "Type",
-      value: "Ngày nghỉ hàng tuần",
+      value: "Weekly day off",
     });
   }
 
@@ -317,7 +372,7 @@ function DayDetailSheet({ data, visible, onClose, theme }) {
       iconBg: "#FEE2E2",
       iconColor: "#EF4444",
       label: "Type",
-      value: "Ngày lễ",
+      value: "Holiday",
     });
   }
 
@@ -380,6 +435,7 @@ export default function Schedule() {
   const [selectedDay, setSelectedDay] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
   const [filter, setFilter] = useState("all");
+  const [apiDataMap, setApiDataMap] = useState({});
 
   const viewDate = useMemo(() => {
     const d = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
@@ -389,8 +445,29 @@ export default function Schedule() {
   const viewYear = viewDate.getFullYear();
   const viewMonth = viewDate.getMonth();
   const cells = useMemo(() => getCalendarDays(viewYear, viewMonth), [viewYear, viewMonth]);
-
   const monthLabel = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
+
+  useFocusEffect(
+    useCallback(() => {
+      loadScheduleData(viewYear, viewMonth + 1); // API expects 1-indexed month
+    }, [viewYear, viewMonth])
+  );
+
+  const loadScheduleData = async (year, month) => {
+    try {
+      const res = await scheduleService.getMonthly(year, month);
+      if (res && res.data) {
+        // Build map: { "2026-03-01": { status: 'Present', ... } }
+        const map = {};
+        res.data.forEach(item => {
+          map[item.date] = item;
+        });
+        setApiDataMap(map);
+      }
+    } catch (error) {
+      console.log("Error loading schedule data:", error);
+    }
+  };
 
   const handleDayPress = (data) => {
     setSelectedDay(data);
@@ -478,6 +555,7 @@ export default function Schedule() {
                   theme={theme}
                   onPress={handleDayPress}
                   filter={filter}
+                  apiData={apiDataMap}
                 />
               ))}
             </View>

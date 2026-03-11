@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -13,21 +14,59 @@ import StatusTabs from "../_components/leave/StatusTabs";
 import LeaveList from "../_components/leave/LeaveList";
 import FloatingAddButton from "../_components/leave/FloatingAddButton";
 import LeaveForm from "../_components/leave/LeaveForm";
+import { leaveService } from "../_utils/leaveService";
+import Toast from "react-native-toast-message";
 
 export default function Leave({ navigation }) {
   const [tab, setTab] = useState("all");
   const [leaveRequests, setLeaveRequests] = useState([]);
+  const [balance, setBalance] = useState({ total_days: 0, used_days: 0, remaining_days: 0 });
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmitLeave = (data) => {
-    const newRequest = {
-      id: Date.now().toString(),
-      ...data,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
-    setLeaveRequests((prev) => [newRequest, ...prev]);
-    setShowForm(false);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
+
+  const loadData = async () => {
+    try {
+      const [balRes, reqsRes] = await Promise.all([
+        leaveService.getBalance(),
+        leaveService.getRequests()
+      ]);
+      if (balRes && balRes.data) {
+        setBalance(balRes.data);
+      }
+      if (reqsRes && reqsRes.data) {
+        setLeaveRequests(reqsRes.data);
+      }
+    } catch (error) {
+      console.log("Error loading leave data:", error);
+    }
+  };
+
+  const handleSubmitLeave = async (data) => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const res = await leaveService.createRequest({
+        leave_type_id: data.type,
+        start_date: data.startDate,
+        end_date: data.endDate,
+        reason: data.reason
+      });
+      if (res.data) {
+        setShowForm(false);
+        Toast.show({ type: 'success', text1: 'Success', text2: 'Leave request created successfully!' });
+        loadData(); // Refresh list 
+      }
+    } catch (error) {
+      Toast.show({ type: 'error', text1: 'Error', text2: error.message || 'Cannot create request' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,7 +85,7 @@ export default function Leave({ navigation }) {
               ]}
             >
               <View style={styles.content}>
-                <LeaveBalance styles={styles} theme={theme} monthlyBalance={12} />
+                <LeaveBalance styles={styles} theme={theme} balance={balance} />
 
                 <View style={styles.sectionRow}>
                   <Text style={[styles.sectionTitle, { color: theme.text }]}>
@@ -60,7 +99,11 @@ export default function Leave({ navigation }) {
                   value={tab}
                   onChange={setTab}
                 />
-                <LeaveList styles={styles} theme={theme} items={leaveRequests} />
+                <LeaveList 
+                  styles={styles} 
+                  theme={theme} 
+                  items={leaveRequests.filter(r => tab === 'all' || r.status.toLowerCase() === tab)} 
+                />
               </View>
             </ScrollView>
 

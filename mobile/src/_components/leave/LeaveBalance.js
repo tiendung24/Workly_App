@@ -3,11 +3,12 @@ import { View, Text } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../../_styles/theme";
 
-export default function LeaveBalance({ styles, theme, monthlyBalance = 0 }) {
+export default function LeaveBalance({ styles, theme, balance }) {
+  const remaining = balance ? balance.remaining_days : 0;
   return (
     <View style={{ marginBottom: 14 }}>
       <View style={styles.sectionRow}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Leave Balance</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>My Leave Balance</Text>
       </View>
 
       <View
@@ -33,7 +34,7 @@ export default function LeaveBalance({ styles, theme, monthlyBalance = 0 }) {
           </View>
           <View>
             <Text style={[styles.balanceValue, { color: "#fff", fontSize: 26 }]}>
-              {monthlyBalance}
+              {remaining}
             </Text>
             <Text
               style={[
@@ -41,7 +42,7 @@ export default function LeaveBalance({ styles, theme, monthlyBalance = 0 }) {
                 { color: "rgba(255,255,255,0.85)" },
               ]}
             >
-              Days remaining this month
+              Remaining annual leave
             </Text>
           </View>
         </View>

@@ -7,15 +7,7 @@ import { COLORS } from "../../_styles/theme";
  * Summary cards: Công tháng, OT tuần, Nghỉ phép tháng
  * TODO: replace hardcoded values with API data
  */
-export default function SummaryCards({ styles, theme }) {
-  // Sample data (replace with props or API)
-  const workedDays = 18;
-  const standardDays = 26;
-  const otHoursWeek = 4.5;
-
-  // Phép có lương: tổng buổi được nghỉ/tháng - số buổi đã dùng (nghỉ phép)
-  const paidLeavePerMonth = 2;   // tổng buổi phép có lương mỗi tháng
-  const usedPaidLeave = 0.5;     // số buổi đã xin nghỉ phép
+export default function SummaryCards({ styles, theme, workedDays = 0, standardDays = 0, otHoursWeek = 0, paidLeavePerMonth = 0, usedPaidLeave = 0 }) {
   const remainingLeave = paidLeavePerMonth - usedPaidLeave;
 
   return (
@@ -24,7 +16,7 @@ export default function SummaryCards({ styles, theme }) {
       <View style={[styles.summaryCard, { backgroundColor: theme.card, borderColor: theme.navBorder }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 }}>
           <MaterialIcons name="event-available" size={16} color="#10B981" />
-          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>Công tháng</Text>
+          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>Working Days</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "baseline" }}>
           <Text style={[styles.summaryValue, { color: "#10B981" }]}>
@@ -40,7 +32,7 @@ export default function SummaryCards({ styles, theme }) {
       <View style={[styles.summaryCard, { backgroundColor: theme.card, borderColor: theme.navBorder }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 }}>
           <MaterialIcons name="more-time" size={16} color={COLORS.primary} />
-          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>OT tuần</Text>
+          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>Weekly OT</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "baseline" }}>
           <Text style={[styles.summaryValue, { color: COLORS.primary }]}>
@@ -56,14 +48,14 @@ export default function SummaryCards({ styles, theme }) {
       <View style={[styles.summaryCard, { backgroundColor: theme.card, borderColor: theme.navBorder }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 }}>
           <MaterialIcons name="beach-access" size={16} color="#F59E0B" />
-          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>Phép còn</Text>
+          <Text style={[styles.summaryLabel, { color: theme.sub, marginTop: 0 }]}>Leave Bal</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "baseline" }}>
           <Text style={[styles.summaryValue, { color: "#F59E0B" }]}>
             {remainingLeave}
           </Text>
           <Text style={{ fontSize: 13, fontWeight: "700", color: theme.sub }}>
-            {" "} / {paidLeavePerMonth} buổi
+            {" "} / {paidLeavePerMonth} days
           </Text>
         </View>
       </View>

@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 import { COLORS } from "../theme";
 
 export const loginStyles = StyleSheet.create({
@@ -57,11 +57,18 @@ export const loginStyles = StyleSheet.create({
     paddingTop: 32,
     paddingHorizontal: 24,
     paddingBottom: 40,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 30,
-    shadowOffset: { width: 0, height: -10 },
-    elevation: 16,
+    ...Platform.select({
+      web: {
+        boxShadow: "0px -10px 30px rgba(0, 0, 0, 0.1)"
+      },
+      default: {
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 30,
+        shadowOffset: { width: 0, height: -10 },
+        elevation: 16,
+      }
+    })
   },
   formTitle: {
     fontSize: 22,
@@ -141,11 +148,18 @@ export const loginStyles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
     gap: 10,
-    shadowColor: COLORS.primary,
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
+    ...Platform.select({
+      web: {
+        boxShadow: `0px 8px 16px ${COLORS.primary}66` // ~0.4 opacity
+      },
+      default: {
+        shadowColor: COLORS.primary,
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
+        shadowOffset: { width: 0, height: 8 },
+        elevation: 8,
+      }
+    })
   },
   loginBtnText: {
     fontSize: 16,
