@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -31,9 +32,11 @@ export default function ManagerTeam() {
   const [year, setYear] = useState(moment().year());
   const [month, setMonth] = useState(moment().month() + 1);
 
-  useEffect(() => {
-    loadData();
-  }, [tab, year, month]);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [tab, year, month])
+  );
 
   const loadData = async () => {
     setLoading(true);

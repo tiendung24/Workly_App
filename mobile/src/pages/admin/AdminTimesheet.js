@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -22,9 +23,11 @@ export default function AdminTimesheet() {
   const [year, setYear] = useState(moment().year());
   const [month, setMonth] = useState(moment().month() + 1);
 
-  useEffect(() => {
-    loadTimesheet();
-  }, [year, month]);
+  useFocusEffect(
+    useCallback(() => {
+      loadTimesheet();
+    }, [year, month])
+  );
 
   const loadTimesheet = async () => {
     try {

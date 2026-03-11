@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -80,9 +81,11 @@ export default function Profile({ onLogout, avatarUrl }) {
   const mockTheme = { bg: "#FAFAFA", card: "#fff", text: "#1F2937", sub: "#9CA3AF", navBorder: "#E5E7EB" };
 
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, [])
+  );
 
   const loadProfile = async () => {
     try {
