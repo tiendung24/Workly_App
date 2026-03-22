@@ -5,7 +5,7 @@ const moment = require('moment');
 const getTimesheet = async (req, res, next) => {
     try {
         const { year, month } = req.query;
-        if (!year || !month) return res.status(400).json({ message: 'Vui lòng cung cấp year và month' });
+        if (!year || !month) return res.status(400).json({ message: 'Please provide year and month' });
 
         // Build start/end date for the month
         const startDate = new Date(year, month - 1, 1);

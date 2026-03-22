@@ -9,7 +9,7 @@ const getMonthly = async (req, res, next) => {
         const { year, month } = req.query;
 
         if (!year || !month) {
-            return res.status(400).json({ message: 'Vui lòng cung cấp year và month' });
+            return res.status(400).json({ message: 'Please provide year and month' });
         }
 
         const formattedMonth = month.toString().padStart(2, '0');
@@ -48,7 +48,7 @@ const getMonthly = async (req, res, next) => {
             
             // Xử lý status
             let finalStatus = 'Off'; // Mặc định nếu không có dữ liệu
-            let shiftDisplay = 'Không có ca';
+            let shiftDisplay = 'No shift';
             
             if (attendanceRecord) {
                 finalStatus = attendanceRecord.status;

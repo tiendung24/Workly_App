@@ -1,4 +1,5 @@
-const { LeaveRequest, LeaveType, UserLeaveBalance } = require('../models');
+const { LeaveRequest, LeaveType, UserLeaveBalance, User } = require('../models');
+const { createAndEmit } = require('../services/notificationService');
 
 // GET /api/leave/balance
 const getBalance = async (req, res, next) => {
@@ -15,7 +16,7 @@ const getBalance = async (req, res, next) => {
         // 2. Nếu chưa có, tự động cấp phát dựa trên cấu hình LeaveType
         if (!balance) {
             const leaveType = await LeaveType.findOne({
-                where: { name: 'Nghỉ Phép Tháng' }
+                where: { name: 'Monthly Leave' }
             });
 
             if (leaveType) {
@@ -34,14 +35,14 @@ const getBalance = async (req, res, next) => {
                 });
             } else {
                 return res.status(200).json({
-                    message: 'Chưa có cấu hình nghỉ phép',
+                    message: 'Leave configuration not found',
                     data: { total_days: 0, used_days: 0, remaining_days: 0 }
                 });
             }
         }
 
         res.status(200).json({
-            message: 'Thành công',
+            message: 'Success',
             data: {
                total_days: balance.total_days,
                used_days: balance.used_days,
@@ -66,7 +67,7 @@ const getRequests = async (req, res, next) => {
         });
 
         res.status(200).json({
-            message: 'Thành công',
+            message: 'Success',
             data: requests
         });
 
@@ -82,7 +83,7 @@ const createRequest = async (req, res, next) => {
         const { leave_type_id, start_date, end_date, reason } = req.body;
 
         if (!leave_type_id || !start_date || !end_date) {
-            return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin' });
+            return res.status(400).json({ message: 'Please provide all details' });
         }
 
         const newRequest = await LeaveRequest.create({
@@ -94,8 +95,20 @@ const createRequest = async (req, res, next) => {
             status: 'Pending'
         });
 
+        // --- Notification Logic ---
+        const currentUser = await User.findByPk(userId);
+        if (currentUser && currentUser.manager_id) {
+            await createAndEmit(
+                currentUser.manager_id,
+                'New leave request',
+                `Employee ${currentUser.full_name} has submitted a leave request.`,
+                'LEAVE_REQUEST',
+                newRequest.id
+            );
+        }
+
         res.status(201).json({
-            message: 'Tạo đơn xin nghỉ thành công',
+            message: 'Leave request created successfully',
             data: newRequest
         });
 

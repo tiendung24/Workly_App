@@ -11,6 +11,7 @@ const UserLeaveBalance = require('./UserLeaveBalance');
 const LeaveRequest = require('./LeaveRequest');
 const OvertimeRequest = require('./OvertimeRequest');
 const CorrectionRequest = require('./CorrectionRequest');
+const Notification = require('./Notification');
 
 // ==================== ASSOCIATIONS ====================
 
@@ -70,6 +71,10 @@ CorrectionRequest.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasMany(CorrectionRequest, { foreignKey: 'approver_id', as: 'approvedCorrections' });
 CorrectionRequest.belongsTo(User, { foreignKey: 'approver_id', as: 'approver' });
 
+// User ↔ Notification
+User.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
+Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
 // ==================== EXPORT ====================
 
 module.exports = {
@@ -84,4 +89,5 @@ module.exports = {
     LeaveRequest,
     OvertimeRequest,
     CorrectionRequest,
+    Notification,
 };

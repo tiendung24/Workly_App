@@ -15,7 +15,7 @@ const createDepartment = async (req, res, next) => {
     try {
         const { name, description } = req.body;
         const department = await Department.create({ name, description });
-        res.status(201).json({ message: 'Tạo phòng ban thành công', data: department });
+        res.status(201).json({ message: 'Department created successfully', data: department });
     } catch (error) {
         next(error);
     }
@@ -27,10 +27,10 @@ const updateDepartment = async (req, res, next) => {
         const { id } = req.params;
         const { name, description } = req.body;
         const department = await Department.findByPk(id);
-        if (!department) return res.status(404).json({ message: 'Không tìm thấy phòng ban' });
+        if (!department) return res.status(404).json({ message: 'Department not found' });
         
         await department.update({ name, description });
-        res.status(200).json({ message: 'Cập nhật thành công', data: department });
+        res.status(200).json({ message: 'Updated successfully', data: department });
     } catch (error) {
         next(error);
     }
@@ -41,13 +41,13 @@ const deleteDepartment = async (req, res, next) => {
     try {
         const { id } = req.params;
         const department = await Department.findByPk(id);
-        if (!department) return res.status(404).json({ message: 'Không tìm thấy phòng ban' });
+        if (!department) return res.status(404).json({ message: 'Department not found' });
         
         await department.destroy();
-        res.status(200).json({ message: 'Xoá phòng ban thành công' });
+        res.status(200).json({ message: 'Department deleted successfully' });
     } catch (error) {
         if (error.name === 'SequelizeForeignKeyConstraintError') {
-            return res.status(400).json({ message: 'Không thể xoá vì đang có nhân sự thuộc phòng ban này' });
+            return res.status(400).json({ message: 'Cannot delete department with assigned employees' });
         }
         next(error);
     }

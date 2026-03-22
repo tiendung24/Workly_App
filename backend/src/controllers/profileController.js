@@ -21,7 +21,7 @@ const getProfile = async (req, res, next) => {
         }
 
         res.status(200).json({
-            message: 'Thành công',
+            message: 'Success',
             data: user
         });
 
@@ -48,14 +48,14 @@ const updateProfile = async (req, res, next) => {
         // Email uniqueness check
         if (email && email !== user.email) {
             const existingEmail = await User.findOne({ where: { email, id: { [Op.ne]: userId } } });
-            if (existingEmail) return res.status(400).json({ message: 'Email đã được sử dụng' });
+            if (existingEmail) return res.status(400).json({ message: 'Email already in use' });
             user.email = email;
         }
 
         // Employee code uniqueness check
         if (employee_code && employee_code !== user.employee_code) {
             const existingCode = await User.findOne({ where: { employee_code, id: { [Op.ne]: userId } } });
-            if (existingCode) return res.status(400).json({ message: 'Mã nhân viên đã tồn tại' });
+            if (existingCode) return res.status(400).json({ message: 'Employee code already exists' });
             user.employee_code = employee_code;
         }
 
@@ -91,7 +91,7 @@ const updateProfile = async (req, res, next) => {
         await user.save();
 
         res.status(200).json({
-            message: 'Cập nhật thành công',
+            message: 'Update successful',
             data: {
                 id: user.id,
                 full_name: user.full_name,
@@ -113,7 +113,7 @@ const changePassword = async (req, res, next) => {
         const { oldPassword, newPassword } = req.body;
 
         if (!oldPassword || !newPassword) {
-            return res.status(400).json({ message: 'Vui lòng cung cấp mật khẩu cũ và mới' });
+            return res.status(400).json({ message: 'Please provide old and new password' });
         }
 
         const user = await User.findByPk(userId);
@@ -123,13 +123,13 @@ const changePassword = async (req, res, next) => {
 
         const isMatch = await user.comparePassword(oldPassword);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Mật khẩu cũ không chính xác' });
+            return res.status(400).json({ message: 'Incorrect old password' });
         }
 
         user.password_hash = newPassword; // Hook will secure it
         await user.save();
 
-        res.status(200).json({ message: 'Đổi mật khẩu thành công' });
+        res.status(200).json({ message: 'Password changed successfully' });
     } catch (error) {
         next(error);
     }

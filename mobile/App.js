@@ -45,6 +45,7 @@ import AdminUsers from "./src/pages/admin/AdminUsers";
 import AdminConfig from "./src/pages/admin/AdminConfig";
 import AdminTimesheet from "./src/pages/admin/AdminTimesheet";
 import AdminOrgs from "./src/pages/admin/AdminOrgs";
+import NotificationModal from "./src/_components/NotificationModal";
 
 import BottomNav from "./src/_components/layout/BottomNav";
 import AdminBottomNav from "./src/_components/layout/AdminBottomNav";
@@ -158,16 +159,37 @@ function ManagerTabBar({ state, navigation }) {
 /* ─── Header Right: Logout (Home only) ─── */
 
 function HomeHeaderRight({ onLogout }) {
+  const { unreadNotifications } = useContext(AuthContext);
+  const [showNotifications, setShowNotifications] = React.useState(false);
+
   return (
     <View style={headerS.rightRow}>
       <TouchableOpacity
-        style={[headerS.headerBtn, headerS.logoutBtn]}
+        style={headerS.headerBtn}
         activeOpacity={0.8}
-        onPress={onLogout}
+        onPress={() => setShowNotifications(true)}
       >
-        <MaterialIcons name="logout" size={18} color={COLORS.primary} />
-        <Text style={[headerS.headerBtnText, { color: COLORS.primary }]}>Logout</Text>
+        <MaterialIcons name="notifications" size={22} color="#fff" />
+        {unreadNotifications > 0 && (
+           <View style={headerS.badge}>
+             <Text style={headerS.badgeText}>{unreadNotifications}</Text>
+           </View>
+        )}
       </TouchableOpacity>
+      {onLogout && (
+        <TouchableOpacity
+          style={[headerS.headerBtn, headerS.logoutBtn]}
+          activeOpacity={0.8}
+          onPress={onLogout}
+        >
+          <MaterialIcons name="logout" size={18} color={COLORS.primary} />
+          <Text style={[headerS.headerBtnText, { color: COLORS.primary }]}>Logout</Text>
+        </TouchableOpacity>
+      )}
+      <NotificationModal
+        visible={showNotifications}
+        onClose={() => setShowNotifications(false)}
+      />
     </View>
   );
 }
@@ -194,10 +216,10 @@ function HomeStackScreen({ onLogout }) {
       <HomeStack.Screen
         name="HomeScreen"
         component={Home}
-        options={{
+        options={() => ({
           title: "Workly",
           headerRight: () => <HomeHeaderRight onLogout={onLogout} />,
-        }}
+        })}
       />
     </HomeStack.Navigator>
   );
@@ -273,7 +295,10 @@ function ManagerStackScreen() {
       <ManagerStack.Screen
         name="ManagerHomeScreen"
         component={ManagerHome}
-        options={{ title: "Manager" }}
+        options={() => ({
+           title: "Manager",
+           headerRight: () => <HomeHeaderRight />,
+        })}
       />
       <ManagerStack.Screen
         name="ManagerApprovalScreen"
@@ -295,7 +320,10 @@ function AdminStackScreen() {
       <AdminStack.Screen
         name="AdminDashboardScreen"
         component={AdminDashboard}
-        options={{ title: "Admin Portal" }}
+        options={() => ({
+           title: "Admin Portal",
+           headerRight: () => <HomeHeaderRight />,
+        })}
       />
       <AdminStack.Screen
         name="AdminUsersScreen"
@@ -452,4 +480,21 @@ const headerS = StyleSheet.create({
   logoutBtn: {
     backgroundColor: "rgba(255,255,255,0.92)",
   },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: 4,
+    backgroundColor: '#ff4757',
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  }
 });

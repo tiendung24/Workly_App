@@ -1,5 +1,6 @@
-const { OvertimeRequest } = require('../models');
+const { OvertimeRequest, User } = require('../models');
 const moment = require('moment');
+const { createAndEmit } = require('../services/notificationService');
 
 // GET /api/overtime/requests
 const getRequests = async (req, res, next) => {
@@ -23,7 +24,7 @@ const createRequest = async (req, res, next) => {
         const { date, start_time, end_time, reason } = req.body;
 
         if (!date || !start_time || !end_time) {
-            return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin ngày và giờ' });
+            return res.status(400).json({ message: 'Please provide all date and time details' });
         }
 
         // Calculate hours
@@ -32,7 +33,7 @@ const createRequest = async (req, res, next) => {
         const total_hours = t2.diff(t1, 'hours', true);
 
         if (total_hours <= 0) {
-            return res.status(400).json({ message: 'Giờ kết thúc phải lớn hơn giờ bắt đầu' });
+            return res.status(400).json({ message: 'End time must be after start time' });
         }
 
         const newRequest = await OvertimeRequest.create({
@@ -45,8 +46,20 @@ const createRequest = async (req, res, next) => {
             status: 'Pending'
         });
 
+        // --- Notification Logic ---
+        const currentUser = await User.findByPk(userId);
+        if (currentUser && currentUser.manager_id) {
+            await createAndEmit(
+                currentUser.manager_id,
+                'New overtime request',
+                `Employee ${currentUser.full_name} has submitted an overtime request.`,
+                'OVERTIME_REQUEST',
+                newRequest.id
+            );
+        }
+
         res.status(201).json({
-            message: 'Tạo đơn tăng ca thành công',
+            message: 'Overtime request created successfully',
             data: newRequest
         });
 

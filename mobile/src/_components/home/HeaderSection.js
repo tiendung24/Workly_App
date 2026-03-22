@@ -16,7 +16,6 @@ export default function HeaderSection({
   statusLabel = "Status: —",
   activeCheck,
   onChangeCheck,
-  onPressNotifications,
 }) {
   const isIn = activeCheck === "IN";
   const isOut = activeCheck === "OUT";
@@ -35,11 +34,6 @@ export default function HeaderSection({
             <Text style={styles.userName}>{userName}</Text>
           </View>
         </View>
-
-        <TouchableOpacity style={styles.iconBtn} activeOpacity={0.85} onPress={onPressNotifications}>
-          <MaterialIcons name="notifications" size={22} color="#fff" />
-          <View style={styles.notifDot} />
-        </TouchableOpacity>
       </View>
 
       <View style={styles.clockBlock}>

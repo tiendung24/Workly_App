@@ -1,11 +1,24 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 const morgan = require('morgan');
 require('dotenv').config();
 
 const { sequelize } = require('./models');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: '*', // For demo purposes, allow all origins
+        methods: ['GET', 'POST']
+    }
+});
+
+const { initSocket } = require('./services/socketService');
+initSocket(io);
+
 const port = process.env.PORT || 3000;
 const hostname = process.env.HOSTNAME || 'localhost';
 
@@ -25,6 +38,7 @@ app.use('/api/overtime', require('./routes/overtimeRoutes'));
 app.use('/api/correction', require('./routes/correctionRoutes'));
 app.use('/api/manager', require('./routes/managerRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 app.get('/', async (req, res) => {
     res.status(200).json({ message: 'Workly API is running 🚀' });
@@ -54,7 +68,7 @@ const startServer = async () => {
         await sequelize.sync({ alter: false });
         console.log('✅ Models synced');
 
-        app.listen(port, () => {
+        server.listen(port, () => {
             console.log(`🚀 Server running at http://${hostname}:${port}/`);
         });
     } catch (error) {

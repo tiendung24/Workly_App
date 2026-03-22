@@ -86,3 +86,13 @@ export async function apiDelete(path) {
   if (!res.ok) throw new Error(data.message || "Request failed");
   return data;
 }
+
+const api = {
+  get: apiGet,
+  post: apiPost,
+  put: apiPut,
+  patch: apiPatch,
+  delete: apiDelete
+};
+
+export default api;
