@@ -28,7 +28,7 @@ export function getQuickActions(role = "employee") {
   return employee;
 }
 
-// Bottom nav theo nghiệp vụ (nhân viên)
+// Bottom nav (employee)
 export const HOME_TABS = [
   { key: "Home", label: "Home", icon: "home" },
   { key: "Timesheet", label: "Timesheet", icon: "history" },

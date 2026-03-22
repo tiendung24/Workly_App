@@ -1,6 +1,7 @@
 const { User, Department, Position } = require('../../models');
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
+const { createAndEmit } = require('../../services/notificationService');
 
 // GET /api/admin/users
 const getUsers = async (req, res, next) => {
@@ -26,10 +27,10 @@ const createUser = async (req, res, next) => {
         
         // Check if email or employee_code exists
         const existingUser = await User.findOne({ where: { email } });
-        if (existingUser) return res.status(400).json({ message: 'Email đã tồn tại' });
+        if (existingUser) return res.status(400).json({ message: 'Email already exists' });
         
         const existingCode = await User.findOne({ where: { employee_code } });
-        if (existingCode) return res.status(400).json({ message: 'Mã nhân viên đã tồn tại' });
+        if (existingCode) return res.status(400).json({ message: 'Employee code already exists' });
 
         // Xử lý Department bằng chữ
         let finalDepartmentId = null;
@@ -72,7 +73,16 @@ const createUser = async (req, res, next) => {
         const userData = user.toJSON();
         delete userData.password_hash;
 
-        res.status(201).json({ message: 'Tạo tài khoản thành công', data: userData });
+        // --- Notification: Chào mừng nhân viên mới ---
+        await createAndEmit(
+            user.id,
+            'Welcome to Workly!',
+            `Your account has been created. ID: ${employee_code}. Welcome aboard!`,
+            'ACCOUNT_CREATED',
+            user.id
+        );
+
+        res.status(201).json({ message: 'User created successfully', data: userData });
     } catch (error) {
         next(error);
     }
@@ -85,7 +95,7 @@ const updateUser = async (req, res, next) => {
         const { full_name, phone, address, department_name, position_name, role, manager_id, is_active, employee_code, email } = req.body;
         
         const user = await User.findByPk(id);
-        if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
         // Xử lý Department bằng chữ
         let finalDepartmentId = user.department_id;
@@ -110,14 +120,14 @@ const updateUser = async (req, res, next) => {
         // Employee code uniqueness check
         if (employee_code && employee_code !== user.employee_code) {
             const existingCode = await User.findOne({ where: { employee_code, id: { [Op.ne]: id } } });
-            if (existingCode) return res.status(400).json({ message: 'Mã nhân viên đã tồn tại' });
+            if (existingCode) return res.status(400).json({ message: 'Employee code already exists' });
             user.employee_code = employee_code;
         }
 
         // Email uniqueness check
         if (email && email !== user.email) {
             const existingEmail = await User.findOne({ where: { email, id: { [Op.ne]: id } } });
-            if (existingEmail) return res.status(400).json({ message: 'Email đã tồn tại' });
+            if (existingEmail) return res.status(400).json({ message: 'Email already exists' });
             user.email = email;
         }
 
@@ -137,7 +147,16 @@ const updateUser = async (req, res, next) => {
         const userData = user.toJSON();
         delete userData.password_hash;
 
-        res.status(200).json({ message: 'Cập nhật thành công', data: userData });
+        // --- Notification: Thông báo cập nhật thông tin ---
+        await createAndEmit(
+            user.id,
+            'Account details updated',
+            'An administrator has updated your account information. Please review your profile.',
+            'ACCOUNT_UPDATED',
+            user.id
+        );
+
+        res.status(200).json({ message: 'Update successful', data: userData });
     } catch (error) {
         next(error);
     }
@@ -148,11 +167,21 @@ const deleteUser = async (req, res, next) => {
     try {
         const { id } = req.params;
         const user = await User.findByPk(id);
-        if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+        if (!user) return res.status(404).json({ message: 'User not found' });
         
         // Hard delete or soft logic? Let's just lock it (soft delete via active status) for safety
         await user.update({ is_active: false });
-        res.status(200).json({ message: 'Tài khoản đã được vô hiệu hoá' });
+
+        // --- Notification: Tài khoản bị vô hiệu hoá ---
+        await createAndEmit(
+            user.id,
+            'Account deactivated',
+            'Your account has been deactivated by an administrator. Please contact HR for support.',
+            'ACCOUNT_DEACTIVATED',
+            user.id
+        );
+
+        res.status(200).json({ message: 'Account has been deactivated' });
     } catch (error) {
         next(error);
     }

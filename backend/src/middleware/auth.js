@@ -7,7 +7,7 @@ const verifyToken = async (req, res, next) => {
         const authHeader = req.headers.authorization;
         
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ message: 'Không có token, vui lòng đăng nhập' });
+            return res.status(401).json({ message: 'No token, please login' });
         }
 
         const token = authHeader.split(' ')[1];
@@ -16,16 +16,16 @@ const verifyToken = async (req, res, next) => {
         // Tìm user trong DB để đảm bảo user còn tồn tại và is_active
         const user = await User.findByPk(decoded.id);
         if (!user || !user.is_active) {
-            return res.status(401).json({ message: 'Token không hợp lệ hoặc tài khoản bị khóa' });
+            return res.status(401).json({ message: 'Invalid token or account locked' });
         }
 
         req.user = user; 
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ message: 'Token đã hết hạn, vui lòng đăng nhập lại' });
+            return res.status(401).json({ message: 'Token expired, please login again' });
         }
-        return res.status(401).json({ message: 'Token không hợp lệ' });
+        return res.status(401).json({ message: 'Invalid token' });
     }
 };
 
@@ -34,11 +34,11 @@ const verifyToken = async (req, res, next) => {
 const requireRole = (...roles) => {
     return (req, res, next) => {
         if (!req.user) {
-            return res.status(401).json({ message: 'Chưa xác thực' });
+            return res.status(401).json({ message: 'Unauthorized' });
         }
         if (!roles.includes(req.user.role)) {
             return res.status(403).json({ 
-                message: `Bạn không có quyền truy cập. Yêu cầu vai trò: ${roles.join(' hoặc ')}` 
+                message: `You do not have access. Required role: ${roles.join(' or ')}` 
             });
         }
         next();

@@ -17,19 +17,19 @@ const register = async (req, res, next) => {
 
         // Validate input
         if (!employee_code || !full_name || !email || !password) {
-            return res.status(400).json({ message: 'Vui lòng nhập đầy đủ: mã NV, họ tên, email, mật khẩu' });
+            return res.status(400).json({ message: 'Please enter all fields: Code, Name, Email, Password' });
         }
 
         // Kiểm tra email đã tồn tại
         const existingEmail = await User.findOne({ where: { email } });
         if (existingEmail) {
-            return res.status(400).json({ message: 'Email đã được sử dụng' });
+            return res.status(400).json({ message: 'Email already in use' });
         }
 
         // Kiểm tra mã nhân viên đã tồn tại
         const existingCode = await User.findOne({ where: { employee_code } });
         if (existingCode) {
-            return res.status(400).json({ message: 'Mã nhân viên đã tồn tại' });
+            return res.status(400).json({ message: 'Employee code already exists' });
         }
 
         // Xử lý Department bằng chữ
@@ -68,7 +68,7 @@ const register = async (req, res, next) => {
         const token = generateToken(user);
 
         res.status(201).json({
-            message: 'Đăng ký thành công',
+            message: 'Registration successful',
             token,
             user: user.toJSON(),
         });
@@ -84,7 +84,7 @@ const login = async (req, res, next) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.status(400).json({ message: 'Vui lòng nhập email và mật khẩu' });
+            return res.status(400).json({ message: 'Please enter email and password' });
         }
 
         // Tìm user kèm thông tin phòng ban & chức vụ
@@ -97,23 +97,23 @@ const login = async (req, res, next) => {
         });
 
         if (!user) {
-            return res.status(401).json({ message: 'Email không tồn tại' });
+            return res.status(401).json({ message: 'Email does not exist' });
         }
 
         if (!user.is_active) {
-            return res.status(403).json({ message: 'Tài khoản đã bị khóa, liên hệ Admin' });
+            return res.status(403).json({ message: 'Account locked, please contact Admin' });
         }
 
         // So sánh mật khẩu
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
-            return res.status(401).json({ message: 'Mật khẩu không đúng' });
+            return res.status(401).json({ message: 'Incorrect password' });
         }
 
         const token = generateToken(user);
 
         res.status(200).json({
-            message: 'Đăng nhập thành công',
+            message: 'Login successful',
             token,
             user: user.toJSON(),
         });
@@ -134,7 +134,7 @@ const getMe = async (req, res, next) => {
         });
 
         if (!user) {
-            return res.status(404).json({ message: 'Không tìm thấy user' });
+            return res.status(404).json({ message: 'User not found' });
         }
 
         res.status(200).json({ user: user.toJSON() });
@@ -147,18 +147,18 @@ const forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
         if (!email) {
-            return res.status(400).json({ message: 'Vui lòng nhập email' });
+            return res.status(400).json({ message: 'Please enter email' });
         }
 
         const user = await User.findOne({ where: { email } });
         if (!user) {
-            return res.status(404).json({ message: 'Email không tồn tại trong hệ thống' });
+            return res.status(404).json({ message: 'Email not found in system' });
         }
 
         user.password_hash = '123456';
         await user.save();
 
-        res.status(200).json({ message: 'Mật khẩu đã được reset thành "123456". Vui lòng đăng nhập và đổi lại!' });
+        res.status(200).json({ message: 'Password reset to "123456". Please login and change it!' });
     } catch (error) {
         next(error);
     }

@@ -1,4 +1,5 @@
-const { CorrectionRequest } = require('../models');
+const { CorrectionRequest, User } = require('../models');
+const { createAndEmit } = require('../services/notificationService');
 
 // GET /api/correction/requests
 const getRequests = async (req, res, next) => {
@@ -22,7 +23,7 @@ const createRequest = async (req, res, next) => {
         const { date, type, requested_check_in, requested_check_out, reason } = req.body;
 
         if (!date || !type || (!requested_check_in && !requested_check_out)) {
-            return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin giải trình' });
+            return res.status(400).json({ message: 'Please provide all correction details' });
         }
 
         let checkInDateTime = null;
@@ -45,8 +46,20 @@ const createRequest = async (req, res, next) => {
             status: 'Pending'
         });
 
+        // --- Notification Logic ---
+        const currentUser = await User.findByPk(userId);
+        if (currentUser && currentUser.manager_id) {
+            await createAndEmit(
+                currentUser.manager_id,
+                'New attendance correction request',
+                `Employee ${currentUser.full_name} has submitted a correction request.`,
+                'CORRECTION_REQUEST',
+                newRequest.id
+            );
+        }
+
         res.status(201).json({
-            message: 'Tạo đơn giải trình thành công',
+            message: 'Correction request created successfully',
             data: newRequest
         });
 

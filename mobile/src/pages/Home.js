@@ -146,7 +146,6 @@ export default function Home({ navigation }) {
             statusLabel={statusLabel}
             activeCheck={activeCheck}
             onChangeCheck={handleChangeCheck}
-            onPressNotifications={() => {}}
           />
 
           <View style={styles.body}>

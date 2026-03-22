@@ -65,7 +65,7 @@ function getDayData(year, month, day, apiData) {
       const record = apiData[key];
       
       // Override timeRange if shift exists
-      if (record.shift && record.shift !== 'Không có ca') {
+      if (record.shift && record.shift !== 'No shift') {
           timeRange = record.shift;
       }
       

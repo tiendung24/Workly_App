@@ -1,6 +1,7 @@
-const { Attendance, WorkShift, LeaveRequest, LeaveType } = require('../models');
+const { Attendance, WorkShift, LeaveRequest, LeaveType, User } = require('../models');
 const { Op } = require('sequelize');
-const moment = require('moment'); // You might need to install moment, or use native Date
+const moment = require('moment');
+const { createAndEmit } = require('../services/notificationService');
 
 const getTodayDateStr = () => {
     return moment().format('YYYY-MM-DD');
@@ -23,14 +24,14 @@ const checkIn = async (req, res, next) => {
         const { today, attendance } = await getTodayAndShift(userId);
 
         if (attendance && attendance.check_in_time) {
-            return res.status(400).json({ message: 'Bạn đã check-in hôm nay rồi' });
+            return res.status(400).json({ message: 'You already checked in today' });
         }
 
         // Logic to determine shift (in a real app, this might depend on user's assigned shift or current time)
         // For simplicity, grab the first shift
         const shift = await WorkShift.findOne();
         if (!shift) {
-            return res.status(400).json({ message: 'Hệ thống chưa cấu hình ca làm việc' });
+            return res.status(400).json({ message: 'No work shift configured in system' });
         }
 
         const now = new Date();
@@ -66,8 +67,22 @@ const checkIn = async (req, res, next) => {
             });
         }
 
+        // --- Notification: Check-in trễ ---
+        if (status === 'Late') {
+            const currentUser = await User.findByPk(userId);
+            if (currentUser && currentUser.manager_id) {
+                await createAndEmit(
+                    currentUser.manager_id,
+                    'Late check-in',
+                    `${currentUser.full_name} checked in late at ${checkInTimeStr} (Shift start: ${shift.start_time}).`,
+                    'LATE_CHECK_IN',
+                    newAttendance.id
+                );
+            }
+        }
+
         res.status(200).json({
-            message: 'Check-in thành công',
+            message: 'Check-in successful',
             data: newAttendance
         });
 
@@ -83,11 +98,11 @@ const checkOut = async (req, res, next) => {
         const { today, attendance } = await getTodayAndShift(userId);
 
         if (!attendance || !attendance.check_in_time) {
-            return res.status(400).json({ message: 'Bạn chưa check-in hôm nay, không thể check-out' });
+            return res.status(400).json({ message: 'You have not checked in today, cannot check out' });
         }
 
         if (attendance.check_out_time) {
-            return res.status(400).json({ message: 'Bạn đã check-out hôm nay rồi' });
+            return res.status(400).json({ message: 'You already checked out today' });
         }
 
         const shift = attendance.workShift;
@@ -96,9 +111,11 @@ const checkOut = async (req, res, next) => {
         
         let status = attendance.status;
 
+        let isEarlyLeave = false;
         if (shift && checkOutTimeStr < shift.end_time) {
             // Nếu check-out sớm hơn giờ kết thúc ca
             if (status === 'Present') status = 'EarlyLeave';
+            isEarlyLeave = true;
             // Nếu đã Late rồi thì thành Late (hoặc Late_EarlyLeave tuỳ logic công ty)
         }
 
@@ -106,8 +123,22 @@ const checkOut = async (req, res, next) => {
         attendance.status = status;
         await attendance.save();
 
+        // --- Notification: Check-out sớm ---
+        if (isEarlyLeave) {
+            const currentUser = await User.findByPk(userId);
+            if (currentUser && currentUser.manager_id) {
+                await createAndEmit(
+                    currentUser.manager_id,
+                    'Early check-out',
+                    `${currentUser.full_name} checked out early at ${checkOutTimeStr} (Shift ends: ${shift.end_time}).`,
+                    'EARLY_CHECK_OUT',
+                    attendance.id
+                );
+            }
+        }
+
         res.status(200).json({
-            message: 'Check-out thành công',
+            message: 'Check-out successful',
             data: attendance
         });
 
@@ -147,7 +178,7 @@ const getMonthly = async (req, res, next) => {
         const { year, month } = req.query; // VD: 2026, 03
 
         if (!year || !month) {
-            return res.status(400).json({ message: 'Vui lòng cung cấp year và month' });
+            return res.status(400).json({ message: 'Please provide year and month' });
         }
 
         // Tạo chuỗi năm tháng, vd: "2026-03"
@@ -193,7 +224,7 @@ const getMonthly = async (req, res, next) => {
                     }
                     dataMap[dateStr].status = 'Leave';
                     dataMap[dateStr].leaveInfo = {
-                        type: lv.leaveType ? lv.leaveType.name : 'Nghỉ',
+                        type: lv.leaveType ? lv.leaveType.name : 'Leave',
                         reason: lv.reason
                     };
                 }

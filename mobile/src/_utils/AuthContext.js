@@ -1,6 +1,10 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { authService } from './authService';
 import { ActivityIndicator, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from './api';
+import socketService from './socket';
+import Toast from 'react-native-toast-message';
 
 export const AuthContext = createContext();
 
@@ -9,27 +13,47 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [userToken, setUserToken] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  // Provide a function to manually trigger count refresh
+  const fetchUnreadCount = async () => {
+      if (!userToken) return;
+      try {
+          const res = await api.get('/notifications/unread-count');
+          if (res.success) {
+             setUnreadNotifications(res.count);
+          }
+      } catch (err) {
+         console.log('Error fetching unread count:', err);
+      }
+  };
 
   // Check token on app load
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
         const token = await authService.getToken();
-        const user = await authService.getUser();
+        const cachedUser = await authService.getUser(); // authService returns object or null
         
-        if (token && user) {
-          setUserToken(token);
-          setUserInfo(user);
-          // Optional: Verify token with backend by calling getMe()
+        if (token && cachedUser) {
+          let userObj = cachedUser;
+
           try {
-             const response = await authService.getMe();
-             setUserInfo(response.user);
+            // Verify profile on load
+            const freshProfileRes = await authService.getMe();
+            if (freshProfileRes && freshProfileRes.user) {
+                userObj = { ...userObj, ...freshProfileRes.user };
+                await AsyncStorage.setItem('userInfo', JSON.stringify(userObj));
+            }
           } catch (e) {
-             console.log("Token invalid or expired, logging out automatically");
-             await authService.logout();
-             setUserToken(null);
-             setUserInfo(null);
+                console.log("Cannot fetch fresh profile, using cached", e);
           }
+
+          setUserToken(token);
+          setUserInfo(userObj);
+          
+          socketService.connect(userObj.id); // Connect socket after user info is set
+          fetchUnreadCount(); // Fetch count on init
         }
       } catch (error) {
         console.error("Auth init error:", error);
@@ -47,6 +71,8 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.login(email, password);
       setUserToken(response.token);
       setUserInfo(response.user);
+      socketService.connect(response.user.id);
+      fetchUnreadCount();
       return { success: true, user: response.user };
     } catch (error) {
       return { success: false, message: error.message };
@@ -61,6 +87,8 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.register(userData);
       setUserToken(response.token);
       setUserInfo(response.user);
+      socketService.connect(response.user.id);
+      fetchUnreadCount();
       return { success: true, user: response.user };
     } catch (error) {
       return { success: false, message: error.message };
@@ -75,12 +103,36 @@ export const AuthProvider = ({ children }) => {
       await authService.logout();
       setUserToken(null);
       setUserInfo(null);
+      socketService.disconnect(); // Disconnect socket on logout
+      setUnreadNotifications(0); // Reset unread notifications on logout
     } catch (error) {
       console.error(error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Socket listener effect
+  useEffect(() => {
+    const handleNotification = (notification) => {
+      setUnreadNotifications(prev => prev + 1);
+      Toast.show({
+        type: 'info',
+        text1: notification.title,
+        text2: notification.message,
+        position: 'top',
+        visibilityTime: 4000
+      });
+    };
+
+    if (userToken) {
+       socketService.onNotification(handleNotification);
+    }
+
+    return () => {
+       socketService.offNotification(handleNotification);
+    };
+  }, [userToken]);
 
   if (isInitializing) {
     return (
@@ -91,13 +143,15 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{
+    <AuthContext.Provider value={{ 
       login, 
       register, 
       logout, 
       userToken, 
       userInfo, 
-      isLoading
+      isLoading,
+      unreadNotifications, 
+      setUnreadNotifications 
     }}>
       {children}
     </AuthContext.Provider>

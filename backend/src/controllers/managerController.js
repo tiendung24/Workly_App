@@ -1,5 +1,6 @@
 const { User, LeaveRequest, OvertimeRequest, CorrectionRequest, LeaveType, UserLeaveBalance, Department, Position, Attendance } = require('../models');
 const moment = require('moment');
+const { createAndEmit } = require('../services/notificationService');
 
 // GET /api/manager/requests
 const getTeamRequests = async (req, res, next) => {
@@ -87,7 +88,7 @@ const updateRequestStatus = async (req, res, next) => {
         
         // Ensure the manager approving is actually the user's manager
         if (item.user.manager_id !== managerId) {
-            return res.status(403).json({ message: 'Không có quyền duyệt đơn này' });
+            return res.status(403).json({ message: 'No permission to approve this request' });
         }
 
         // Process specific hook for Leave Approval
@@ -138,7 +139,7 @@ const updateRequestStatus = async (req, res, next) => {
                      await attendance.save();
                  }
              } catch (err) {
-                 console.error("Lỗi khi cập nhật Attendance sau khi duyệt Correction:", err);
+                 console.error("Error updating Attendance after Correction approval:", err);
              }
          }
 
@@ -146,7 +147,21 @@ const updateRequestStatus = async (req, res, next) => {
         item.approver_id = managerId;
         await item.save();
 
-        res.status(200).json({ message: `Đơn đã được ${status.toLowerCase()}`, data: item });
+        // --- Notification Logic ---
+        let typeName = '';
+        if (type === 'leave') typeName = 'leave';
+        else if (type === 'overtime') typeName = 'overtime';
+        else if (type === 'correction') typeName = 'correction';
+
+        await createAndEmit(
+            item.user_id,
+            `${typeName.charAt(0).toUpperCase() + typeName.slice(1)} request processed`,
+            `Your manager has ${status === 'Approved' ? 'approved' : 'rejected'} your ${typeName} request.`,
+            `${type.toUpperCase()}_STATUS_UPDATE`,
+            item.id
+        );
+
+        res.status(200).json({ message: `Request has been ${status.toLowerCase()}`, data: item });
 
     } catch (error) {
         next(error);
@@ -176,7 +191,7 @@ const getTeamSchedule = async (req, res, next) => {
     try {
         const managerId = req.user.id;
         const { year, month } = req.query;
-        if (!year || !month) return res.status(400).json({ message: 'Vui lòng cung cấp year và month' });
+        if (!year || !month) return res.status(400).json({ message: 'Please provide year and month' });
 
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0);
@@ -221,7 +236,7 @@ const getTeamAttendance = async (req, res, next) => {
      try {
         const managerId = req.user.id;
         const { year, month } = req.query;
-        if (!year || !month) return res.status(400).json({ message: 'Vui lòng cung cấp year và month' });
+        if (!year || !month) return res.status(400).json({ message: 'Please provide year and month' });
 
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0);
