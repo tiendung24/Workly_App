@@ -41,6 +41,7 @@ export default function Home({ navigation }) {
   const [attendanceLabel, setAttendanceLabel] = useState("Not Checked In");
   const [loadingAction, setLoadingAction] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
+  const [hasInsuranceDebt, setHasInsuranceDebt] = useState(false);
 
   // Time ticker
   useEffect(() => {
@@ -53,8 +54,20 @@ export default function Home({ navigation }) {
     useCallback(() => {
       loadTodayStatus();
       loadDashboard();
+      loadInsuranceStatus();
     }, [])
   );
+
+  const loadInsuranceStatus = async () => {
+    try {
+      const res = await apiGet('/insurance/my-status');
+      if (res && res.currentRecord) {
+         setHasInsuranceDebt(res.currentRecord.status === 'Unpaid');
+      }
+    } catch(e) {
+      console.log("Error loading insurance status", e);
+    }
+  };
 
   const loadTodayStatus = async () => {
     try {
@@ -120,6 +133,8 @@ export default function Home({ navigation }) {
       navigation.navigate("Overtime");
     } else if (key === "schedule") {
       navigation.navigate("Schedule");
+    } else if (key === "insurance") {
+      navigation.navigate("InsuranceDetail");
     }
   };
 
@@ -164,6 +179,7 @@ export default function Home({ navigation }) {
                   theme={theme}
                   isDark={isDark}
                   actions={actions}
+                  badges={{ insurance: hasInsuranceDebt }}
                   onPressAction={onPressAction}
                 />
               </View>

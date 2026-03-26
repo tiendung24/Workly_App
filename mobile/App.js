@@ -36,6 +36,7 @@ import Timesheet from "./src/pages/Timesheet";
 import Leave from "./src/pages/Leave";
 import Overtime from "./src/pages/Overtime";
 import Schedule from "./src/pages/Schedule";
+import InsuranceDetail from "./src/pages/InsuranceDetail";
 import Profile from "./src/pages/Profile";
 import ManagerHome from "./src/pages/manager/ManagerHome";
 import ManagerApproval from "./src/pages/manager/ManagerApproval";
@@ -45,6 +46,7 @@ import AdminUsers from "./src/pages/admin/AdminUsers";
 import AdminConfig from "./src/pages/admin/AdminConfig";
 import AdminTimesheet from "./src/pages/admin/AdminTimesheet";
 import AdminOrgs from "./src/pages/admin/AdminOrgs";
+import AdminInsurance from "./src/pages/admin/AdminInsurance";
 import NotificationModal from "./src/_components/NotificationModal";
 
 import BottomNav from "./src/_components/layout/BottomNav";
@@ -221,6 +223,11 @@ function HomeStackScreen({ onLogout }) {
           headerRight: () => <HomeHeaderRight onLogout={onLogout} />,
         })}
       />
+      <HomeStack.Screen
+        name="InsuranceDetail"
+        component={InsuranceDetail}
+        options={{ title: "Bảo hiểm" }}
+      />
     </HomeStack.Navigator>
   );
 }
@@ -344,6 +351,11 @@ function AdminStackScreen() {
         name="AdminTimesheetScreen"
         component={AdminTimesheet}
         options={{ title: "Timesheet" }}
+      />
+      <AdminStack.Screen
+        name="AdminInsuranceScreen"
+        component={AdminInsurance}
+        options={{ title: "Bảo hiểm PayOS" }}
       />
     </AdminStack.Navigator>
   );
