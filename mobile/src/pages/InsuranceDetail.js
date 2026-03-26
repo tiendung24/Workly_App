@@ -86,6 +86,24 @@ export default function InsuranceDetail() {
                     {currentRecord.status === 'Paid' ? 'Paid' : 'Unpaid'}
                   </Text>
                 </View>
+
+                <View style={[styles.infoBanner, { backgroundColor: 'rgba(52, 152, 219, 0.1)' }]}>
+                  <MaterialIcons name="info" size={20} color={COLORS.primary} style={{ marginTop: 2 }} />
+                  <View style={styles.infoTextContainer}>
+                    <Text style={[styles.infoTitle, { color: COLORS.primary }]}>Insurance Information</Text>
+                    <Text style={[styles.infoDesc, { color: theme.text }]}>
+                      A deduction of 10.5% is applied for mandatory insurance:
+                    </Text>
+                    <Text style={[styles.infoDesc, { color: theme.sub, marginTop: 4 }]}>
+                      • 8% Social Insurance (BHXH){'\n'}
+                      • 1.5% Health Insurance (BHYT){'\n'}
+                      • 1% Unemployment Insurance (BHTN)
+                    </Text>
+                    <Text style={[styles.infoDesc, { color: theme.text, marginTop: 4, fontStyle: 'italic', fontWeight: '500' }]}>
+                      * Thông tin bảo hiểm: Trừ 10.5% lưu lượng lương cơ sở theo quy định.
+                    </Text>
+                  </View>
+                </View>
                 
                 <View style={styles.row}>
                   <Text style={[styles.label, { color: theme.sub }]}>Base Fee:</Text>
@@ -241,6 +259,26 @@ const styles = StyleSheet.create({
   },
   statusUnpaid: {
     backgroundColor: '#ff4757',
+  },
+  infoBanner: {
+    flexDirection: 'row',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignItems: 'flex-start',
+  },
+  infoTextContainer: {
+    marginLeft: 10,
+    flex: 1,
+  },
+  infoTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  infoDesc: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   row: {
     flexDirection: 'row',
