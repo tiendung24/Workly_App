@@ -98,6 +98,10 @@ function CustomTabBar({ state, navigation }) {
           navigation.navigate("Approval");
           return;
         }
+        if (tab === "Home") {
+          navigation.navigate("Home", { screen: "HomeScreen" });
+          return;
+        }
         navigation.navigate(tab);
       }}
       bottomInset={safeBottomInset}
@@ -125,6 +129,10 @@ function AdminTabBar({ state, navigation }) {
       isDark={isDark}
       activeTab={activeTab}
       onTabChange={(tab) => {
+        if (tab === "Admin") {
+          navigation.navigate("Admin", { screen: "AdminDashboardScreen" });
+          return;
+        }
         navigation.navigate(tab);
       }}
       bottomInset={safeBottomInset}
@@ -151,6 +159,10 @@ function ManagerTabBar({ state, navigation }) {
       isDark={isDark}
       activeTab={activeTab}
       onTabChange={(tab) => {
+        if (tab === "Manager") {
+          navigation.navigate("Manager", { screen: "ManagerHomeScreen" });
+          return;
+        }
         navigation.navigate(tab);
       }}
       bottomInset={safeBottomInset}
@@ -226,7 +238,10 @@ function HomeStackScreen({ onLogout }) {
       <HomeStack.Screen
         name="InsuranceDetail"
         component={InsuranceDetail}
-        options={{ title: "Bảo hiểm" }}
+        options={{ 
+          title: "Insurance",
+          headerLeft: () => null 
+        }}
       />
     </HomeStack.Navigator>
   );

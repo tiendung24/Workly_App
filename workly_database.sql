@@ -1,8 +1,5 @@
 
-DROP DATABASE IF EXISTS Workly;
-CREATE DATABASE Workly;
 USE Workly;
-
 -- 1. Bảng Phòng ban
 CREATE TABLE Departments (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -180,7 +177,6 @@ CREATE TABLE InsuranceRecords (
     FOREIGN KEY (user_id) REFERENCES Users(id),
     UNIQUE(user_id, month, year)
 );
-
 -- 12. Bảng Transactions
 CREATE TABLE Transactions (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -204,6 +200,7 @@ CREATE TABLE Transactions (
 -- ==============================================
 -- DỮ LIỆU MẪU (WIPE & SEED - AUTO MIGRATION)
 -- ==============================================
+
 
 -- 1. Departments
 INSERT INTO Departments (id,name,description,code) VALUES
@@ -260,7 +257,7 @@ INSERT INTO UserLeaveBalances (id,user_id,leave_type_id,year,total_days,used_day
 (3, 5, 1, 2026, 12, 0);
 
 
-
+select * from Users
 
 
 
