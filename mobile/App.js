@@ -232,6 +232,7 @@ function HomeStackScreen({ onLogout }) {
         component={Home}
         options={() => ({
           title: "Workly",
+          headerLeft: () => null,
           headerRight: () => <HomeHeaderRight onLogout={onLogout} />,
         })}
       />
@@ -319,6 +320,7 @@ function ManagerStackScreen() {
         component={ManagerHome}
         options={() => ({
            title: "Manager",
+           headerLeft: () => null,
            headerRight: () => <HomeHeaderRight />,
         })}
       />
@@ -344,6 +346,7 @@ function AdminStackScreen() {
         component={AdminDashboard}
         options={() => ({
            title: "Admin Portal",
+           headerLeft: () => null,
            headerRight: () => <HomeHeaderRight />,
         })}
       />
