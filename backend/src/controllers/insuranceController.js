@@ -130,8 +130,8 @@ const handlePayOSWebhook = async (req, res) => {
              return res.json({ message: 'Ignore if not success' });
         }
 
-        const orderCode = verifiedData.data.orderCode;
-        const amount = verifiedData.data.amount;
+        const orderCode = verifiedData.orderCode;
+        const amount = verifiedData.amount;
 
         const transaction = await Transaction.findOne({ where: { transaction_code: orderCode.toString() } });
         if (!transaction || transaction.status === 'Success') {
