@@ -169,19 +169,10 @@ const deleteUser = async (req, res, next) => {
         const user = await User.findByPk(id);
         if (!user) return res.status(404).json({ message: 'User not found' });
         
-        // Hard delete or soft logic? Let's just lock it (soft delete via active status) for safety
-        await user.update({ is_active: false });
+        // Remove user from the database entirely
+        await user.destroy();
 
-        // --- Notification: Tài khoản bị vô hiệu hoá ---
-        await createAndEmit(
-            user.id,
-            'Account deactivated',
-            'Your account has been deactivated by an administrator. Please contact HR for support.',
-            'ACCOUNT_DEACTIVATED',
-            user.id
-        );
-
-        res.status(200).json({ message: 'Account has been deactivated' });
+        res.status(200).json({ message: 'Employee has been permanently deleted' });
     } catch (error) {
         next(error);
     }

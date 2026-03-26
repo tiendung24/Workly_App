@@ -9,6 +9,7 @@ import {
   Modal,
   TextInput,
   Switch,
+  Alert
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import Layout from "../../_components/layout/Layout";
@@ -110,6 +111,30 @@ export default function AdminUsers() {
     } catch (error) {
       Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "An error occurred" });
     }
+  };
+
+  const handleConfirmDelete = () => {
+    Alert.alert(
+      "Confirm Deletion",
+      `Are you sure you want to permanently delete employee ${formData.employee_code}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive", 
+          onPress: async () => {
+            try {
+              await adminService.deleteUser(editingId);
+              Toast.show({ type: "success", text1: "Deleted", text2: "Employee deleted permanently." });
+              setModalVisible(false);
+              loadData();
+            } catch (error) {
+              Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "Could not delete user" });
+            }
+          } 
+        }
+      ]
+    );
   };
 
   const getRoleColor = (role) => {
@@ -248,6 +273,15 @@ export default function AdminUsers() {
                  <TouchableOpacity style={[s.btn, { paddingVertical: 14 }]} onPress={handleSave}>
                     <Text style={s.btnText}>Save Details</Text>
                  </TouchableOpacity>
+
+                 {editingId && (
+                   <TouchableOpacity 
+                     style={[s.btn, { backgroundColor: '#ff4757', paddingVertical: 14, marginTop: 12 }]} 
+                     onPress={handleConfirmDelete}
+                   >
+                      <Text style={s.btnText}>Delete Employee</Text>
+                   </TouchableOpacity>
+                 )}
                </View>
             </View>
           </Modal>
