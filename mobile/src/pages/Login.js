@@ -43,7 +43,9 @@ export default function Login({ onGoToRegister }) {
     }
     Keyboard.dismiss();
     const result = await login(email, password);
+    if (!result.success) {
       Toast.show({ type: 'error', text1: 'Error', text2: result.message || "Login failed" });
+    }
   };
 
   const handleForgotPassword = async () => {
