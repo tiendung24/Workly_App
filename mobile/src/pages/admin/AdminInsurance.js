@@ -1,6 +1,6 @@
 // mobile/src/pages/admin/AdminInsurance.js
 import React, { useState, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Modal } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import Layout from "../../_components/layout/Layout";
 import { COLORS } from "../../_styles/theme";
@@ -11,6 +11,7 @@ export default function AdminInsurance() {
   const [loading, setLoading] = useState(true);
   const [dashboard, setDashboard] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [selectedTx, setSelectedTx] = useState(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -33,6 +34,8 @@ export default function AdminInsurance() {
       setLoading(false);
     }
   };
+
+  const paidTransactions = transactions?.filter(tx => tx.status === 'Success') || [];
 
   return (
     <Layout>
@@ -82,34 +85,66 @@ export default function AdminInsurance() {
                   </>
                 )}
 
-               {/* Transactions List */}
-               <Text style={[styles.sectionTitle, { color: theme.text, marginTop: 24 }]}>Lịch sử dòng tiền (Real-time)</Text>
-               {transactions?.length > 0 ? transactions.map((tx, i) => (
-                 <View key={i} style={[styles.itemCard, { backgroundColor: theme.card }]}>
-                    <View style={[styles.iconWrap, { backgroundColor: tx.status === 'Success' ? '#2ed57315' : '#ffa50215' }]}>
-                      <MaterialIcons name={tx.status === 'Success' ? 'check-circle' : 'hourglass-empty'} size={24} color={tx.status === 'Success' ? '#2ed573' : '#ffa502'} />
+               {/* Paid Employees List */}
+               <Text style={[styles.sectionTitle, { color: theme.text, marginTop: 24 }]}>Nhân sự đã thanh toán</Text>
+               {paidTransactions.length > 0 ? paidTransactions.map((tx, i) => (
+                 <TouchableOpacity key={i} style={[styles.itemCard, { backgroundColor: theme.card }]} activeOpacity={0.7} onPress={() => setSelectedTx(tx)}>
+                    <View style={[styles.iconWrap, { backgroundColor: '#2ed57315' }]}>
+                      <MaterialIcons name="check-circle" size={24} color="#2ed573" />
                     </View>
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-                         <Text style={[styles.itemName, { color: theme.text }]}>GD: {tx.transaction_code}</Text>
-                         <View style={{ marginLeft: 8, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, backgroundColor: tx.status === 'Success' ? '#2ed573' : '#ffa502' }}>
-                           <Text style={{ fontSize: 10, color: '#fff', fontWeight: 'bold' }}>{tx.status === 'Success' ? 'THANH TOÁN' : 'ĐANG CHỜ'}</Text>
-                         </View>
-                       </View>
-                       <Text style={[styles.itemSub, { color: theme.sub }]}>{tx.user?.full_name || 'N/A'} • {new Date(tx.transaction_date || tx.createdAt).toLocaleString('en-GB')}</Text>
+                       <Text style={[styles.itemName, { color: theme.text }]}>{tx.user?.full_name || 'N/A'}</Text>
+                       <Text style={[styles.itemSub, { color: theme.sub }]}>{tx.user?.employee_code || ''} • {new Date(tx.transaction_date || tx.createdAt).toLocaleString('en-GB')}</Text>
                     </View>
-                    <Text style={[styles.itemAmount, { color: tx.status === 'Success' ? '#2ed573' : '#6B7280' }]}>
+                    <Text style={[styles.itemAmount, { color: '#2ed573' }]}>
                       {Number(tx.amount).toLocaleString()}đ
                     </Text>
-                 </View>
+                 </TouchableOpacity>
                )) : (
-                  <Text style={{ color: theme.sub, textAlign: 'center', marginTop: 10 }}>Chưa có giao dịch nào</Text>
+                  <Text style={{ color: theme.sub, textAlign: 'center', marginTop: 10 }}>Chưa có nhân sự nào thanh toán</Text>
                )}
             </View>
           )}
         </ScrollView>
       )}
     </Layout>
+
+    {/* Detail Modal */}
+    <Modal visible={!!selectedTx} animationType="fade" transparent>
+       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 }}>
+         {selectedTx && (
+           <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20 }}>
+             <View style={{ alignItems: 'center', marginBottom: 20 }}>
+               <MaterialIcons name="check-circle" size={48} color="#2ed573" />
+               <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#111', marginTop: 10 }}>THANH TOÁN THÀNH CÔNG</Text>
+               <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#2ed573', marginTop: 5 }}>{Number(selectedTx.amount).toLocaleString()} VND</Text>
+             </View>
+
+             <View style={styles.detailRow}>
+               <Text style={styles.detailLabel}>Tên nhân sự</Text>
+               <Text style={styles.detailValue}>{selectedTx.user?.full_name || 'N/A'}</Text>
+             </View>
+             <View style={styles.detailRow}>
+               <Text style={styles.detailLabel}>Mã NV</Text>
+               <Text style={styles.detailValue}>{selectedTx.user?.employee_code || 'N/A'}</Text>
+             </View>
+             <View style={styles.detailRow}>
+               <Text style={styles.detailLabel}>Mã giao dịch</Text>
+               <Text style={styles.detailValue}>{selectedTx.transaction_code}</Text>
+             </View>
+             <View style={styles.detailRow}>
+               <Text style={styles.detailLabel}>Thời gian nộp</Text>
+               <Text style={styles.detailValue}>{new Date(selectedTx.transaction_date || selectedTx.createdAt).toLocaleString('en-GB')}</Text>
+             </View>
+             
+             <TouchableOpacity style={{ marginTop: 20, backgroundColor: COLORS.primary, padding: 14, borderRadius: 12, alignItems: 'center' }} onPress={() => setSelectedTx(null)}>
+               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Đóng</Text>
+             </TouchableOpacity>
+           </View>
+         )}
+       </View>
+    </Modal>
+    </>
   );
 }
 
@@ -126,5 +161,8 @@ const styles = StyleSheet.create({
   iconWrap: { padding: 8, borderRadius: 8 },
   itemName: { fontSize: 15, fontWeight: 'bold' },
   itemSub: { fontSize: 13, marginTop: 2 },
-  itemAmount: { fontSize: 15, fontWeight: 'bold' }
+  itemAmount: { fontSize: 15, fontWeight: 'bold' },
+  detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' },
+  detailLabel: { color: '#666', fontSize: 14 },
+  detailValue: { color: '#111', fontSize: 14, fontWeight: '500' }
 });
