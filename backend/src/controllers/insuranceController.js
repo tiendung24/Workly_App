@@ -81,7 +81,7 @@ const createPaymentLink = async (req, res) => {
             returnUrl: `https://workly-app.com/success` // Placeholder
         };
 
-        const paymentLinkData = await payos.createPaymentLink(body);
+        const paymentLinkData = await payos.paymentRequests.create(body);
 
         // Save transaction as pending
         await Transaction.create({
@@ -112,7 +112,7 @@ const handlePayOSWebhook = async (req, res) => {
         
         let verifiedData;
         try {
-             verifiedData = payos.verifyWebhookData(webhookData);
+             verifiedData = await payos.webhooks.verify(webhookData);
         } catch (e) {
             console.error('Webhook signature verification failed', e);
             return res.status(400).json({ message: 'Invalid signature' });
