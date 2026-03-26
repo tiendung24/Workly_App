@@ -9,7 +9,8 @@ import {
   Modal,
   TextInput,
   Switch,
-  Alert
+  Alert,
+  Platform
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import Layout from "../../_components/layout/Layout";
@@ -21,6 +22,7 @@ import Toast from "react-native-toast-message";
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [depts, setDepts] = useState([]);
+  const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Form State
@@ -37,6 +39,13 @@ export default function AdminUsers() {
     manager_id: null,
     is_active: true,
   });
+  
+  // Custom Dropdown Modal State
+  const [selectOptions, setSelectOptions] = useState({ visible: false, title: '', data: [], stateKey: '' });
+
+  const openSelect = (title, data, stateKey) => {
+    setSelectOptions({ visible: true, title, data, stateKey });
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -47,12 +56,14 @@ export default function AdminUsers() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [uRes, dRes] = await Promise.all([
+      const [uRes, dRes, pRes] = await Promise.all([
         adminService.getUsers(),
-        adminService.getDepartments()
+        adminService.getDepartments(),
+        adminService.getPositions()
       ]);
       if (uRes.data) setUsers(uRes.data);
       if (dRes.data) setDepts(dRes.data);
+      if (pRes.data) setPositions(pRes.data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -113,28 +124,32 @@ export default function AdminUsers() {
     }
   };
 
+  const performDelete = async () => {
+    try {
+      await adminService.deleteUser(editingId);
+      Toast.show({ type: "success", text1: "Deleted", text2: "Employee deleted permanently." });
+      setModalVisible(false);
+      loadData();
+    } catch (error) {
+      Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "Could not delete user" });
+    }
+  };
+
   const handleConfirmDelete = () => {
-    Alert.alert(
-      "Confirm Deletion",
-      `Are you sure you want to permanently delete employee ${formData.employee_code}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive", 
-          onPress: async () => {
-            try {
-              await adminService.deleteUser(editingId);
-              Toast.show({ type: "success", text1: "Deleted", text2: "Employee deleted permanently." });
-              setModalVisible(false);
-              loadData();
-            } catch (error) {
-              Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "Could not delete user" });
-            }
-          } 
-        }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Are you sure you want to permanently delete employee ${formData.employee_code}?`)) {
+        performDelete();
+      }
+    } else {
+      Alert.alert(
+        "Confirm Deletion",
+        `Are you sure you want to permanently delete employee ${formData.employee_code}?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: performDelete }
+        ]
+      );
+    }
   };
 
   const getRoleColor = (role) => {
@@ -144,7 +159,8 @@ export default function AdminUsers() {
   };
 
   return (
-    <Layout>
+    <>
+      <Layout>
       {({ theme, isDark, insets, isWeb, webPadding }) => (
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -228,11 +244,21 @@ export default function AdminUsers() {
                       </>
                     )}
 
-                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Department (Optional)</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="e.g. IT Department" placeholderTextColor={theme.sub} value={formData.department_name} onChangeText={t => setFormData({...formData, department_name: t})} />
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Department</Text>
+                    <TouchableOpacity style={[s.input, { borderColor: theme.navBorder, justifyContent: 'center' }]} onPress={() => openSelect('Department', depts, 'department_name')}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text style={{ color: formData.department_name ? theme.text : theme.sub }}>{formData.department_name || "Select Department..."}</Text>
+                        <MaterialIcons name="arrow-drop-down" size={24} color={theme.sub} />
+                      </View>
+                    </TouchableOpacity>
 
-                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Position (Optional)</Text>
-                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="e.g. Developer" placeholderTextColor={theme.sub} value={formData.position_name} onChangeText={t => setFormData({...formData, position_name: t})} />
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Position</Text>
+                    <TouchableOpacity style={[s.input, { borderColor: theme.navBorder, justifyContent: 'center' }]} onPress={() => openSelect('Position', positions, 'position_name')}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text style={{ color: formData.position_name ? theme.text : theme.sub }}>{formData.position_name || "Select Position..."}</Text>
+                        <MaterialIcons name="arrow-drop-down" size={24} color={theme.sub} />
+                      </View>
+                    </TouchableOpacity>
 
                     <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Role</Text>
                     <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -286,8 +312,38 @@ export default function AdminUsers() {
             </View>
           </Modal>
 
-        </ScrollView>
-      )}
-    </Layout>
+         </ScrollView>
+       )}
+     </Layout>
+
+     {/* Dropdown Selection Modal */}
+     <Modal visible={selectOptions.visible} animationType="fade" transparent>
+       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 }}>
+         <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, maxHeight: '80%' }}>
+           <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#111', marginBottom: 15 }}>Select {selectOptions.title}</Text>
+           <ScrollView showsVerticalScrollIndicator={false}>
+             <TouchableOpacity 
+               style={{ paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#eee' }} 
+               onPress={() => { setFormData({...formData, [selectOptions.stateKey]: ""}); setSelectOptions({...selectOptions, visible: false}); }}
+             >
+               <Text style={{ color: '#111', fontSize: 16 }}>None</Text>
+             </TouchableOpacity>
+             {selectOptions.data.map(item => (
+               <TouchableOpacity 
+                 key={item.id} 
+                 style={{ paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#eee' }} 
+                 onPress={() => { setFormData({...formData, [selectOptions.stateKey]: item.name}); setSelectOptions({...selectOptions, visible: false}); }}
+               >
+                 <Text style={{ color: '#111', fontSize: 16 }}>{item.name}</Text>
+               </TouchableOpacity>
+             ))}
+           </ScrollView>
+           <TouchableOpacity style={{ marginTop: 15, alignItems: 'center', padding: 10 }} onPress={() => setSelectOptions({...selectOptions, visible: false})}>
+             <Text style={{ color: COLORS.primary, fontWeight: 'bold', fontSize: 16 }}>Close</Text>
+           </TouchableOpacity>
+         </View>
+       </View>
+     </Modal>
+   </>
   );
 }
