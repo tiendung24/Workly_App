@@ -38,7 +38,8 @@ export default function AdminInsurance() {
   const paidTransactions = transactions?.filter(tx => tx.status === 'Success') || [];
 
   return (
-    <Layout>
+    <>
+      <Layout>
       {({ theme, isWeb, webPadding, insets }) => (
         <ScrollView
           showsVerticalScrollIndicator={false}

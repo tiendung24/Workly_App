@@ -9,8 +9,8 @@ import { Platform } from 'react-native';
 // });
 
 // Thay dòng dưới bằng đúng đường dẫn Render mà bạn vừa deploy thành công nhé
-// export const API_BASE = `https://workly-app.onrender.com/api`;
-export const API_BASE = `http://localhost:3000/api`
+export const API_BASE = `https://workly-app.onrender.com/api`;
+// export const API_BASE = `http://localhost:3000/api`
 
 // Helper to get auth token
 const getAuthHeaders = async () => {
