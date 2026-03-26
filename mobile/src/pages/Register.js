@@ -17,6 +17,9 @@ import { COLORS } from "../_styles/theme";
 import { loginStyles as s } from "../_styles/pages/loginStyles";
 import Toast from "react-native-toast-message";
 import DatePickerInput from "../_components/shared/DatePickerInput";
+import PickerInput from "../_components/shared/PickerInput";
+import { metadataService } from "../_utils/metadataService";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function Register({ onGoToLogin }) {
   const { register, isLoading } = useContext(AuthContext);
@@ -33,6 +36,23 @@ export default function Register({ onGoToLogin }) {
   const [position, setPosition] = useState("");
   const [startDate, setStartDate] = useState("");
   const [focusedField, setFocusedField] = useState(null);
+  const [deptOptions, setDeptOptions] = useState([]);
+  const [posOptions, setPosOptions] = useState([]);
+
+  React.useEffect(() => {
+    loadMetadata();
+  }, []);
+
+  const loadMetadata = async () => {
+    try {
+      const depts = await metadataService.getDepartments();
+      const poss = await metadataService.getPositions();
+      if (depts.success) setDeptOptions(depts.data);
+      if (poss.success) setPosOptions(poss.data);
+    } catch (error) {
+      console.log("Error loading metadata:", error);
+    }
+  };
 
   const mockTheme = { bg: "#FAFAFA", card: "#fff", text: "#1F2937", sub: "#9CA3AF", navBorder: "#E5E7EB" };
 
@@ -191,17 +211,27 @@ export default function Register({ onGoToLogin }) {
 
             {/* Department */}
             <Text style={s.fieldLabel}>Department</Text>
-            <View style={[s.inputRow, focusedField === "dept" && s.inputRowFocused]}>
-              <MaterialIcons name="corporate-fare" size={20} color={focusedField === "dept" ? COLORS.primary : "#9CA3AF"}/>
-              <TextInput style={s.input} placeholder="e.g. IT Department" placeholderTextColor="#9CA3AF" value={department} onChangeText={setDepartment} onFocus={() => setFocusedField("dept")} onBlur={() => setFocusedField(null)} />
-            </View>
+            <PickerInput
+                value={department}
+                onSelect={setDepartment}
+                options={deptOptions}
+                placeholder="Select Department"
+                theme={mockTheme}
+                icon="corporate-fare"
+                label="Choose Department"
+            />
 
             {/* Position */}
-            <Text style={s.fieldLabel}>Position</Text>
-            <View style={[s.inputRow, focusedField === "pos" && s.inputRowFocused]}>
-              <MaterialIcons name="work-outline" size={20} color={focusedField === "pos" ? COLORS.primary : "#9CA3AF"}/>
-              <TextInput style={s.input} placeholder="e.g. Developer" placeholderTextColor="#9CA3AF" value={position} onChangeText={setPosition} onFocus={() => setFocusedField("pos")} onBlur={() => setFocusedField(null)} />
-            </View>
+            <Text style={[s.fieldLabel, { marginTop: 16 }]}>Position</Text>
+            <PickerInput
+                value={position}
+                onSelect={setPosition}
+                options={posOptions}
+                placeholder="Select Position"
+                theme={mockTheme}
+                icon="work-outline"
+                label="Choose Position"
+            />
 
             {/* Start Date */}
             <Text style={s.fieldLabel}>Start Date</Text>

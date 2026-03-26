@@ -19,6 +19,8 @@ import { profileStyles as s } from "../_styles/pages/profileStyles";
 import Layout from "../_components/layout/Layout";
 import { LinearGradient } from "expo-linear-gradient";
 import { profileService } from "../_utils/profileService";
+import { metadataService } from "../_utils/metadataService";
+import PickerInput from "../_components/shared/PickerInput";
 
 // TODO: pass employee data from API via props
 const DEFAULT_EMPLOYEE = {
@@ -77,6 +79,20 @@ export default function Profile({ onLogout, avatarUrl }) {
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
   const [isChangingPass, setIsChangingPass] = useState(false);
+
+  const [deptOptions, setDeptOptions] = useState([]);
+  const [posOptions, setPosOptions] = useState([]);
+
+  const loadMetadata = async () => {
+    try {
+      const depts = await metadataService.getDepartments();
+      const poss = await metadataService.getPositions();
+      if (depts.success) setDeptOptions(depts.data);
+      if (poss.success) setPosOptions(poss.data);
+    } catch (error) {
+      console.log("Error loading metadata:", error);
+    }
+  };
 
   const mockTheme = { bg: "#FAFAFA", card: "#fff", text: "#1F2937", sub: "#9CA3AF", navBorder: "#E5E7EB" };
 
@@ -215,6 +231,7 @@ export default function Profile({ onLogout, avatarUrl }) {
                 setEditPhone(employeeData?.phone || "");
                 setEditAddress(employeeData?.address || "");
                 setEditAvatar(employeeData?.avatar_url || "");
+                loadMetadata();
                 setShowEditModal(true);
               }}
             >
@@ -350,17 +367,27 @@ export default function Profile({ onLogout, avatarUrl }) {
 
                   {/* Department */}
                   <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Department</Text>
-                  <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 12 }}>
-                    <MaterialIcons name="work" size={18} color={theme.sub} />
-                    <TextInput style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }} value={editDept} onChangeText={setEditDept} placeholder="Enter department" placeholderTextColor={theme.sub} />
-                  </View>
+                  <PickerInput
+                    value={editDept}
+                    onSelect={setEditDept}
+                    options={deptOptions}
+                    theme={theme}
+                    icon="work"
+                    label="Choose Department"
+                  />
+                  <View style={{ marginBottom: 12 }} />
 
                   {/* Position */}
                   <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Position</Text>
-                  <View style={{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.navBorder, borderRadius: 10, paddingHorizontal: 12, marginBottom: 12 }}>
-                    <MaterialIcons name="business" size={18} color={theme.sub} />
-                    <TextInput style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, color: theme.text, fontSize: 14 }} value={editPos} onChangeText={setEditPos} placeholder="Enter position" placeholderTextColor={theme.sub} />
-                  </View>
+                  <PickerInput
+                    value={editPos}
+                    onSelect={setEditPos}
+                    options={posOptions}
+                    theme={theme}
+                    icon="business"
+                    label="Choose Position"
+                  />
+                  <View style={{ marginBottom: 16 }} />
 
                   {/* Start Date */}
                   <Text style={{ fontSize: 13, fontWeight: "600", color: theme.text, marginBottom: 6 }}>Start Date</Text>

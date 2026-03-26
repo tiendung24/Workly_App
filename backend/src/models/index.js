@@ -12,6 +12,8 @@ const LeaveRequest = require('./LeaveRequest');
 const OvertimeRequest = require('./OvertimeRequest');
 const CorrectionRequest = require('./CorrectionRequest');
 const Notification = require('./Notification');
+const InsuranceRecord = require('./InsuranceRecord');
+const Transaction = require('./Transaction');
 
 // ==================== ASSOCIATIONS ====================
 
@@ -75,6 +77,18 @@ CorrectionRequest.belongsTo(User, { foreignKey: 'approver_id', as: 'approver' })
 User.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
 Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
+// User ↔ InsuranceRecord
+User.hasMany(InsuranceRecord, { foreignKey: 'user_id', as: 'insuranceRecords' });
+InsuranceRecord.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+// User ↔ Transaction
+User.hasMany(Transaction, { foreignKey: 'user_id', as: 'transactions' });
+Transaction.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+// InsuranceRecord ↔ Transaction
+InsuranceRecord.hasMany(Transaction, { foreignKey: 'insurance_record_id', as: 'transactions' });
+Transaction.belongsTo(InsuranceRecord, { foreignKey: 'insurance_record_id', as: 'insuranceRecord' });
+
 // ==================== EXPORT ====================
 
 module.exports = {
@@ -90,4 +104,6 @@ module.exports = {
     OvertimeRequest,
     CorrectionRequest,
     Notification,
+    InsuranceRecord,
+    Transaction,
 };

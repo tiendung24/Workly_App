@@ -4,6 +4,7 @@ USE Workly;
 CREATE TABLE Departments (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
+    code VARCHAR(20) UNIQUE,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -160,4 +161,44 @@ UPDATE Users SET role = 'Admin' WHERE email = 'admin@gmail.com';
 
 
 
-select * from users ;
+-- 11. Bảng InsuranceRecords
+CREATE TABLE InsuranceRecords (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    month INT NOT NULL,
+    year INT NOT NULL,
+    
+    monthly_fee DECIMAL(15,2) NOT NULL,
+    old_debt DECIMAL(15,2) DEFAULT 0,
+    total_amount DECIMAL(15,2) GENERATED ALWAYS AS (monthly_fee + old_debt) STORED,
+    
+    status ENUM('Unpaid', 'Paid') DEFAULT 'Unpaid',
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES Users(id),
+    UNIQUE(user_id, month, year)
+);
+
+-- 12. Bảng Transactions
+CREATE TABLE Transactions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    transaction_code VARCHAR(100) UNIQUE NOT NULL,
+    user_id INT NOT NULL,
+    insurance_record_id INT,
+    
+    amount DECIMAL(15, 2) NOT NULL,
+    description TEXT,
+    
+    status ENUM('Pending', 'Success', 'Failed') DEFAULT 'Pending',
+    payos_webhook_data JSON,
+    
+    transaction_time DATETIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES Users(id),
+    FOREIGN KEY (insurance_record_id) REFERENCES InsuranceRecords(id)
+);
+
+select * from users;
