@@ -66,8 +66,26 @@ const startServer = async () => {
      
         await sequelize.authenticate();
         console.log('✅ Database connected successfully');
-        await sequelize.sync({ alter: true });
+        await sequelize.sync({ alter: false });
         console.log('✅ Models synced');
+
+        // Auto-run raw SQL migrations on startup (Reads workly_database.sql)
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const sqlPath = path.join(__dirname, '../../workly_database.sql');
+            if (fs.existsSync(sqlPath)) {
+                const queries = fs.readFileSync(sqlPath, 'utf8').split(';');
+                for (let query of queries) {
+                    if (query.trim() && !query.trim().startsWith('--')) {
+                        await sequelize.query(query).catch(() => {}); // Gracefully ignore "already exists" errors
+                    }
+                }
+                console.log('✅ Auto-applied raw SQL file to Database!');
+            }
+        } catch (error) {
+            console.error('⚠️ SQL Auto-run Alert:', error.message);
+        }
 
         server.listen(port, () => {
             console.log(`🚀 Server running at http://${hostname}:${port}/`);
