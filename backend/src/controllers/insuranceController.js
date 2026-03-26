@@ -1,4 +1,4 @@
-const { User, InsuranceRecord, Transaction } = require('../models');
+const { User, InsuranceRecord, Transaction, Position } = require('../models');
 const { PayOS } = require('@payos/node');
 const crypto = require('crypto');
 
@@ -188,30 +188,54 @@ const getAdminDashboard = async (req, res) => {
             include: [{ model: User, as: 'user', attributes: ['full_name', 'employee_code', 'department_id'] }]
         });
 
-        let totalToCollect = 0;
         let totalCollected = 0;
-        const unpaidEmployees = [];
+        let totalToCollect = 0;
 
+        // Calculate totals from existing records
         records.forEach(r => {
             const amount = parseFloat(r.monthly_fee) + parseFloat(r.old_debt);
             totalToCollect += amount;
             if (r.status === 'Paid') {
                 totalCollected += amount;
-            } else {
-                unpaidEmployees.push({
-                    user: r.user,
-                    amount: amount
-                });
             }
         });
 
         const collectionPercentage = totalToCollect > 0 ? ((totalCollected / totalToCollect) * 100).toFixed(2) : 0;
 
+        // Better logic: Find all active employees and check who hasn't paid
+        const allEmployees = await User.findAll({
+            where: { role: 'Employee', is_active: true },
+            attributes: ['id', 'full_name', 'employee_code', 'email'],
+            include: [{ model: Position, as: 'position' }]
+        });
+
+        const unpaidUsers = [];
+        for (const emp of allEmployees) {
+            const hasPaid = records.find(r => r.user_id === emp.id && r.status === 'Paid');
+            if (!hasPaid) {
+                const existingRecord = records.find(r => r.user_id === emp.id);
+                // If there's no record yet, calculate estimated fee so admin knows potential revenue
+                const baseSalary = emp.position?.base_salary || 0;
+                const dynamicFee = baseSalary * 0.105;
+                const dueAmount = existingRecord ? (parseFloat(existingRecord.monthly_fee) + parseFloat(existingRecord.old_debt)) : dynamicFee;
+                
+                unpaidUsers.push({
+                    user: emp,
+                    amount: dueAmount
+                });
+                
+                // If no record existed, add this estimated amount to totalToCollect
+                if (!existingRecord) {
+                    totalToCollect += dueAmount;
+                }
+            }
+        }
+
         return res.status(200).json({
             totalToCollect,
             totalCollected,
             collectionPercentage,
-            unpaidEmployees
+            unpaidUsers
         });
     } catch (error) {
         console.error('Error fetching admin dashboard:', error);

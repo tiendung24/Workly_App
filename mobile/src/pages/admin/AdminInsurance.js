@@ -59,42 +59,47 @@ export default function AdminInsurance() {
                  <View style={[styles.summaryCard, { backgroundColor: theme.card }]}>
                     <Text style={[styles.summaryLabel, { color: theme.sub }]}>Còn thiếu</Text>
                     <Text style={[styles.summaryValue, { color: '#ff4757' }]}>{dashboard?.unpaidUsers?.length || 0}</Text>
-                    <Text style={[styles.summaryDesc, { color: theme.sub }]}>nhân sự chưa nộp</Text>
+                    <Text style={[styles.summaryDesc, { color: theme.sub }]}>nhân sự chưa nộp phí</Text>
                  </View>
                </View>
 
-               {/* Unpaid List */}
-               {dashboard?.unpaidUsers?.length > 0 && (
-                 <>
-                   <Text style={[styles.sectionTitle, { color: theme.text }]}>Nhân sự chưa thanh toán</Text>
-                   {dashboard.unpaidUsers.map((u, i) => (
-                      <View key={i} style={[styles.itemCard, { backgroundColor: theme.card }]}>
-                         <MaterialIcons name="person" size={24} color={theme.sub} />
-                         <View style={{ flex: 1, marginLeft: 12 }}>
-                           <Text style={[styles.itemName, { color: theme.text }]}>{u.user?.name || 'Unknown'}</Text>
-                           <Text style={[styles.itemSub, { color: theme.sub }]}>{u.user?.email || ''}</Text>
-                         </View>
-                         <Text style={[styles.itemAmount, { color: '#ff4757' }]}>
-                           {(Number(u.monthly_fee) + Number(u.old_debt)).toLocaleString()}đ
-                         </Text>
-                      </View>
-                   ))}
-                 </>
-               )}
+                {/* Unpaid List */}
+                {dashboard?.unpaidUsers?.length > 0 && (
+                  <>
+                    <Text style={[styles.sectionTitle, { color: theme.text }]}>Nhân sự chưa thanh toán</Text>
+                    {dashboard.unpaidUsers.map((u, i) => (
+                       <View key={i} style={[styles.itemCard, { backgroundColor: theme.card }]}>
+                          <MaterialIcons name="person" size={24} color={theme.sub} />
+                          <View style={{ flex: 1, marginLeft: 12 }}>
+                            <Text style={[styles.itemName, { color: theme.text }]}>{u.user?.full_name || 'Update Required'}</Text>
+                            <Text style={[styles.itemSub, { color: theme.sub }]}>{u.user?.employee_code || ''} • {u.user?.email}</Text>
+                          </View>
+                          <Text style={[styles.itemAmount, { color: '#ff4757' }]}>
+                            {Number(u.amount || 0).toLocaleString()}đ
+                          </Text>
+                       </View>
+                    ))}
+                  </>
+                )}
 
                {/* Transactions List */}
                <Text style={[styles.sectionTitle, { color: theme.text, marginTop: 24 }]}>Lịch sử dòng tiền (Real-time)</Text>
                {transactions?.length > 0 ? transactions.map((tx, i) => (
                  <View key={i} style={[styles.itemCard, { backgroundColor: theme.card }]}>
-                    <View style={[styles.iconWrap, { backgroundColor: tx.status === 'Success' ? '#2ed57320' : '#ffa50220' }]}>
-                      <MaterialIcons name={tx.status === 'Success' ? 'check-circle' : 'pending'} size={24} color={tx.status === 'Success' ? '#2ed573' : '#ffa502'} />
+                    <View style={[styles.iconWrap, { backgroundColor: tx.status === 'Success' ? '#2ed57315' : '#ffa50215' }]}>
+                      <MaterialIcons name={tx.status === 'Success' ? 'check-circle' : 'hourglass-empty'} size={24} color={tx.status === 'Success' ? '#2ed573' : '#ffa502'} />
                     </View>
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Text style={[styles.itemName, { color: theme.text }]}>Mã GD: {tx.transaction_code}</Text>
-                      <Text style={[styles.itemSub, { color: theme.sub }]}>{new Date(tx.transaction_date || tx.createdAt).toLocaleString('en-GB')}</Text>
+                       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                         <Text style={[styles.itemName, { color: theme.text }]}>GD: {tx.transaction_code}</Text>
+                         <View style={{ marginLeft: 8, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, backgroundColor: tx.status === 'Success' ? '#2ed573' : '#ffa502' }}>
+                           <Text style={{ fontSize: 10, color: '#fff', fontWeight: 'bold' }}>{tx.status === 'Success' ? 'THANH TOÁN' : 'ĐANG CHỜ'}</Text>
+                         </View>
+                       </View>
+                       <Text style={[styles.itemSub, { color: theme.sub }]}>{tx.user?.full_name || 'N/A'} • {new Date(tx.transaction_date || tx.createdAt).toLocaleString('en-GB')}</Text>
                     </View>
-                    <Text style={[styles.itemAmount, { color: tx.status === 'Success' ? '#2ed573' : '#ffa502' }]}>
-                      +{Number(tx.amount).toLocaleString()}đ
+                    <Text style={[styles.itemAmount, { color: tx.status === 'Success' ? '#2ed573' : '#6B7280' }]}>
+                      {Number(tx.amount).toLocaleString()}đ
                     </Text>
                  </View>
                )) : (
