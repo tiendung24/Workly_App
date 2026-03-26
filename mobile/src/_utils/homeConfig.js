@@ -32,7 +32,7 @@ export function getQuickActions(role = "employee") {
 // Bottom nav (employee)
 export const HOME_TABS = [
   { key: "Home", label: "Home", icon: "home" },
-  { key: "Timesheet", label: "Timesheet", icon: "history" },
+  { key: "Timesheet", label: "Correction", icon: "history" },
   // Center FAB: Check
   { key: "Requests", label: "Requests", icon: "assignment" }, // nghỉ + OT
   { key: "Profile", label: "Profile", icon: "person" },
