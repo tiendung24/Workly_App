@@ -57,8 +57,7 @@ export default function AdminInsurance() {
                <View style={styles.summaryRow}>
                  <View style={[styles.summaryCard, { backgroundColor: theme.card }]}>
                     <Text style={[styles.summaryLabel, { color: theme.sub }]}>Collected</Text>
-                    <Text style={[styles.summaryValue, { color: COLORS.primary }]}>{dashboard?.percentage || '0'}%</Text>
-                    <Text style={[styles.summaryDesc, { color: theme.sub }]}>{Number(dashboard?.totalCollected || 0).toLocaleString()} VND</Text>
+                    <Text style={[styles.summaryValue, { color: COLORS.primary, fontSize: 20 }]}>{Number(dashboard?.totalCollected || 0).toLocaleString()} VND</Text>
                  </View>
                  <View style={[styles.summaryCard, { backgroundColor: theme.card }]}>
                     <Text style={[styles.summaryLabel, { color: theme.sub }]}>Outstanding</Text>
@@ -132,6 +131,10 @@ export default function AdminInsurance() {
              <View style={styles.detailRow}>
                <Text style={styles.detailLabel}>Transaction ID</Text>
                <Text style={styles.detailValue}>{selectedTx.transaction_code}</Text>
+             </View>
+             <View style={styles.detailRow}>
+               <Text style={styles.detailLabel}>Transfer Content</Text>
+               <Text style={styles.detailValue}>{selectedTx.description || 'N/A'}</Text>
              </View>
              <View style={styles.detailRow}>
                <Text style={styles.detailLabel}>Payment Time</Text>

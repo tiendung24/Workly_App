@@ -1,6 +1,7 @@
 const { User, InsuranceRecord, Transaction, Position } = require('../models');
 const { PayOS } = require('@payos/node');
 const crypto = require('crypto');
+const { notifyByRoles } = require('../services/notificationService');
 
 // Initialize PayOS
 const payos = new PayOS(
@@ -176,11 +177,25 @@ const handlePayOSWebhook = async (req, res) => {
         await transaction.save();
 
         // Update InsuranceRecord
-        const record = await InsuranceRecord.findByPk(transaction.insurance_record_id);
+        const record = await InsuranceRecord.findByPk(transaction.insurance_record_id, {
+            include: [{ model: User, as: 'user' }]
+        });
         if (record) {
             record.status = 'Paid';
             record.old_debt = 0; // Reset debt
             await record.save();
+
+            // Notify Admins
+            const empName = record.user?.full_name || 'N/A';
+            const empCode = record.user?.employee_code || '';
+            const amountStr = Number(transaction.amount).toLocaleString('vi-VN') + ' VNĐ';
+            
+            await notifyByRoles(
+                'Admin',
+                'Thanh toán bảo hiểm mới',
+                `Nhân viên ${empName} (${empCode}) vừa thanh toán ${amountStr} tiền bảo hiểm.`,
+                'insurance'
+            );
         }
 
         return res.status(200).json({
