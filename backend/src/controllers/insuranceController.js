@@ -1,5 +1,5 @@
 const { User, InsuranceRecord, Transaction } = require('../models');
-const PayOS = require('@payos/node');
+const { PayOS } = require('@payos/node');
 const crypto = require('crypto');
 
 // Initialize PayOS
