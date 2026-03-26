@@ -200,7 +200,18 @@ CREATE TABLE Transactions (
 -- ==============================================
 -- DỮ LIỆU MẪU (WIPE & SEED - AUTO MIGRATION)
 -- ==============================================
-
+-- DELETE FROM Transactions;
+-- DELETE FROM InsuranceRecords;
+-- DELETE FROM CorrectionRequests;
+-- DELETE FROM OvertimeRequests;
+-- DELETE FROM LeaveRequests;
+-- DELETE FROM UserLeaveBalances;
+-- DELETE FROM LeaveTypes;
+-- DELETE FROM Attendance;
+-- DELETE FROM Users;
+-- DELETE FROM WorkShifts;
+-- DELETE FROM Positions;
+-- DELETE FROM Departments;
 
 -- 1. Departments
 INSERT INTO Departments (id,name,description,code) VALUES
@@ -226,7 +237,7 @@ INSERT INTO Positions (id,name,base_salary) VALUES
 (11, 'SEO Specialist', 18000000.00),
 (12, 'Nhân viên Kế toán', 15000000.00),
 (13, 'Nhân viên Hành chính', 15000000.00),
-(14, 'Lễ tân', 10000000.00);
+(14, 'Lễ tân', 100000.00);
 
 -- 3. WorkShifts
 INSERT INTO WorkShifts (id,name,start_time,end_time) VALUES
@@ -238,7 +249,7 @@ INSERT INTO WorkShifts (id,name,start_time,end_time) VALUES
 INSERT INTO Users (id,employee_code,full_name,email,password_hash,phone,address,avatar_url,department_id,position_id,manager_id,role,start_date,is_active) VALUES
 (1, 'HE180957', 'Nguyễn Tiến Dũng', 'tien.dungg2011@gmail.com', '$2b$10$JAYWx9B7ZMxRY3nZNSmikeV/C/X9UcBTuolHFA7VEgjsoZr2u6xim', '0352033029', 'Cầu Giấy, Hà Nội', 'https://media.istockphoto.com/id/2171248303/vi/anh/th%C3%A1p-r%C3%B9a-t%E1%BA%A1i-h%C3%A0-n%E1%BB%99i-vi%E1%BB%87t-nam.jpg?s=612x612&w=0&k=20&c=E9ZYD_jtv4QEaDFFbF6AWgSWOo-o33ScfCZZlk2o_TY=', NULL, 6, NULL, 'Employee', '2026-03-10', 1),
 (2, 'EMP3128', 'Hệ Thống Admin', 'admin@gmail.com', '$2b$10$IgXcAcVt2f1TRzZ9.wCsOeIjAqxyXGX9f93dGuJPZsw1kYDstAufG', '09847376347', NULL, NULL, NULL, NULL, NULL, 'Admin', '2026-03-09', 1),
-(3, 'EMP4771', 'Diệu Linh', 'dieulinh@gmail.com', '$2b$10$kItEYR0gShOdhrlstQuWTOx0X8rm.7MDl2HlG.UkkpBvnfztTIk6S', '09738636245', NULL, NULL, NULL, 6, NULL, 'Employee', '2026-03-09', 1),
+(3, 'EMP4771', 'Minh Hiếu', 'minhhieu@gmail.com', '$2b$10$kItEYR0gShOdhrlstQuWTOx0X8rm.7MDl2HlG.UkkpBvnfztTIk6S', '09738636245', NULL, NULL, NULL, 6, NULL, 'Employee', '2026-03-09', 1),
 (4, 'HE0000', 'Nguyễn Đức Tài', 'ductai@gmail.com', '$2b$10$dP3jNyQ5ik52uicw6F5iv.u8x0R7LqmFb5oDA.vqbYRimGaNYsLXm', NULL, NULL, NULL, NULL, NULL, NULL, 'Employee', '2026-03-10', 1),
 (5, 'HE180960', 'Kim Ji Won', 'kjw@gmail.com', '$2b$10$Q1RbwhlWuO3RrcT8So..4OSjht4cgXZ./N4yJxaRMM1.LR2Pj0QP6', '0352033028', 'HNoi', 'https://resource.kinhtedothi.vn/2024/05/20/kim-ji-won-1a4.jpg', NULL, 6, NULL, 'Employee', '2026-03-10', 1),
 (6, 'MGR001', 'Manager', 'manager@gmail.com', '$2b$10$5dh0ZHTDnJG/Jxzb.stuhuX5y7nZ.9WgJCpaou6b8BlGdAqA8Uszu', '0987654321', 'Hà Nội', NULL, NULL, NULL, NULL, 'Manager', '2026-03-10', 1);
@@ -257,7 +268,7 @@ INSERT INTO UserLeaveBalances (id,user_id,leave_type_id,year,total_days,used_day
 (3, 5, 1, 2026, 12, 0);
 
 
-select * from Users
+select * from Positions
 
 
 
