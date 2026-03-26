@@ -13,9 +13,10 @@ CREATE TABLE Departments (
 CREATE TABLE Positions (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL, -- Ví dụ: Developer, HR, Accountant
+    base_salary DECIMAL(15,2) DEFAULT 0, -- Lương cơ bản của vị trí
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
+select * from Positions;
 -- 3. Bảng Ca làm việc (Để định nghĩa giờ vào/ra chuẩn)
 CREATE TABLE WorkShifts (
     id INT PRIMARY KEY AUTO_INCREMENT,
