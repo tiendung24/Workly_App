@@ -55,7 +55,7 @@ export default function BottomNav({
       />
 
       <NavBtn
-        label="Timesheet"
+        label="Correction"
         icon="history"
         active={activeTab === "Timesheet"}
         onPress={() => onTabChange("Timesheet")}

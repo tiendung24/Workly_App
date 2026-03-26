@@ -158,7 +158,7 @@ export const timesheetStyles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 18,
-    bottom: 90,
+    bottom: 130,
     width: 56,
     height: 56,
     borderRadius: 28,

@@ -161,7 +161,7 @@ export default function Timesheet({ navigation }) {
             contentContainerStyle={[
               styles.scrollContent,
               isWeb && { paddingHorizontal: webPadding },
-              { paddingBottom: Math.round(100 + insets.bottom) },
+              { paddingBottom: Math.round(130 + insets.bottom) },
             ]}
           >
             <View style={styles.content}>
