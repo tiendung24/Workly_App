@@ -56,26 +56,26 @@ export default function AdminInsurance() {
                {/* Dashboard Cards */}
                <View style={styles.summaryRow}>
                  <View style={[styles.summaryCard, { backgroundColor: theme.card }]}>
-                    <Text style={[styles.summaryLabel, { color: theme.sub }]}>Đã thu</Text>
+                    <Text style={[styles.summaryLabel, { color: theme.sub }]}>Collected</Text>
                     <Text style={[styles.summaryValue, { color: COLORS.primary }]}>{dashboard?.percentage || '0'}%</Text>
                     <Text style={[styles.summaryDesc, { color: theme.sub }]}>{Number(dashboard?.totalCollected || 0).toLocaleString()} VND</Text>
                  </View>
                  <View style={[styles.summaryCard, { backgroundColor: theme.card }]}>
-                    <Text style={[styles.summaryLabel, { color: theme.sub }]}>Còn thiếu</Text>
+                    <Text style={[styles.summaryLabel, { color: theme.sub }]}>Outstanding</Text>
                     <Text style={[styles.summaryValue, { color: '#ff4757' }]}>{dashboard?.unpaidUsers?.length || 0}</Text>
-                    <Text style={[styles.summaryDesc, { color: theme.sub }]}>nhân sự chưa nộp phí</Text>
+                    <Text style={[styles.summaryDesc, { color: theme.sub }]}>employees not paid</Text>
                  </View>
                </View>
 
                 {/* Unpaid List */}
                 {dashboard?.unpaidUsers?.length > 0 && (
                   <>
-                    <Text style={[styles.sectionTitle, { color: theme.text }]}>Nhân sự chưa thanh toán</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.text }]}>Employees Not Yet Paid</Text>
                     {dashboard.unpaidUsers.map((u, i) => (
                        <View key={i} style={[styles.itemCard, { backgroundColor: theme.card }]}>
                           <MaterialIcons name="person" size={24} color={theme.sub} />
                           <View style={{ flex: 1, marginLeft: 12 }}>
-                            <Text style={[styles.itemName, { color: theme.text }]}>{u.user?.full_name || 'Update Required'}</Text>
+                            <Text style={[styles.itemName, { color: theme.text }]}>{u.user?.full_name || 'N/A'}</Text>
                             <Text style={[styles.itemSub, { color: theme.sub }]}>{u.user?.employee_code || ''} • {u.user?.email}</Text>
                           </View>
                           <Text style={[styles.itemAmount, { color: '#ff4757' }]}>
@@ -87,7 +87,7 @@ export default function AdminInsurance() {
                 )}
 
                {/* Paid Employees List */}
-               <Text style={[styles.sectionTitle, { color: theme.text, marginTop: 24 }]}>Nhân sự đã thanh toán</Text>
+               <Text style={[styles.sectionTitle, { color: theme.text, marginTop: 24 }]}>Employees Who Paid</Text>
                {paidTransactions.length > 0 ? paidTransactions.map((tx, i) => (
                  <TouchableOpacity key={i} style={[styles.itemCard, { backgroundColor: theme.card }]} activeOpacity={0.7} onPress={() => setSelectedTx(tx)}>
                     <View style={[styles.iconWrap, { backgroundColor: '#2ed57315' }]}>
@@ -102,7 +102,7 @@ export default function AdminInsurance() {
                     </Text>
                  </TouchableOpacity>
                )) : (
-                  <Text style={{ color: theme.sub, textAlign: 'center', marginTop: 10 }}>Chưa có nhân sự nào thanh toán</Text>
+                  <Text style={{ color: theme.sub, textAlign: 'center', marginTop: 10 }}>No employees have paid yet</Text>
                )}
             </View>
           )}
@@ -117,29 +117,29 @@ export default function AdminInsurance() {
            <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20 }}>
              <View style={{ alignItems: 'center', marginBottom: 20 }}>
                <MaterialIcons name="check-circle" size={48} color="#2ed573" />
-               <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#111', marginTop: 10 }}>THANH TOÁN THÀNH CÔNG</Text>
+               <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#111', marginTop: 10 }}>PAYMENT SUCCESSFUL</Text>
                <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#2ed573', marginTop: 5 }}>{Number(selectedTx.amount).toLocaleString()} VND</Text>
              </View>
 
              <View style={styles.detailRow}>
-               <Text style={styles.detailLabel}>Tên nhân sự</Text>
+               <Text style={styles.detailLabel}>Employee Name</Text>
                <Text style={styles.detailValue}>{selectedTx.user?.full_name || 'N/A'}</Text>
              </View>
              <View style={styles.detailRow}>
-               <Text style={styles.detailLabel}>Mã NV</Text>
+               <Text style={styles.detailLabel}>Employee Code</Text>
                <Text style={styles.detailValue}>{selectedTx.user?.employee_code || 'N/A'}</Text>
              </View>
              <View style={styles.detailRow}>
-               <Text style={styles.detailLabel}>Mã giao dịch</Text>
+               <Text style={styles.detailLabel}>Transaction ID</Text>
                <Text style={styles.detailValue}>{selectedTx.transaction_code}</Text>
              </View>
              <View style={styles.detailRow}>
-               <Text style={styles.detailLabel}>Thời gian nộp</Text>
+               <Text style={styles.detailLabel}>Payment Time</Text>
                <Text style={styles.detailValue}>{new Date(selectedTx.transaction_date || selectedTx.createdAt).toLocaleString('en-GB')}</Text>
              </View>
              
              <TouchableOpacity style={{ marginTop: 20, backgroundColor: COLORS.primary, padding: 14, borderRadius: 12, alignItems: 'center' }} onPress={() => setSelectedTx(null)}>
-               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Đóng</Text>
+               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Close</Text>
              </TouchableOpacity>
            </View>
          )}
