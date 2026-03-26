@@ -7,6 +7,7 @@ export function getQuickActions(role = "employee") {
     { key: "leave", label: "Leave", icon: "event-note", tone: "orange" },            // xin nghỉ
     { key: "overtime", label: "Overtime", icon: "timer", tone: "purple" },           // đăng ký OT
     { key: "schedule", label: "Schedule", icon: "calendar-today", tone: "green" },   // lịch làm/ca
+    { key: "insurance", label: "Insurance", icon: "health-and-safety", tone: "red" }, // bảo hiểm
   ];
 
   const manager = [

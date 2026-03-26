@@ -60,6 +60,7 @@ export default function AdminDashboard({ navigation }) {
     { id: "AdminOrgs", label: "Departments & Positions", icon: "business", count: stats.departments + stats.positions, desc: "Organization Structure" },
     { id: "AdminTimesheet", label: "Timesheet Report", icon: "assessment", count: null, desc: "Payroll & Aggregation" },
     { id: "AdminConfig", label: "System Config", icon: "settings", count: stats.shifts + stats.leaves, desc: "Shifts & Leaves" },
+    { id: "AdminInsurance", label: "Insurance & Payments", icon: "health-and-safety", count: null, desc: "Collections & PayOS" },
   ];
 
   return (
@@ -89,6 +90,7 @@ export default function AdminDashboard({ navigation }) {
                     else if (item.id === "AdminTimesheet") navigation.navigate("AdminTimesheetScreen");
                     else if (item.id === "AdminConfig") navigation.navigate("AdminConfigScreen");
                     else if (item.id === "AdminOrgs") navigation.navigate("AdminOrgsScreen");
+                    else if (item.id === "AdminInsurance") navigation.navigate("AdminInsuranceScreen");
                   }}
                 >
                   <View style={s.row}>

@@ -5,7 +5,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../../_styles/theme";
 import { menuToneBg, menuToneIcon } from "../../_utils/tone";
 
-export default function QuickActionsGrid({ styles, theme, isDark, actions = [], onPressAction }) {
+export default function QuickActionsGrid({ styles, theme, isDark, actions = [], badges = {}, onPressAction }) {
   return (
     <>
       <Text style={[styles.sectionTitle, { color: theme.text }]}>Quick Actions</Text>
@@ -28,6 +28,13 @@ export default function QuickActionsGrid({ styles, theme, isDark, actions = [], 
                 size={22}
                 color={menuToneIcon(item.tone, isDark, COLORS.primary)}
               />
+              {badges[item.key] && (
+                 <View style={{
+                   position: 'absolute', top: -2, right: -2,
+                   width: 10, height: 10, borderRadius: 5, backgroundColor: '#ff4757',
+                   borderWidth: 1.5, borderColor: theme.card
+                 }} />
+              )}
             </View>
             <Text style={[styles.actionLabel, { color: theme.sub }]} numberOfLines={1}>
               {item.label}
