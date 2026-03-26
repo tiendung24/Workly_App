@@ -29,6 +29,14 @@ const getMyInsurance = async (req, res) => {
             }
         });
 
+        // Always sync the unpaid record with the latest salary
+        if (!created && record.status === 'Unpaid') {
+            if (parseFloat(record.monthly_fee) !== dynamicFee) {
+                record.monthly_fee = dynamicFee;
+                await record.save();
+            }
+        }
+
         // Fetch history
         const history = await InsuranceRecord.findAll({
             where: { user_id: userId },
@@ -71,6 +79,14 @@ const createPaymentLink = async (req, res) => {
                 status: 'Unpaid'
             }
         });
+
+        // Always sync the unpaid record with the latest salary
+        if (!created && record.status === 'Unpaid') {
+            if (parseFloat(record.monthly_fee) !== dynamicFee) {
+                record.monthly_fee = dynamicFee;
+                await record.save();
+            }
+        }
 
         if (record.status === 'Paid') return res.status(400).json({ message: 'Insurance already paid' });
 
@@ -214,10 +230,13 @@ const getAdminDashboard = async (req, res) => {
             const hasPaid = records.find(r => r.user_id === emp.id && r.status === 'Paid');
             if (!hasPaid) {
                 const existingRecord = records.find(r => r.user_id === emp.id);
-                // If there's no record yet, calculate estimated fee so admin knows potential revenue
+                // Calculate estimated fee based on current salary
                 const baseSalary = emp.position?.base_salary || 0;
                 const dynamicFee = baseSalary * 0.105;
-                const dueAmount = existingRecord ? (parseFloat(existingRecord.monthly_fee) + parseFloat(existingRecord.old_debt)) : dynamicFee;
+                
+                // If record exists, we still use dynamicFee + old_debt. 
+                // The actual DB record gets synced when the employee opens their page.
+                const dueAmount = dynamicFee + (existingRecord ? parseFloat(existingRecord.old_debt || 0) : 0);
                 
                 unpaidUsers.push({
                     user: emp,
