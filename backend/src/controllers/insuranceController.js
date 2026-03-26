@@ -78,8 +78,18 @@ const createPaymentLink = async (req, res) => {
         if (totalAmount <= 0) return res.status(400).json({ message: 'No amount to pay' });
         if (totalAmount < 2000) return res.status(400).json({ message: 'Minimum transaction amount is 2000 VND' });
 
-        const orderCode = Number(String(Date.now()).slice(-6));
+        // PayOS v2 requires unique orderCode. Using 13-digit timestamp is safer.
+        const orderCode = Number(Date.now());
         const description = `Bao hiem T${currentMonth} ${user.employee_code}`;
+
+        // Verify PayOS Keys (Common cause of 500 on Render)
+        if (!process.env.PAYOS_CLIENT_ID || !process.env.PAYOS_API_KEY || !process.env.PAYOS_CHECKSUM_KEY) {
+            console.error('❌ PayOS Environment Variables are MISSING!');
+            return res.status(500).json({ 
+                message: 'Internal configuration error: Missing PayOS keys on server.',
+                error: 'Please check Render Dashboard Environment Variables.'
+            });
+        }
 
         const body = {
             orderCode: orderCode,
@@ -90,6 +100,7 @@ const createPaymentLink = async (req, res) => {
         };
 
         const paymentLinkData = await payos.paymentRequests.create(body);
+        console.log('=== PayOS Full Response ===', JSON.stringify(paymentLinkData, null, 2));
 
         // Save transaction as pending
         await Transaction.create({
@@ -105,12 +116,17 @@ const createPaymentLink = async (req, res) => {
         return res.status(200).json({
             checkoutUrl: paymentLinkData.checkoutUrl,
             qrCode: paymentLinkData.qrCode,
+            paymentLinkData: paymentLinkData, 
             orderCode: orderCode
         });
 
     } catch (error) {
         console.error('Error creating payment link:', error);
-        res.status(500).json({ message: 'Failed to create payment link', error: error.message });
+        res.status(500).json({ 
+            message: 'Failed to create payment link', 
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 };
 
