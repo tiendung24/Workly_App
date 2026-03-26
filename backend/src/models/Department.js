@@ -11,6 +11,10 @@ const Department = sequelize.define('Department', {
         type: DataTypes.STRING(100),
         allowNull: false,
     },
+    code: {
+        type: DataTypes.STRING(20),
+        unique: true,
+    },
     description: {
         type: DataTypes.TEXT,
     },

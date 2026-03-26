@@ -2,16 +2,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 
-const HOST = Platform.select({
-  android: '10.0.2.2',     // Android emulator
-  ios: '192.168.1.2',      // Corrected IP for local network
-  default: '192.168.1.2'
-});
+// const HOST = Platform.select({
+//   android: '10.0.2.2',    
+//   ios: '192.168.1.2',     
+//   default: '192.168.1.2'
+// });
 
-// To use ngrok instead (recommended for physical devices):
-// export const API_BASE = `https://YOUR_NGROK_URL/api`;
-
-export const API_BASE = `http://${HOST}:3000/api`;
+// Thay dòng dưới bằng đúng đường dẫn Render mà bạn vừa deploy thành công nhé
+// export const API_BASE = `https://workly-app.onrender.com/api`;
+export const API_BASE = `http://localhost:3000/api`
 
 // Helper to get auth token
 const getAuthHeaders = async () => {
