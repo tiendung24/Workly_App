@@ -11,6 +11,10 @@ const Position = sequelize.define('Position', {
         type: DataTypes.STRING(100),
         allowNull: false,
     },
+    base_salary: {
+        type: DataTypes.DECIMAL(15, 2),
+        defaultValue: 0,
+    }
 }, {
     tableName: 'Positions',
     timestamps: false,

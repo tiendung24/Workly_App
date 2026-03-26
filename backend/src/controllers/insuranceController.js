@@ -9,20 +9,21 @@ const payos = new PayOS(
     process.env.PAYOS_CHECKSUM_KEY
 );
 
-// Constants
-const INSURANCE_MONTHLY_FEE = 2100000; // Mocked 10.5% salary (20M base)
-
 const getMyInsurance = async (req, res) => {
     try {
         const userId = req.user.id;
         const currentMonth = new Date().getMonth() + 1;
         const currentYear = new Date().getFullYear();
 
+        const user = await User.findByPk(userId, { include: ['position'] });
+        const baseSalary = user && user.position ? parseFloat(user.position.base_salary || 0) : 0;
+        const dynamicFee = baseSalary * 0.105;
+
         // Find or Create record for this month
         let [record, created] = await InsuranceRecord.findOrCreate({
             where: { user_id: userId, month: currentMonth, year: currentYear },
             defaults: {
-                monthly_fee: INSURANCE_MONTHLY_FEE,
+                monthly_fee: dynamicFee,
                 old_debt: 0,
                 status: 'Unpaid'
             }
@@ -56,14 +57,21 @@ const createPaymentLink = async (req, res) => {
         const currentMonth = new Date().getMonth() + 1;
         const currentYear = new Date().getFullYear();
 
-        const user = await User.findByPk(userId);
+        const user = await User.findByPk(userId, { include: ['position'] });
         if (!user) return res.status(404).json({ message: 'User not found' });
 
-        const record = await InsuranceRecord.findOne({
-            where: { user_id: userId, month: currentMonth, year: currentYear }
+        const baseSalary = user.position ? parseFloat(user.position.base_salary || 0) : 0;
+        const dynamicFee = baseSalary * 0.105;
+
+        const [record, created] = await InsuranceRecord.findOrCreate({
+            where: { user_id: userId, month: currentMonth, year: currentYear },
+            defaults: {
+                monthly_fee: dynamicFee,
+                old_debt: 0,
+                status: 'Unpaid'
+            }
         });
 
-        if (!record) return res.status(404).json({ message: 'Insurance record not found' });
         if (record.status === 'Paid') return res.status(400).json({ message: 'Insurance already paid' });
 
         const totalAmount = parseFloat(record.monthly_fee) + parseFloat(record.old_debt);
