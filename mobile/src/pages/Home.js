@@ -4,7 +4,11 @@ import {
   View,
   ScrollView,
   useWindowDimensions,
+  Text,
+  TouchableOpacity
 } from "react-native";
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from "@expo/vector-icons";
 
 import Layout from "../_components/layout/Layout";
 import { homeStyles as styles } from "../_styles/pages/homeStyles";
@@ -183,6 +187,44 @@ export default function Home({ navigation }) {
                   onPressAction={onPressAction}
                 />
               </View>
+
+              {/* Salary Gradient Bar */}
+              {dashboardData && (
+                <TouchableOpacity activeOpacity={0.8} style={{ marginTop: 24, marginBottom: 16 }}>
+                  <LinearGradient
+                    colors={['#4facfe', '#00f2fe']}
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 0}}
+                    style={{
+                      padding: 16,
+                      borderRadius: 16,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      shadowColor: '#00f2fe',
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 8,
+                      elevation: 5,
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{ backgroundColor: 'rgba(255,255,255,0.25)', padding: 12, borderRadius: 12, marginRight: 16 }}>
+                        <MaterialIcons name="account-balance-wallet" size={26} color="#ffffff" />
+                      </View>
+                      <View>
+                        <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: '600', marginBottom: 4, letterSpacing: 0.5 }}>
+                          Lương cơ sở hiện tại
+                        </Text>
+                        <Text style={{ color: '#ffffff', fontSize: 24, fontWeight: 'bold' }}>
+                          {Number(dashboardData.baseSalary || 0).toLocaleString('en-US')} VND
+                        </Text>
+                      </View>
+                    </View>
+                    <MaterialIcons name="chevron-right" size={28} color="rgba(255,255,255,0.8)" />
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </ScrollView>

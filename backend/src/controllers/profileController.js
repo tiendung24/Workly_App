@@ -146,6 +146,11 @@ const getDashboard = async (req, res, next) => {
         const startOfWeek = now.clone().startOf('isoWeek').format('YYYY-MM-DD');
         const endOfWeek = now.clone().endOf('isoWeek').format('YYYY-MM-DD');
 
+        const user = await User.findByPk(userId, {
+            include: [{ model: Position, as: 'position' }]
+        });
+        const baseSalary = user?.position?.base_salary || 0;
+
         // 1. Worked Days in Current Month
         const workedDays = await Attendance.count({
             where: {
@@ -190,7 +195,8 @@ const getDashboard = async (req, res, next) => {
                 standardDays: 22, // Typically 22 working days in a month
                 otHoursWeek,
                 paidLeavePerMonth,
-                usedPaidLeave
+                usedPaidLeave,
+                baseSalary
             }
         });
 
