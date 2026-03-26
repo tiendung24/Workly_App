@@ -1,5 +1,8 @@
 
+DROP DATABASE IF EXISTS Workly;
+CREATE DATABASE Workly;
 USE Workly;
+
 -- 1. Bảng Phòng ban
 CREATE TABLE Departments (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -16,7 +19,7 @@ CREATE TABLE Positions (
     base_salary DECIMAL(15,2) DEFAULT 0, -- Lương cơ bản của vị trí
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-select * from Positions;
+
 -- 3. Bảng Ca làm việc (Để định nghĩa giờ vào/ra chuẩn)
 CREATE TABLE WorkShifts (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -158,10 +161,6 @@ CREATE TABLE CorrectionRequests (
     FOREIGN KEY (approver_id) REFERENCES Users(id)
 );
 
-UPDATE Users SET role = 'Admin' WHERE email = 'admin@gmail.com';
-
-
-
 -- 11. Bảng InsuranceRecords
 CREATE TABLE InsuranceRecords (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -202,4 +201,66 @@ CREATE TABLE Transactions (
     FOREIGN KEY (insurance_record_id) REFERENCES InsuranceRecords(id)
 );
 
-select * from users;
+-- ==============================================
+-- DỮ LIỆU MẪU (WIPE & SEED - AUTO MIGRATION)
+-- ==============================================
+
+-- 1. Departments
+INSERT INTO Departments (id,name,description,code) VALUES
+(1, 'Phòng Nhân Sự', 'Human Resources', 'HR'),
+(2, 'Phòng Kỹ Thuật', 'Information Technology', 'IT'),
+(3, 'Phòng Kinh Doanh', 'Sales Department', 'SALE'),
+(4, 'Phòng Marketing', 'Marketing Department', 'MKT'),
+(5, 'Phòng Kế Toán', 'Accounting Department', 'ACC'),
+(6, 'Phòng Hành Chính', 'Administration Department', 'ADMIN');
+
+-- 2. Positions
+INSERT INTO Positions (id,name,base_salary) VALUES
+(1, 'Nhân viên Nhân sự', 15000000.00),
+(2, 'Backend Developer', 25000000.00),
+(3, 'Frontend Developer', 25000000.00),
+(4, 'Mobile Developer', 25000000.00),
+(5, 'Tester (QA/QC)', 16000000.00),
+(6, 'DevOps Engineer', 25000000.00),
+(7, 'Nhân viên Kinh doanh', 18000000.00),
+(8, 'Nhân viên Chăm sóc khách hàng', 10000000.00),
+(9, 'Content Marketing', 18000000.00),
+(10, 'Digital Marketing', 18000000.00),
+(11, 'SEO Specialist', 18000000.00),
+(12, 'Nhân viên Kế toán', 15000000.00),
+(13, 'Nhân viên Hành chính', 15000000.00),
+(14, 'Lễ tân', 10000000.00);
+
+-- 3. WorkShifts
+INSERT INTO WorkShifts (id,name,start_time,end_time) VALUES
+(1, 'Ca Hành Chính', '08:30:00', '17:30:00'),
+(3, 'Ca sáng', '06:00:00', '14:00:00'),
+(4, 'Ca chiều', '14:00:00', '22:00:00');
+
+-- 4. Users (Mật khẩu mặc định: 123456)
+INSERT INTO Users (id,employee_code,full_name,email,password_hash,phone,address,avatar_url,department_id,position_id,manager_id,role,start_date,is_active) VALUES
+(1, 'HE180957', 'Nguyễn Tiến Dũng', 'tien.dungg2011@gmail.com', '$2b$10$JAYWx9B7ZMxRY3nZNSmikeV/C/X9UcBTuolHFA7VEgjsoZr2u6xim', '0352033029', 'Cầu Giấy, Hà Nội', 'https://media.istockphoto.com/id/2171248303/vi/anh/th%C3%A1p-r%C3%B9a-t%E1%BA%A1i-h%C3%A0-n%E1%BB%99i-vi%E1%BB%87t-nam.jpg?s=612x612&w=0&k=20&c=E9ZYD_jtv4QEaDFFbF6AWgSWOo-o33ScfCZZlk2o_TY=', NULL, 6, NULL, 'Employee', '2026-03-10', 1),
+(2, 'EMP3128', 'Hệ Thống Admin', 'admin@gmail.com', '$2b$10$IgXcAcVt2f1TRzZ9.wCsOeIjAqxyXGX9f93dGuJPZsw1kYDstAufG', '09847376347', NULL, NULL, NULL, NULL, NULL, 'Admin', '2026-03-09', 1),
+(3, 'EMP4771', 'Diệu Linh', 'dieulinh@gmail.com', '$2b$10$kItEYR0gShOdhrlstQuWTOx0X8rm.7MDl2HlG.UkkpBvnfztTIk6S', '09738636245', NULL, NULL, NULL, 6, NULL, 'Employee', '2026-03-09', 1),
+(4, 'HE0000', 'Nguyễn Đức Tài', 'ductai@gmail.com', '$2b$10$dP3jNyQ5ik52uicw6F5iv.u8x0R7LqmFb5oDA.vqbYRimGaNYsLXm', NULL, NULL, NULL, NULL, NULL, NULL, 'Employee', '2026-03-10', 1),
+(5, 'HE180960', 'Kim Ji Won', 'kjw@gmail.com', '$2b$10$Q1RbwhlWuO3RrcT8So..4OSjht4cgXZ./N4yJxaRMM1.LR2Pj0QP6', '0352033028', 'HNoi', 'https://resource.kinhtedothi.vn/2024/05/20/kim-ji-won-1a4.jpg', NULL, 6, NULL, 'Employee', '2026-03-10', 1),
+(6, 'MGR001', 'Manager', 'manager@gmail.com', '$2b$10$5dh0ZHTDnJG/Jxzb.stuhuX5y7nZ.9WgJCpaou6b8BlGdAqA8Uszu', '0987654321', 'Hà Nội', NULL, NULL, NULL, NULL, 'Manager', '2026-03-10', 1);
+
+-- 5. LeaveTypes
+INSERT INTO LeaveTypes (id,name,days_allowed_per_year,is_paid) VALUES
+(1, 'Annual Leave', 12, 1),
+(2, 'Sick Leave', 0, 1),
+(3, 'Personal Leave', 0, 1),
+(4, 'Business Trip', 0, 1);
+
+-- 6. UserLeaveBalances
+INSERT INTO UserLeaveBalances (id,user_id,leave_type_id,year,total_days,used_days) VALUES
+(1, 3, 1, 2026, 12, 2),
+(2, 1, 1, 2026, 12, 0),
+(3, 5, 1, 2026, 12, 0);
+
+
+
+
+
+
