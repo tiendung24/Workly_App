@@ -32,41 +32,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const token = await authService.getToken();
-        const cachedUser = await authService.getUser(); // authService returns object or null
-        
-        if (token && cachedUser) {
-          let userObj = cachedUser;
-
-          try {
-            // Verify profile on load
-            const freshProfileRes = await authService.getMe();
-            if (freshProfileRes && freshProfileRes.user) {
-                userObj = { ...userObj, ...freshProfileRes.user };
-                await AsyncStorage.setItem('userInfo', JSON.stringify(userObj));
-            }
-            setUserToken(token);
-            setUserInfo(userObj);
-            
-            socketService.connect(userObj.id); // Connect socket after user info is set
-            fetchUnreadCount(); // Fetch count on init
-          } catch (e) {
-            console.log("Cannot fetch fresh profile, error:", e);
-            if (e.status === 401 || e.status === 403 || e.status === 404) {
-              console.log("Token expired or invalid, logging out");
-              await authService.logout();
-              setUserToken(null);
-              setUserInfo(null);
-            } else {
-              // Network error or server down, fallback to cached
-              console.log("Using cached profile due to network/server error");
-              setUserToken(token);
-              setUserInfo(userObj);
-              socketService.connect(userObj.id);
-              fetchUnreadCount();
-            }
-          }
-        }
+        // Force login every time the app opens by clearing any stored tokens
+        await authService.logout();
+        setUserToken(null);
+        setUserInfo(null);
       } catch (error) {
         console.error("Auth init error:", error);
       } finally {
