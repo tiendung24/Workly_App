@@ -71,7 +71,7 @@ export default function InsuranceDetail() {
           contentContainerStyle={[
             styles.scrollContent,
             isWeb && { paddingHorizontal: webPadding },
-            { paddingBottom: Math.round(60 + insets.bottom) },
+            { paddingBottom: Math.round(100 + insets.bottom) },
           ]}
         >
           {loading ? (
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   container: {
-    flex: 1,
+    // flex: 1 removed to allow ScrollView to scroll properly
   },
   card: {
     padding: 20,
