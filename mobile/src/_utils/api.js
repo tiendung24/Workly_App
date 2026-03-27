@@ -36,7 +36,11 @@ export async function apiGet(path) {
     headers,
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Request failed");
+  if (!res.ok) {
+    const err = new Error(data.message || "Request failed");
+    err.status = res.status;
+    throw err;
+  }
   return data;
 }
 
@@ -49,7 +53,11 @@ export async function apiPost(path, body) {
     body: JSON.stringify(body),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Request failed");
+  if (!res.ok) {
+    const err = new Error(data.message || "Request failed");
+    err.status = res.status;
+    throw err;
+  }
   return data;
 }
 
@@ -62,7 +70,11 @@ export async function apiPut(path, body) {
     body: JSON.stringify(body),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Request failed");
+  if (!res.ok) {
+    const err = new Error(data.message || "Request failed");
+    err.status = res.status;
+    throw err;
+  }
   return data;
 }
 
@@ -75,7 +87,11 @@ export async function apiPatch(path, body) {
     body: JSON.stringify(body),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Request failed");
+  if (!res.ok) {
+    const err = new Error(data.message || "Request failed");
+    err.status = res.status;
+    throw err;
+  }
   return data;
 }
 
@@ -87,7 +103,11 @@ export async function apiDelete(path) {
     headers,
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Request failed");
+  if (!res.ok) {
+    const err = new Error(data.message || "Request failed");
+    err.status = res.status;
+    throw err;
+  }
   return data;
 }
 
