@@ -1,4 +1,6 @@
 const { LeaveRequest, LeaveType, UserLeaveBalance, User } = require('../models');
+const { Op } = require('sequelize');
+const moment = require('moment');
 const { createAndEmit } = require('../services/notificationService');
 
 // GET /api/leave/balance
@@ -84,6 +86,48 @@ const createRequest = async (req, res, next) => {
 
         if (!leave_type_id || !start_date || !end_date) {
             return res.status(400).json({ message: 'Please provide all details' });
+        }
+
+        const today = moment().format('YYYY-MM-DD');
+        const startMoment = moment(start_date, 'YYYY-MM-DD');
+        const endMoment = moment(end_date, 'YYYY-MM-DD');
+
+        // 1. Không cho chọn ngày quá khứ
+        if (startMoment.isBefore(today)) {
+            return res.status(400).json({ message: 'Cannot request leave for past dates' });
+        }
+
+        // 2. end_date phải >= start_date
+        if (endMoment.isBefore(startMoment)) {
+            return res.status(400).json({ message: 'End date must be on or after start date' });
+        }
+
+        // 3. Check số ngày phép còn lại
+        const requestedDays = endMoment.diff(startMoment, 'days') + 1;
+        const currentYear = new Date().getFullYear();
+        const balance = await UserLeaveBalance.findOne({
+            where: { user_id: userId, year: currentYear }
+        });
+        if (balance) {
+            const remaining = balance.total_days - balance.used_days;
+            if (requestedDays > remaining) {
+                return res.status(400).json({ 
+                    message: `Insufficient leave balance. Remaining: ${remaining} days, Requested: ${requestedDays} days` 
+                });
+            }
+        }
+
+        // 4. Không cho trùng đơn (Pending/Approved) trùng khoảng ngày
+        const overlapping = await LeaveRequest.findOne({
+            where: {
+                user_id: userId,
+                status: { [Op.in]: ['Pending', 'Approved'] },
+                start_date: { [Op.lte]: end_date },
+                end_date: { [Op.gte]: start_date }
+            }
+        });
+        if (overlapping) {
+            return res.status(400).json({ message: 'You already have a leave request overlapping these dates' });
         }
 
         const newRequest = await LeaveRequest.create({

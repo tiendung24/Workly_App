@@ -20,6 +20,22 @@ const register = async (req, res, next) => {
             return res.status(400).json({ message: 'Please enter all fields: Code, Name, Email, Password' });
         }
 
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: 'Invalid email format' });
+        }
+
+        // Validate password length
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        }
+
+        // Validate phone format (10-11 digits)
+        if (phone && !/^[0-9]{10,11}$/.test(phone)) {
+            return res.status(400).json({ message: 'Phone number must be 10-11 digits' });
+        }
+
         // Kiểm tra email đã tồn tại
         const existingEmail = await User.findOne({ where: { email } });
         if (existingEmail) {

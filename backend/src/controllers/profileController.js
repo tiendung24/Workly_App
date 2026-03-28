@@ -45,6 +45,19 @@ const updateProfile = async (req, res, next) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        // Validate email format
+        if (email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({ message: 'Invalid email format' });
+            }
+        }
+
+        // Validate phone format (10-11 digits)
+        if (phone && !/^[0-9]{10,11}$/.test(phone)) {
+            return res.status(400).json({ message: 'Phone number must be 10-11 digits' });
+        }
+
         // Email uniqueness check
         if (email && email !== user.email) {
             const existingEmail = await User.findOne({ where: { email, id: { [Op.ne]: userId } } });

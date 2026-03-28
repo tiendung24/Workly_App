@@ -25,6 +25,28 @@ const createUser = async (req, res, next) => {
     try {
         const { employee_code, full_name, email, password, phone, address, department_name, position_name, role, manager_id, start_date } = req.body;
         
+        // Validate required fields
+        if (!employee_code || !full_name || !email) {
+            return res.status(400).json({ message: 'Employee code, name and email are required' });
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: 'Invalid email format' });
+        }
+
+        // Validate phone format
+        if (phone && !/^[0-9]{10,11}$/.test(phone)) {
+            return res.status(400).json({ message: 'Phone number must be 10-11 digits' });
+        }
+
+        // Validate role
+        const validRoles = ['Employee', 'Manager', 'Admin'];
+        if (role && !validRoles.includes(role)) {
+            return res.status(400).json({ message: 'Role must be Employee, Manager or Admin' });
+        }
+
         // Check if email or employee_code exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) return res.status(400).json({ message: 'Email already exists' });
@@ -96,6 +118,17 @@ const updateUser = async (req, res, next) => {
         
         const user = await User.findByPk(id);
         if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Validate role
+        const validRoles = ['Employee', 'Manager', 'Admin'];
+        if (role && !validRoles.includes(role)) {
+            return res.status(400).json({ message: 'Role must be Employee, Manager or Admin' });
+        }
+
+        // Validate phone format
+        if (phone && !/^[0-9]{10,11}$/.test(phone)) {
+            return res.status(400).json({ message: 'Phone number must be 10-11 digits' });
+        }
 
         // Xử lý Department bằng chữ
         let finalDepartmentId = user.department_id;

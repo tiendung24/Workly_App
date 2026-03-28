@@ -23,6 +23,11 @@ const checkIn = async (req, res, next) => {
         const userId = req.user.id;
         const { today, attendance } = await getTodayAndShift(userId);
 
+        // Không cho check-in ngày Chủ Nhật
+        if (moment().day() === 0) {
+            return res.status(400).json({ message: 'Cannot check in on Sunday' });
+        }
+
         if (attendance && attendance.check_in_time) {
             return res.status(400).json({ message: 'You already checked in today' });
         }
