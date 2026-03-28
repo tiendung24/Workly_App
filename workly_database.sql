@@ -1,4 +1,4 @@
-
+Users
 USE Workly;
 -- 1. Bảng Phòng ban
 CREATE TABLE Departments (

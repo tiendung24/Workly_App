@@ -1,4 +1,5 @@
-const { OvertimeRequest, User } = require('../models');
+const { OvertimeRequest, User, WorkShift } = require('../models');
+const { Op } = require('sequelize');
 const moment = require('moment');
 const { createAndEmit } = require('../services/notificationService');
 
@@ -27,6 +28,13 @@ const createRequest = async (req, res, next) => {
             return res.status(400).json({ message: 'Please provide all date and time details' });
         }
 
+        const today = moment().format('YYYY-MM-DD');
+
+        // 1. Không cho chọn ngày quá khứ
+        if (moment(date, 'YYYY-MM-DD').isBefore(today)) {
+            return res.status(400).json({ message: 'Cannot register overtime for past dates' });
+        }
+
         // Calculate hours
         const t1 = moment(start_time, "HH:mm");
         const t2 = moment(end_time, "HH:mm");
@@ -34,6 +42,30 @@ const createRequest = async (req, res, next) => {
 
         if (total_hours <= 0) {
             return res.status(400).json({ message: 'End time must be after start time' });
+        }
+
+        // 2. OT phải ngoài giờ hành chính (sau giờ kết thúc ca)
+        const shift = await WorkShift.findOne();
+        if (shift) {
+            const shiftEnd = moment(shift.end_time, 'HH:mm:ss');
+            const otStart = moment(start_time, 'HH:mm');
+            if (otStart.isBefore(shiftEnd)) {
+                return res.status(400).json({ 
+                    message: `Overtime must start after office hours (${shift.end_time}). Your start time: ${start_time}` 
+                });
+            }
+        }
+
+        // 3. Không cho trùng đơn OT cùng ngày (Pending/Approved)
+        const duplicate = await OvertimeRequest.findOne({
+            where: {
+                user_id: userId,
+                date: date,
+                status: { [Op.in]: ['Pending', 'Approved'] }
+            }
+        });
+        if (duplicate) {
+            return res.status(400).json({ message: 'You already have an overtime request for this date' });
         }
 
         const newRequest = await OvertimeRequest.create({

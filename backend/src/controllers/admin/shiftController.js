@@ -15,6 +15,12 @@ const getShifts = async (req, res, next) => {
 const createShift = async (req, res, next) => {
     try {
         const { name, start_time, end_time } = req.body;
+        if (!name || !start_time || !end_time) {
+            return res.status(400).json({ message: 'Name, start time and end time are required' });
+        }
+        if (start_time >= end_time) {
+            return res.status(400).json({ message: 'Start time must be before end time' });
+        }
         const shift = await WorkShift.create({ name, start_time, end_time });
         res.status(201).json({ message: 'Shift created successfully', data: shift });
     } catch (error) {
@@ -27,6 +33,12 @@ const updateShift = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { name, start_time, end_time } = req.body;
+        if (!name || !start_time || !end_time) {
+            return res.status(400).json({ message: 'Name, start time and end time are required' });
+        }
+        if (start_time >= end_time) {
+            return res.status(400).json({ message: 'Start time must be before end time' });
+        }
         const shift = await WorkShift.findByPk(id);
         if (!shift) return res.status(404).json({ message: 'Shift not found' });
         

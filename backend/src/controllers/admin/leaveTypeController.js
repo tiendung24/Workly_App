@@ -19,7 +19,10 @@ const getLeaveTypes = async (req, res, next) => {
 const createLeaveType = async (req, res, next) => {
     try {
         const { name, default_days, is_paid, description } = req.body;
-        const type = await LeaveType.create({ name, days_allowed_per_year: default_days, is_paid, description });
+        if (!name || !name.trim()) {
+            return res.status(400).json({ message: 'Leave type name is required' });
+        }
+        const type = await LeaveType.create({ name: name.trim(), days_allowed_per_year: default_days, is_paid, description });
 
         // --- Notification: Loại phép mới ---
         await notifyByRoles(

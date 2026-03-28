@@ -91,6 +91,11 @@ const updateRequestStatus = async (req, res, next) => {
             return res.status(403).json({ message: 'No permission to approve this request' });
         }
 
+        // Không cho approve/reject đơn đã xử lý rồi
+        if (item.status !== 'Pending') {
+            return res.status(400).json({ message: `This request has already been ${item.status.toLowerCase()}` });
+        }
+
         // Process specific hook for Leave Approval
         if (modelClass === LeaveRequest && status === 'Approved') {
              // Lấy chi tiết phép

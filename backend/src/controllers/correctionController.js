@@ -1,4 +1,6 @@
 const { CorrectionRequest, User } = require('../models');
+const { Op } = require('sequelize');
+const moment = require('moment');
 const { createAndEmit } = require('../services/notificationService');
 
 // GET /api/correction/requests
@@ -24,6 +26,25 @@ const createRequest = async (req, res, next) => {
 
         if (!date || !type || (!requested_check_in && !requested_check_out)) {
             return res.status(400).json({ message: 'Please provide all correction details' });
+        }
+
+        const today = moment().format('YYYY-MM-DD');
+
+        // 1. Correction chỉ cho sửa ngày quá khứ
+        if (!moment(date, 'YYYY-MM-DD').isBefore(today)) {
+            return res.status(400).json({ message: 'Correction requests can only be made for past dates' });
+        }
+
+        // 2. Không cho trùng đơn Correction cùng ngày (Pending/Approved)
+        const duplicate = await CorrectionRequest.findOne({
+            where: {
+                user_id: userId,
+                date: date,
+                status: { [Op.in]: ['Pending', 'Approved'] }
+            }
+        });
+        if (duplicate) {
+            return res.status(400).json({ message: 'You already have a correction request for this date' });
         }
 
         let checkInDateTime = null;
