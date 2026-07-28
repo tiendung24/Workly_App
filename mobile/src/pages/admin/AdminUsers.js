@@ -40,6 +40,7 @@ export default function AdminUsers() {
     position_name: "",
     role: "Employee",
     manager_id: null,
+    bank_account: "",
     is_active: true,
   });
   
@@ -86,6 +87,7 @@ export default function AdminUsers() {
         position_name: user.position?.name || "",
         role: user.role,
         manager_id: user.manager_id || null,
+        bank_account: user.bank_account || "",
         is_active: user.is_active,
       });
     } else {
@@ -99,6 +101,7 @@ export default function AdminUsers() {
         position_name: "",
         role: "Employee",
         manager_id: null,
+        bank_account: "",
         is_active: true,
       });
     }
@@ -122,7 +125,8 @@ export default function AdminUsers() {
         ...formData,
         employee_code: formData.employee_code.trim(),
         full_name: formData.full_name.trim(),
-        email: formData.email.trim()
+        email: formData.email.trim(),
+        bank_account: formData.bank_account.trim()
       };
 
       if (editingId) {
@@ -172,6 +176,7 @@ export default function AdminUsers() {
   const getRoleColor = (role) => {
     if (role === "Admin") return "#EF4444";
     if (role === "Manager") return "#F59E0B";
+    if (role === "Accountant") return "#10B981";
     return "#3B82F6";
   };
 
@@ -254,6 +259,9 @@ export default function AdminUsers() {
                     <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Email (*)</Text>
                     <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="a@workly.com" placeholderTextColor={theme.sub} keyboardType="email-address" value={formData.email} onChangeText={t => setFormData({...formData, email: t})} />
 
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Bank Account</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="MB Bank - 123456789" placeholderTextColor={theme.sub} value={formData.bank_account} onChangeText={t => setFormData({...formData, bank_account: t})} />
+
                     {!editingId && (
                       <>
                         <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Password (*)</Text>
@@ -279,7 +287,7 @@ export default function AdminUsers() {
 
                     <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Role</Text>
                     <View style={{ flexDirection: 'row', gap: 10 }}>
-                        {['Employee', 'Manager', 'Admin'].map(r => (
+                        {['Employee', 'Manager', 'Admin', 'Accountant'].map(r => (
                           <TouchableOpacity key={r} style={[s.badge, { backgroundColor: formData.role === r ? getRoleColor(r) : theme.bg, borderWidth: formData.role === r ? 0 : 1, borderColor: theme.navBorder }]} onPress={() => setFormData({...formData, role: r})}>
                              <Text style={{ color: formData.role === r ? '#fff' : theme.text, fontWeight: 'bold' }}>{r}</Text>
                           </TouchableOpacity>

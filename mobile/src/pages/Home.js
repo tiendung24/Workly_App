@@ -177,6 +177,12 @@ export default function Home({ navigation }) {
       navigation.navigate("Schedule");
     } else if (key === "insurance") {
       navigation.navigate("InsuranceDetail");
+    } else if (key === "payroll") {
+      if (role === "admin" || role === "accountant") {
+        navigation.navigate("Admin", { screen: "AdminPayrollScreen" });
+      } else {
+        navigation.navigate("Payroll");
+      }
     }
   };
 
@@ -234,7 +240,7 @@ export default function Home({ navigation }) {
 
               {/* Salary Bar */}
               {dashboardData && (
-                <TouchableOpacity activeOpacity={0.8} style={{ marginTop: 24, marginBottom: 16 }}>
+                <TouchableOpacity activeOpacity={0.8} style={{ marginTop: 24, marginBottom: 16 }} onPress={() => navigation.navigate("Payroll")}>
                   <View
                     style={{
                       padding: 16,

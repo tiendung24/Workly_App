@@ -41,6 +41,9 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/metadata', require('./routes/metadataRoutes'));
 app.use('/api/insurance', require('./routes/insuranceRoutes'));
+app.use('/api/payroll', require('./routes/payrollRoutes'));
+app.use('/api/admin/payroll', require('./routes/admin/payrollRoutes'));
+
 app.get('/', async (req, res) => {
     res.status(200).json({ message: 'Workly API is running 🚀' });
 });

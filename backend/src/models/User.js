@@ -49,8 +49,11 @@ const User = sequelize.define('User', {
         references: { model: 'Users', key: 'id' },
     },
     role: {
-        type: DataTypes.ENUM('Admin', 'Manager', 'Employee'),
+        type: DataTypes.ENUM('Admin', 'Manager', 'Employee', 'Accountant'),
         defaultValue: 'Employee',
+    },
+    bank_account: {
+        type: DataTypes.STRING(50),
     },
     start_date: {
         type: DataTypes.DATEONLY,
