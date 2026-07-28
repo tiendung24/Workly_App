@@ -4,8 +4,8 @@ import { Platform } from 'react-native';
 
 const HOST = Platform.select({
   android: '10.0.2.2',
-  ios: '192.168.1.2',
-  default: '192.168.1.2'
+  ios: '192.168.1.7',
+  default: '192.168.1.7'
 });
 
 // Thay dòng dưới bằng đúng đường dẫn Render khi bạn muốn deploy
