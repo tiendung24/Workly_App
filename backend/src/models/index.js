@@ -14,6 +14,7 @@ const CorrectionRequest = require('./CorrectionRequest');
 const Notification = require('./Notification');
 const InsuranceRecord = require('./InsuranceRecord');
 const Transaction = require('./Transaction');
+const SystemConfig = require('./SystemConfig');
 
 // ==================== ASSOCIATIONS ====================
 
@@ -106,4 +107,5 @@ module.exports = {
     Notification,
     InsuranceRecord,
     Transaction,
+    SystemConfig,
 };

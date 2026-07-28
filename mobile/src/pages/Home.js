@@ -5,10 +5,12 @@ import {
   ScrollView,
   useWindowDimensions,
   Text,
-  TouchableOpacity
+  TouchableOpacity,
+  Modal
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from "@expo/vector-icons";
+import * as Location from 'expo-location';
 
 import Layout from "../_components/layout/Layout";
 import { homeStyles as styles } from "../_styles/pages/homeStyles";
@@ -46,6 +48,9 @@ export default function Home({ navigation }) {
   const [loadingAction, setLoadingAction] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
   const [hasInsuranceDebt, setHasInsuranceDebt] = useState(false);
+  const [officeAddress, setOfficeAddress] = useState("Văn phòng Cầu Giấy, Hà Nội");
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Time ticker
   useEffect(() => {
@@ -59,8 +64,20 @@ export default function Home({ navigation }) {
       loadTodayStatus();
       loadDashboard();
       loadInsuranceStatus();
+      loadOfficeAddress();
     }, [])
   );
+
+  const loadOfficeAddress = async () => {
+    try {
+      const res = await apiGet('/metadata/office');
+      if (res && res.data) {
+        setOfficeAddress(res.data);
+      }
+    } catch (error) {
+      console.log("Error loading office address", error);
+    }
+  };
 
   const loadInsuranceStatus = async () => {
     try {
@@ -108,16 +125,37 @@ export default function Home({ navigation }) {
     if (loadingAction) return;
     setLoadingAction(true);
     try {
+      // 1. Request Permission
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Toast.show({ type: 'error', text1: 'Permission Denied', text2: 'Location permission is required to check in/out.' });
+        setLoadingAction(false);
+        return;
+      }
+
+      // 2. Get Location
+      const location = await Location.getCurrentPositionAsync({});
+      const coords = location.coords;
+      const isMocked = location.mocked || false;
+      
+      const payload = {
+         latitude: coords.latitude,
+         longitude: coords.longitude,
+         accuracy: coords.accuracy,
+         isMocked: isMocked
+      };
+
       if (type === "IN") {
-        await attendanceService.checkIn();
+        await attendanceService.checkIn(payload);
         Toast.show({ type: 'success', text1: 'Success', text2: 'Checked in successfully!' });
       } else if (type === "OUT") {
-        await attendanceService.checkOut();
+        await attendanceService.checkOut(payload);
         Toast.show({ type: 'success', text1: 'Success', text2: 'Checked out successfully!' });
       }
       await loadTodayStatus();
     } catch (error) {
-      Toast.show({ type: 'error', text1: 'Error', text2: error.message || 'An error occurred' });
+      setErrorMessage(error.message || 'An error occurred');
+      setErrorModalVisible(true);
     } finally {
       setLoadingAction(false);
     }
@@ -143,6 +181,7 @@ export default function Home({ navigation }) {
   };
 
   return (
+    <>
     <Layout>
       {({ theme, isDark, insets, isWeb, webPadding }) => (
         <ScrollView
@@ -176,6 +215,11 @@ export default function Home({ navigation }) {
                 },
               ]}
             >
+              <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: 12, borderRadius: 12, marginBottom: 16, flexDirection: 'row', alignItems: 'center' }}>
+                 <MaterialIcons name="location-on" size={20} color={theme.primary} />
+                 <Text style={{ color: theme.text, marginLeft: 8, fontSize: 13, flex: 1 }}>{officeAddress}</Text>
+              </View>
+
               <SummaryCards styles={styles} theme={theme} {...(dashboardData || {})} />
               <View style={{ marginTop: 12 }}>
                 <QuickActionsGrid
@@ -230,5 +274,33 @@ export default function Home({ navigation }) {
         </ScrollView>
       )}
     </Layout>
+
+    {/* Custom Error Modal */}
+    <Modal
+      transparent={true}
+      visible={errorModalVisible}
+      animationType="fade"
+      onRequestClose={() => setErrorModalVisible(false)}
+    >
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <View style={{ backgroundColor: '#fff', borderRadius: 20, padding: 24, width: '100%', maxWidth: 400, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.25, shadowRadius: 20, elevation: 10 }}>
+          <View style={{ backgroundColor: '#FEE2E2', width: 64, height: 64, borderRadius: 32, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
+             <MaterialIcons name="error-outline" size={32} color="#EF4444" />
+          </View>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1F2937', marginBottom: 8, textAlign: 'center' }}>Check-in Failed</Text>
+          <Text style={{ fontSize: 15, color: '#4B5563', textAlign: 'center', marginBottom: 24, lineHeight: 22 }}>
+            {errorMessage}
+          </Text>
+          <TouchableOpacity 
+            style={{ backgroundColor: '#EF4444', paddingVertical: 14, paddingHorizontal: 24, borderRadius: 12, width: '100%', alignItems: 'center' }}
+            onPress={() => setErrorModalVisible(false)}
+            activeOpacity={0.8}
+          >
+            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>I Understand</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+    </>
   );
 }

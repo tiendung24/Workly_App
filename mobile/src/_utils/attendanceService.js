@@ -1,12 +1,12 @@
 import { apiPost, apiGet } from './api';
 
 export const attendanceService = {
-  checkIn: async () => {
-    return await apiPost('/attendance/check-in', {});
+  checkIn: async (payload = {}) => {
+    return await apiPost('/attendance/check-in', payload);
   },
 
-  checkOut: async () => {
-    return await apiPost('/attendance/check-out', {});
+  checkOut: async (payload = {}) => {
+    return await apiPost('/attendance/check-out', payload);
   },
 
   getTodayStatus: async () => {

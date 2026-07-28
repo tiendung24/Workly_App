@@ -18,12 +18,15 @@ import { adminStyles as s } from "../../_styles/pages/adminStyles";
 import { COLORS } from "../../_styles/theme";
 import { adminService } from "../../_utils/adminService";
 import Toast from "react-native-toast-message";
+import ErrorModal from "../../_components/common/ErrorModal";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [depts, setDepts] = useState([]);
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Form State
   const [modalVisible, setModalVisible] = useState(false);
@@ -105,7 +108,8 @@ export default function AdminUsers() {
   const handleSave = async () => {
     try {
       if (!formData.employee_code || !formData.full_name || !formData.email) {
-        Toast.show({ type: "error", text1: "Error", text2: "Please enter all required information" });
+        setErrorMessage("Please enter all required information");
+        setErrorModalVisible(true);
         return;
       }
       const payload = { ...formData };
@@ -120,7 +124,8 @@ export default function AdminUsers() {
       setModalVisible(false);
       loadData();
     } catch (error) {
-      Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "An error occurred" });
+      setErrorMessage(error.response?.data?.message || "An error occurred");
+      setErrorModalVisible(true);
     }
   };
 
@@ -131,7 +136,8 @@ export default function AdminUsers() {
       setModalVisible(false);
       loadData();
     } catch (error) {
-      Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "Could not delete user" });
+      setErrorMessage(error.response?.data?.message || "Could not delete user");
+      setErrorModalVisible(true);
     }
   };
 

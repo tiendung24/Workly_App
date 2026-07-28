@@ -10,6 +10,7 @@ const shiftController = require('../controllers/admin/shiftController');
 const leaveTypeController = require('../controllers/admin/leaveTypeController');
 const userController = require('../controllers/admin/userController');
 const timesheetController = require('../controllers/admin/timesheetController');
+const configController = require('../controllers/admin/configController');
 
 // All routes here MUST be Admin ONLY
 router.use(verifyToken);
@@ -57,6 +58,11 @@ router.route('/users/:id')
 
 // Timesheet Aggregation
 router.get('/timesheet', timesheetController.getTimesheet);
+
+// System Configs
+router.route('/configs')
+    .get(configController.getOfficeConfigs)
+    .put(configController.updateOfficeConfigs);
 
 
 module.exports = router;

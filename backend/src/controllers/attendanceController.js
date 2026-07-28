@@ -1,7 +1,42 @@
-const { Attendance, WorkShift, LeaveRequest, LeaveType, User } = require('../models');
+const { Attendance, WorkShift, LeaveRequest, LeaveType, User, SystemConfig } = require('../models');
 const { Op } = require('sequelize');
 const moment = require('moment');
 const { createAndEmit } = require('../services/notificationService');
+const { getDistance } = require('../utils/geo');
+
+// Helpers for GPS
+const validateGPS = async (lat, lon, accuracy, isMocked) => {
+    if (isMocked) {
+        throw new Error('Fake GPS detected (Mock Location). Cannot check in/out.');
+    }
+    
+    // Optional: check accuracy threshold (e.g. > 100m is too inaccurate)
+    if (accuracy && accuracy > 100) {
+        throw new Error(`GPS signal too weak (Accuracy: ${Math.round(accuracy)}m). Please move outside or wait for better signal.`);
+    }
+
+    if (!lat || !lon) {
+        throw new Error('Missing GPS coordinates.');
+    }
+
+    const configs = await SystemConfig.findAll({
+        where: { key: { [Op.in]: ['OFFICE_LATITUDE', 'OFFICE_LONGITUDE', 'OFFICE_RADIUS_METERS'] } }
+    });
+    
+    let officeLat, officeLon, radiusMeters = 100;
+    configs.forEach(c => {
+        if (c.key === 'OFFICE_LATITUDE') officeLat = parseFloat(c.value);
+        if (c.key === 'OFFICE_LONGITUDE') officeLon = parseFloat(c.value);
+        if (c.key === 'OFFICE_RADIUS_METERS') radiusMeters = parseInt(c.value);
+    });
+
+    if (officeLat && officeLon) {
+        const distance = getDistance(parseFloat(lat), parseFloat(lon), officeLat, officeLon);
+        if (distance > radiusMeters) {
+            throw new Error(`You are too far from the office (Distance: ${Math.round(distance)}m). Max allowed: ${radiusMeters}m.`);
+        }
+    }
+};
 
 const getTodayDateStr = () => {
     return moment().format('YYYY-MM-DD');
@@ -21,6 +56,10 @@ const getTodayAndShift = async (userId) => {
 const checkIn = async (req, res, next) => {
     try {
         const userId = req.user.id;
+        const { latitude, longitude, accuracy, isMocked } = req.body;
+
+        await validateGPS(latitude, longitude, accuracy, isMocked);
+
         const { today, attendance } = await getTodayAndShift(userId);
 
         // Không cho check-in ngày Chủ Nhật
@@ -100,6 +139,10 @@ const checkIn = async (req, res, next) => {
 const checkOut = async (req, res, next) => {
     try {
         const userId = req.user.id;
+        const { latitude, longitude, accuracy, isMocked } = req.body;
+
+        await validateGPS(latitude, longitude, accuracy, isMocked);
+
         const { today, attendance } = await getTodayAndShift(userId);
 
         if (!attendance || !attendance.check_in_time) {

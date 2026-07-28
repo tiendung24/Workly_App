@@ -14,10 +14,13 @@ import { COLORS } from "../../_styles/theme";
 import { adminService } from "../../_utils/adminService";
 import moment from "moment";
 import Toast from "react-native-toast-message";
+import ErrorModal from "../../_components/common/ErrorModal";
 
 export default function AdminTimesheet() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   
   // Date selection
   const [year, setYear] = useState(moment().year());
@@ -33,10 +36,11 @@ export default function AdminTimesheet() {
     try {
       setLoading(true);
       const res = await adminService.getTimesheet(year, month);
-      if (res.data) setData(res.data);
+      if (res && res.data) setData(res.data);
     } catch (error) {
       console.error(error);
-      Toast.show({ type: "error", text1: "Error", text2: "Cannot fetch timesheet data" });
+      setErrorMessage("Cannot fetch timesheet data");
+      setErrorModalVisible(true);
     } finally {
       setLoading(false);
     }
@@ -61,6 +65,7 @@ export default function AdminTimesheet() {
   };
 
   return (
+    <>
     <Layout>
       {({ theme, isDark, insets, isWeb, webPadding }) => (
         <ScrollView
@@ -149,5 +154,7 @@ export default function AdminTimesheet() {
         </ScrollView>
       )}
     </Layout>
+    <ErrorModal visible={errorModalVisible} errorMessage={errorMessage} onClose={() => setErrorModalVisible(false)} />
+    </>
   );
 }
