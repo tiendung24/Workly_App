@@ -132,10 +132,6 @@ function AdminTabBar({ state, navigation }) {
       isDark={isDark}
       activeTab={activeTab}
       onTabChange={(tab) => {
-        if (tab === "Admin") {
-          navigation.navigate("Admin", { screen: "AdminDashboardScreen" });
-          return;
-        }
         navigation.navigate(tab);
       }}
       bottomInset={safeBottomInset}
@@ -162,10 +158,6 @@ function ManagerTabBar({ state, navigation }) {
       isDark={isDark}
       activeTab={activeTab}
       onTabChange={(tab) => {
-        if (tab === "Manager") {
-          navigation.navigate("Manager", { screen: "ManagerHomeScreen" });
-          return;
-        }
         navigation.navigate(tab);
       }}
       bottomInset={safeBottomInset}
