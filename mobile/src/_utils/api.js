@@ -46,13 +46,24 @@ export async function apiGet(path) {
 }
 
 // Generic POST request
-export async function apiPost(path, body) {
+export async function apiPost(path, body, customHeaders = null) {
   const headers = await getAuthHeaders();
+  
+  if (customHeaders) {
+    Object.assign(headers, customHeaders);
+  }
+
+  let isFormData = body instanceof FormData;
+  if (isFormData) {
+    delete headers['Content-Type'];
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers,
-    body: JSON.stringify(body),
+    body: isFormData ? body : JSON.stringify(body),
   });
+  
   const data = await res.json();
   if (!res.ok) {
     const err = new Error(data.message || "Request failed");
