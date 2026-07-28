@@ -1,4 +1,4 @@
-const { Department } = require('../../models');
+const { Department, Sequelize } = require('../../models');
 const { Op } = require('sequelize');
 
 // GET /api/admin/departments
@@ -18,7 +18,9 @@ const createDepartment = async (req, res, next) => {
         if (!name || !name.trim()) {
             return res.status(400).json({ message: 'Department name is required' });
         }
-        const existing = await Department.findOne({ where: { name: name.trim() } });
+        const existing = await Department.findOne({ 
+            where: Sequelize.where(Sequelize.fn('lower', Sequelize.col('name')), name.trim().toLowerCase()) 
+        });
         if (existing) {
             return res.status(400).json({ message: 'Department name already exists' });
         }
@@ -40,7 +42,14 @@ const updateDepartment = async (req, res, next) => {
         const department = await Department.findByPk(id);
         if (!department) return res.status(404).json({ message: 'Department not found' });
         
-        const duplicate = await Department.findOne({ where: { name: name.trim(), id: { [Op.ne]: id } } });
+        const duplicate = await Department.findOne({ 
+            where: { 
+                [Op.and]: [
+                    Sequelize.where(Sequelize.fn('lower', Sequelize.col('name')), name.trim().toLowerCase()),
+                    { id: { [Op.ne]: id } }
+                ]
+            } 
+        });
         if (duplicate) {
             return res.status(400).json({ message: 'Department name already exists' });
         }

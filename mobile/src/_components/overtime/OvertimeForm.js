@@ -37,7 +37,7 @@ export default function OvertimeForm({ visible, onClose, onSubmit, theme }) {
     onClose();
   };
 
-  const canSubmit = date && startTime && endTime;
+  const canSubmit = date && startTime && endTime && reason.trim().length >= 5;
 
   return (
     <Modal

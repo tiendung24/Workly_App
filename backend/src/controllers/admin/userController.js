@@ -23,7 +23,11 @@ const getUsers = async (req, res, next) => {
 // POST /api/admin/users
 const createUser = async (req, res, next) => {
     try {
-        const { employee_code, full_name, email, password, phone, address, department_name, position_name, role, manager_id, start_date } = req.body;
+        const { employee_code: rawCode, full_name: rawName, email: rawEmail, password, phone, address, department_name, position_name, role, manager_id, start_date } = req.body;
+        
+        const employee_code = rawCode ? rawCode.trim() : '';
+        const full_name = rawName ? rawName.trim() : '';
+        const email = rawEmail ? rawEmail.trim().toLowerCase() : '';
         
         // Validate required fields
         if (!employee_code || !full_name || !email) {
@@ -53,6 +57,12 @@ const createUser = async (req, res, next) => {
         
         const existingCode = await User.findOne({ where: { employee_code } });
         if (existingCode) return res.status(400).json({ message: 'Employee code already exists' });
+
+        // Check if phone exists
+        if (phone) {
+            const existingPhone = await User.findOne({ where: { phone } });
+            if (existingPhone) return res.status(400).json({ message: 'Phone number already exists' });
+        }
 
         // Xử lý Department bằng chữ
         let finalDepartmentId = null;
@@ -114,7 +124,11 @@ const createUser = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { full_name, phone, address, department_name, position_name, role, manager_id, is_active, employee_code, email } = req.body;
+        const { full_name: rawName, phone, address, department_name, position_name, role, manager_id, is_active, employee_code: rawCode, email: rawEmail } = req.body;
+        
+        const full_name = rawName ? rawName.trim() : '';
+        const employee_code = rawCode ? rawCode.trim() : undefined;
+        const email = rawEmail ? rawEmail.trim().toLowerCase() : undefined;
         
         const user = await User.findByPk(id);
         if (!user) return res.status(404).json({ message: 'User not found' });
@@ -162,6 +176,13 @@ const updateUser = async (req, res, next) => {
             const existingEmail = await User.findOne({ where: { email, id: { [Op.ne]: id } } });
             if (existingEmail) return res.status(400).json({ message: 'Email already exists' });
             user.email = email;
+        }
+
+        // Phone uniqueness check
+        if (phone && phone !== user.phone) {
+            const existingPhone = await User.findOne({ where: { phone, id: { [Op.ne]: id } } });
+            if (existingPhone) return res.status(400).json({ message: 'Phone number already exists' });
+            user.phone = phone;
         }
 
         await user.update({

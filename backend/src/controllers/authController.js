@@ -13,7 +13,11 @@ const generateToken = (user) => {
 // POST /api/auth/register
 const register = async (req, res, next) => {
     try {
-        const { employee_code, full_name, email, password, phone, address, department_name, position_name, start_date } = req.body;
+        const { employee_code: rawCode, full_name: rawName, email: rawEmail, password, phone, address, department_name, position_name, start_date } = req.body;
+        
+        const employee_code = rawCode ? rawCode.trim() : '';
+        const full_name = rawName ? rawName.trim() : '';
+        const email = rawEmail ? rawEmail.trim().toLowerCase() : '';
 
         // Validate input
         if (!employee_code || !full_name || !email || !password) {
@@ -46,6 +50,14 @@ const register = async (req, res, next) => {
         const existingCode = await User.findOne({ where: { employee_code } });
         if (existingCode) {
             return res.status(400).json({ message: 'Employee code already exists' });
+        }
+
+        // Kiểm tra SĐT đã tồn tại
+        if (phone) {
+            const existingPhone = await User.findOne({ where: { phone } });
+            if (existingPhone) {
+                return res.status(400).json({ message: 'Phone number already exists' });
+            }
         }
 
         // Xử lý Department bằng chữ
@@ -97,7 +109,9 @@ const register = async (req, res, next) => {
 // POST /api/auth/login
 const login = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        const rawEmail = req.body.email;
+        const password = req.body.password;
+        const email = rawEmail ? rawEmail.trim().toLowerCase() : '';
 
         if (!email || !password) {
             return res.status(400).json({ message: 'Please enter email and password' });

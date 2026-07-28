@@ -107,12 +107,23 @@ export default function AdminUsers() {
 
   const handleSave = async () => {
     try {
-      if (!formData.employee_code || !formData.full_name || !formData.email) {
+      if (!formData.employee_code.trim() || !formData.full_name.trim() || !formData.email.trim()) {
         setErrorMessage("Please enter all required information");
         setErrorModalVisible(true);
         return;
       }
-      const payload = { ...formData };
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        setErrorMessage("Invalid email format");
+        setErrorModalVisible(true);
+        return;
+      }
+      const payload = { 
+        ...formData,
+        employee_code: formData.employee_code.trim(),
+        full_name: formData.full_name.trim(),
+        email: formData.email.trim()
+      };
 
       if (editingId) {
         await adminService.updateUser(editingId, payload);

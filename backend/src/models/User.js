@@ -28,6 +28,7 @@ const User = sequelize.define('User', {
     },
     phone: {
         type: DataTypes.STRING(20),
+        unique: true,
     },
     address: {
         type: DataTypes.TEXT,

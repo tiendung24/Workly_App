@@ -1,4 +1,4 @@
-const { Position } = require('../../models');
+const { Position, Sequelize } = require('../../models');
 const { Op } = require('sequelize');
 
 // GET /api/admin/positions
@@ -18,7 +18,9 @@ const createPosition = async (req, res, next) => {
         if (!name || !name.trim()) {
             return res.status(400).json({ message: 'Position name is required' });
         }
-        const existing = await Position.findOne({ where: { name: name.trim() } });
+        const existing = await Position.findOne({ 
+            where: Sequelize.where(Sequelize.fn('lower', Sequelize.col('name')), name.trim().toLowerCase()) 
+        });
         if (existing) {
             return res.status(400).json({ message: 'Position name already exists' });
         }
@@ -40,7 +42,14 @@ const updatePosition = async (req, res, next) => {
         const position = await Position.findByPk(id);
         if (!position) return res.status(404).json({ message: 'Position not found' });
         
-        const duplicate = await Position.findOne({ where: { name: name.trim(), id: { [Op.ne]: id } } });
+        const duplicate = await Position.findOne({ 
+            where: { 
+                [Op.and]: [
+                    Sequelize.where(Sequelize.fn('lower', Sequelize.col('name')), name.trim().toLowerCase()),
+                    { id: { [Op.ne]: id } }
+                ]
+            } 
+        });
         if (duplicate) {
             return res.status(400).json({ message: 'Position name already exists' });
         }
