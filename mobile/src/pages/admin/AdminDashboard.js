@@ -13,8 +13,10 @@ import Layout from "../../_components/layout/Layout";
 import { adminStyles as s } from "../../_styles/pages/adminStyles";
 import { COLORS } from "../../_styles/theme";
 import { adminService } from "../../_utils/adminService";
+import { useAuth } from "../../_utils/AuthContext";
 
 export default function AdminDashboard({ navigation }) {
+  const { userInfo } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     users: 0,
@@ -27,10 +29,14 @@ export default function AdminDashboard({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [])
+    }, [userInfo])
   );
 
   const loadData = async () => {
+    if (userInfo?.role === 'Accountant' || userInfo?.role?.name === 'Accountant') {
+      navigation.replace("AdminPayrollScreen");
+      return;
+    }
     try {
       setLoading(true);
       const [uRes, dRes, pRes, sRes, lRes] = await Promise.all([
@@ -61,6 +67,7 @@ export default function AdminDashboard({ navigation }) {
     { id: "AdminTimesheet", label: "Timesheet Report", icon: "assessment", count: null, desc: "Payroll & Aggregation" },
     { id: "AdminConfig", label: "System Config", icon: "settings", count: stats.shifts + stats.leaves, desc: "Shifts & Leaves" },
     { id: "AdminInsurance", label: "Insurance & Payments", icon: "health-and-safety", count: null, desc: "Collections & PayOS" },
+    { id: "AdminPayrollScreen", label: "Payroll", icon: "payments", count: null, desc: "Salary & Drafts" },
   ];
 
   return (
