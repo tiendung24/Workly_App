@@ -4,8 +4,8 @@ import { Platform } from 'react-native';
 
 const HOST = Platform.select({
   android: '10.0.2.2',
-  ios: '192.168.1.7',
-  default: '192.168.1.7'
+  ios: '192.168.1.2',
+  default: '192.168.1.2'
 });
 
 // Thay dòng dưới bằng đúng đường dẫn Render khi bạn muốn deploy
@@ -48,22 +48,18 @@ export async function apiGet(path) {
 // Generic POST request
 export async function apiPost(path, body, customHeaders = null) {
   const headers = await getAuthHeaders();
-  
   if (customHeaders) {
     Object.assign(headers, customHeaders);
   }
-
   let isFormData = body instanceof FormData;
   if (isFormData) {
     delete headers['Content-Type'];
   }
-
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers,
     body: isFormData ? body : JSON.stringify(body),
   });
-  
   const data = await res.json();
   if (!res.ok) {
     const err = new Error(data.message || "Request failed");
