@@ -28,6 +28,10 @@ const createRequest = async (req, res, next) => {
             return res.status(400).json({ message: 'Please provide all date and time details' });
         }
 
+        if (!reason || reason.trim().length < 5) {
+            return res.status(400).json({ message: 'Reason must be at least 5 characters long' });
+        }
+
         const today = moment().format('YYYY-MM-DD');
 
         // 1. Không cho chọn ngày quá khứ
@@ -38,10 +42,11 @@ const createRequest = async (req, res, next) => {
         // Calculate hours
         const t1 = moment(start_time, "HH:mm");
         const t2 = moment(end_time, "HH:mm");
-        const total_hours = t2.diff(t1, 'hours', true);
+        let total_hours = t2.diff(t1, 'hours', true);
 
+        // Support overnight OT (e.g. 22:00 to 02:00)
         if (total_hours <= 0) {
-            return res.status(400).json({ message: 'End time must be after start time' });
+            total_hours += 24;
         }
 
         // 2. OT phải ngoài giờ hành chính (sau giờ kết thúc ca)

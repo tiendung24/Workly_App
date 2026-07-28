@@ -14,6 +14,8 @@ const CorrectionRequest = require('./CorrectionRequest');
 const Notification = require('./Notification');
 const InsuranceRecord = require('./InsuranceRecord');
 const Transaction = require('./Transaction');
+const SystemConfig = require('./SystemConfig');
+const Payroll = require('./Payroll');
 
 // ==================== ASSOCIATIONS ====================
 
@@ -89,6 +91,10 @@ Transaction.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 InsuranceRecord.hasMany(Transaction, { foreignKey: 'insurance_record_id', as: 'transactions' });
 Transaction.belongsTo(InsuranceRecord, { foreignKey: 'insurance_record_id', as: 'insuranceRecord' });
 
+// User ↔ Payroll
+User.hasMany(Payroll, { foreignKey: 'user_id', as: 'payrolls' });
+Payroll.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
 // ==================== EXPORT ====================
 
 module.exports = {
@@ -106,4 +112,6 @@ module.exports = {
     Notification,
     InsuranceRecord,
     Transaction,
+    SystemConfig,
+    Payroll,
 };

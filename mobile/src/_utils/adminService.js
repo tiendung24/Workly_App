@@ -33,4 +33,8 @@ export const adminService = {
   
   // Timesheet
   getTimesheet: (year, month) => apiGet(`/admin/timesheet?year=${year}&month=${month}`),
+
+  // Configs
+  getConfigs: () => apiGet('/admin/configs'),
+  updateConfigs: (data) => apiPut('/admin/configs', data),
 };

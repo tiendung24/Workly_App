@@ -1,6 +1,6 @@
 // mobile/src/_utils/homeConfig.js
 
-// Roles: "employee" | "manager" | "admin"
+// Roles: "employee" | "manager" | "admin" | "accountant"
 export function getQuickActions(role = "employee") {
   const employee = [
     { key: "timesheet", label: "Correction", icon: "assignment", tone: "blue" },       // giải trình / bù công
@@ -24,8 +24,13 @@ export function getQuickActions(role = "employee") {
     { key: "payroll", label: "Payroll", icon: "payments", tone: "green" },
   ];
 
+  const accountant = [
+    { key: "payroll", label: "Payroll", icon: "payments", tone: "green" },
+  ];
+
   if (role === "manager") return [...employee, ...manager];
   if (role === "admin") return [...employee, ...admin];
+  if (role === "accountant") return [...employee, ...accountant];
   return employee;
 }
 

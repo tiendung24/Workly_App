@@ -16,11 +16,15 @@ import { COLORS } from "../../_styles/theme";
 import { adminService } from "../../_utils/adminService";
 import Toast from "react-native-toast-message";
 import TimePickerInput from "../../_components/shared/TimePickerInput";
+import ErrorModal from "../../_components/common/ErrorModal";
 
 export default function AdminConfig() {
   const [shifts, setShifts] = useState([]);
   const [leaves, setLeaves] = useState([]);
+  const [officeConfig, setOfficeConfig] = useState({});
   const [loading, setLoading] = useState(true);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Form State
   const [modalVisible, setModalVisible] = useState(false);
@@ -37,12 +41,14 @@ export default function AdminConfig() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [sRes, lRes] = await Promise.all([
+      const [sRes, lRes, cRes] = await Promise.all([
         adminService.getShifts(),
-        adminService.getLeaveTypes()
+        adminService.getLeaveTypes(),
+        adminService.getConfigs()
       ]);
       if (sRes.data) setShifts(sRes.data);
       if (lRes.data) setLeaves(lRes.data);
+      if (cRes.data) setOfficeConfig(cRes.data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -82,8 +88,10 @@ export default function AdminConfig() {
 
   const handleSave = async () => {
     try {
-      if (!formData.name) {
-        Toast.show({ type: "error", text1: "Error", text2: "Name cannot be empty" });
+      const val = formData.name?.trim();
+      if (!val) {
+        setErrorMessage("Name cannot be empty");
+        setErrorModalVisible(true);
         return;
       }
 
@@ -106,7 +114,8 @@ export default function AdminConfig() {
       setModalVisible(false);
       loadData();
     } catch (error) {
-      Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "An error occurred" });
+      setErrorMessage(error.response?.data?.message || "An error occurred");
+      setErrorModalVisible(true);
     }
   };
 
@@ -118,11 +127,24 @@ export default function AdminConfig() {
           Toast.show({ type: "success", text1: "Success", text2: "Deleted successfully" });
           loadData();
       } catch (error) {
-          Toast.show({ type: "error", text1: "Error", text2: "Cannot delete linked data" });
+          setErrorMessage("Cannot delete linked data");
+          setErrorModalVisible(true);
       }
   };
 
+  const handleSaveOfficeConfig = async () => {
+    try {
+       await adminService.updateConfigs(officeConfig);
+       Toast.show({ type: "success", text1: "Success", text2: "Office Location updated" });
+       loadData();
+    } catch(e) {
+       setErrorMessage("Failed to update configs");
+       setErrorModalVisible(true);
+    }
+  };
+
   return (
+    <>
     <Layout>
       {({ theme, isDark, insets, isWeb, webPadding }) => (
         <ScrollView
@@ -137,8 +159,33 @@ export default function AdminConfig() {
              <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
           ) : (
             <>
-                {/* Shifts Section */}
+                {/* Office Config Section */}
                 <View style={[s.row, { borderBottomWidth: 0, marginBottom: 12, marginTop: 10 }]}>
+                    <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Office Location Config</Text>
+                    <TouchableOpacity style={[s.btn, { backgroundColor: '#3B82F6' }]} activeOpacity={0.8} onPress={handleSaveOfficeConfig}>
+                       <Text style={s.btnText}>Save Location</Text>
+                    </TouchableOpacity>
+                </View>
+                <View style={[s.card, { backgroundColor: theme.card, padding: 16 }]}>
+                   <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Office Address</Text>
+                   <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text, marginBottom: 10 }]} value={officeConfig.OFFICE_ADDRESS || ''} onChangeText={t => setOfficeConfig({...officeConfig, OFFICE_ADDRESS: t})} />
+                   
+                   <View style={{ flexDirection: 'row', gap: 10 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Latitude</Text>
+                        <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} value={officeConfig.OFFICE_LATITUDE || ''} onChangeText={t => setOfficeConfig({...officeConfig, OFFICE_LATITUDE: t})} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: theme.text, marginBottom: 5, fontWeight: 'bold' }}>Longitude</Text>
+                        <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} value={officeConfig.OFFICE_LONGITUDE || ''} onChangeText={t => setOfficeConfig({...officeConfig, OFFICE_LONGITUDE: t})} />
+                      </View>
+                   </View>
+                   <Text style={{ color: theme.text, marginTop: 10, marginBottom: 5, fontWeight: 'bold' }}>Radius (Meters)</Text>
+                   <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} keyboardType="numeric" value={officeConfig.OFFICE_RADIUS_METERS || ''} onChangeText={t => setOfficeConfig({...officeConfig, OFFICE_RADIUS_METERS: t})} />
+                </View>
+
+                {/* Shifts Section */}
+                <View style={[s.row, { borderBottomWidth: 0, marginBottom: 12, marginTop: 20 }]}>
                     <Text style={[s.title, { color: theme.text, marginBottom: 0 }]}>Work Shift Config</Text>
                     <TouchableOpacity style={[s.btn, { backgroundColor: '#10B981' }]} activeOpacity={0.8} onPress={() => handleOpenForm('shift')}>
                     <Text style={s.btnText}>+ Add Shift</Text>
@@ -252,5 +299,7 @@ export default function AdminConfig() {
         </ScrollView>
       )}
     </Layout>
+    <ErrorModal visible={errorModalVisible} errorMessage={errorMessage} onClose={() => setErrorModalVisible(false)} />
+    </>
   );
 }

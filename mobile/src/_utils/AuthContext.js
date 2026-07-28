@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
 
   // Provide a function to manually trigger count refresh
   const fetchUnreadCount = async () => {
-      if (!userToken) return;
       try {
           const res = await api.get('/notifications/unread-count');
           if (res.success) {

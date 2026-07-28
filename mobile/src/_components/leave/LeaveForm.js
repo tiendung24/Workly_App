@@ -89,7 +89,7 @@ export default function LeaveForm({ visible, onClose, onSubmit, theme }) {
     onClose();
   };
 
-  const canSubmit = leaveType && startDate;
+  const canSubmit = leaveType && startDate && endDate && reason.trim().length >= 5;
 
   return (
     <Modal

@@ -38,6 +38,8 @@ import Overtime from "./src/pages/Overtime";
 import Schedule from "./src/pages/Schedule";
 import InsuranceDetail from "./src/pages/InsuranceDetail";
 import Profile from "./src/pages/Profile";
+import Payroll from "./src/pages/Payroll";
+import PayrollDetail from "./src/pages/PayrollDetail";
 import ManagerHome from "./src/pages/manager/ManagerHome";
 import ManagerApproval from "./src/pages/manager/ManagerApproval";
 import ManagerTeam from "./src/pages/manager/ManagerTeam";
@@ -47,6 +49,7 @@ import AdminConfig from "./src/pages/admin/AdminConfig";
 import AdminTimesheet from "./src/pages/admin/AdminTimesheet";
 import AdminOrgs from "./src/pages/admin/AdminOrgs";
 import AdminInsurance from "./src/pages/admin/AdminInsurance";
+import AdminPayroll from "./src/pages/admin/AdminPayroll";
 import NotificationModal from "./src/_components/NotificationModal";
 
 import BottomNav from "./src/_components/layout/BottomNav";
@@ -244,6 +247,16 @@ function HomeStackScreen({ onLogout }) {
           headerLeft: () => null 
         }}
       />
+      <HomeStack.Screen
+        name="Payroll"
+        component={Payroll}
+        options={{ title: "Lương" }}
+      />
+      <HomeStack.Screen
+        name="PayrollDetail"
+        component={PayrollDetail}
+        options={{ title: "Chi tiết Lương" }}
+      />
     </HomeStack.Navigator>
   );
 }
@@ -375,6 +388,11 @@ function AdminStackScreen() {
         component={AdminInsurance}
         options={{ title: "Bảo hiểm PayOS" }}
       />
+      <AdminStack.Screen
+        name="AdminPayrollScreen"
+        component={AdminPayroll}
+        options={{ title: "Bảng Lương" }}
+      />
     </AdminStack.Navigator>
   );
 }
@@ -452,7 +470,7 @@ function RootNavigation() {
   return (
     <NavigationContainer>
       {userToken ? (
-        userInfo?.role === 'Admin' || userInfo?.role?.name === 'Admin' ? (
+        userInfo?.role === 'Admin' || userInfo?.role?.name === 'Admin' || userInfo?.role === 'Accountant' ? (
            <AdminTabs onLogout={logout} />
         ) : userInfo?.role === 'Manager' || userInfo?.role?.name === 'Manager' ? (
            <ManagerTabs onLogout={logout} />

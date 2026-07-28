@@ -88,6 +88,10 @@ const createRequest = async (req, res, next) => {
             return res.status(400).json({ message: 'Please provide all details' });
         }
 
+        if (!reason || reason.trim().length < 5) {
+            return res.status(400).json({ message: 'Reason must be at least 5 characters long' });
+        }
+
         const today = moment().format('YYYY-MM-DD');
         const startMoment = moment(start_date, 'YYYY-MM-DD');
         const endMoment = moment(end_date, 'YYYY-MM-DD');

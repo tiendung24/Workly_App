@@ -13,6 +13,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS } from "../../_styles/theme";
 import Layout from "../../_components/layout/Layout";
 import { managerService } from "../../_utils/managerService";
+import ErrorModal from "../../_components/common/ErrorModal";
 
 const TABS = [
   { key: "leave", label: "Leave" },
@@ -25,6 +26,8 @@ export default function Approval({ navigation }) {
   const [requests, setRequests] = useState({ leave: [], overtime: [], correction: [] });
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useFocusEffect(
     useCallback(() => {
@@ -41,6 +44,8 @@ export default function Approval({ navigation }) {
       }
     } catch (error) {
       console.log("Error loading manager requests:", error);
+      setErrorMessage(error.message || "An error occurred");
+      setErrorModalVisible(true);
     } finally {
       setLoading(false);
     }
@@ -52,7 +57,8 @@ export default function Approval({ navigation }) {
       await managerService.approveRequest(type, id, status);
       loadData();
     } catch (error) {
-      alert("Error: " + error.message);
+      setErrorMessage("Error: " + error.message);
+      setErrorModalVisible(true);
     } finally {
       setActionLoading(null);
     }
@@ -143,6 +149,7 @@ export default function Approval({ navigation }) {
   };
 
   return (
+    <>
     <Layout>
       {({ theme, isDark, insets, isWeb, webPadding }) => (
         <View style={{ flex: 1 }}>
@@ -193,6 +200,8 @@ export default function Approval({ navigation }) {
         </View>
       )}
     </Layout>
+    <ErrorModal visible={errorModalVisible} errorMessage={errorMessage} onClose={() => setErrorModalVisible(false)} />
+    </>
   );
 }
 

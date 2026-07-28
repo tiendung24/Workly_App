@@ -18,12 +18,15 @@ import { adminStyles as s } from "../../_styles/pages/adminStyles";
 import { COLORS } from "../../_styles/theme";
 import { adminService } from "../../_utils/adminService";
 import Toast from "react-native-toast-message";
+import ErrorModal from "../../_components/common/ErrorModal";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [depts, setDepts] = useState([]);
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Form State
   const [modalVisible, setModalVisible] = useState(false);
@@ -37,6 +40,7 @@ export default function AdminUsers() {
     position_name: "",
     role: "Employee",
     manager_id: null,
+    bank_account: "",
     is_active: true,
   });
   
@@ -83,6 +87,7 @@ export default function AdminUsers() {
         position_name: user.position?.name || "",
         role: user.role,
         manager_id: user.manager_id || null,
+        bank_account: user.bank_account || "",
         is_active: user.is_active,
       });
     } else {
@@ -96,6 +101,7 @@ export default function AdminUsers() {
         position_name: "",
         role: "Employee",
         manager_id: null,
+        bank_account: "",
         is_active: true,
       });
     }
@@ -104,11 +110,24 @@ export default function AdminUsers() {
 
   const handleSave = async () => {
     try {
-      if (!formData.employee_code || !formData.full_name || !formData.email) {
-        Toast.show({ type: "error", text1: "Error", text2: "Please enter all required information" });
+      if (!formData.employee_code.trim() || !formData.full_name.trim() || !formData.email.trim()) {
+        setErrorMessage("Please enter all required information");
+        setErrorModalVisible(true);
         return;
       }
-      const payload = { ...formData };
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        setErrorMessage("Invalid email format");
+        setErrorModalVisible(true);
+        return;
+      }
+      const payload = { 
+        ...formData,
+        employee_code: formData.employee_code.trim(),
+        full_name: formData.full_name.trim(),
+        email: formData.email.trim(),
+        bank_account: formData.bank_account.trim()
+      };
 
       if (editingId) {
         await adminService.updateUser(editingId, payload);
@@ -120,7 +139,8 @@ export default function AdminUsers() {
       setModalVisible(false);
       loadData();
     } catch (error) {
-      Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "An error occurred" });
+      setErrorMessage(error.response?.data?.message || "An error occurred");
+      setErrorModalVisible(true);
     }
   };
 
@@ -131,7 +151,8 @@ export default function AdminUsers() {
       setModalVisible(false);
       loadData();
     } catch (error) {
-      Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "Could not delete user" });
+      setErrorMessage(error.response?.data?.message || "Could not delete user");
+      setErrorModalVisible(true);
     }
   };
 
@@ -155,6 +176,7 @@ export default function AdminUsers() {
   const getRoleColor = (role) => {
     if (role === "Admin") return "#EF4444";
     if (role === "Manager") return "#F59E0B";
+    if (role === "Accountant") return "#10B981";
     return "#3B82F6";
   };
 
@@ -237,6 +259,9 @@ export default function AdminUsers() {
                     <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Email (*)</Text>
                     <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="a@workly.com" placeholderTextColor={theme.sub} keyboardType="email-address" value={formData.email} onChangeText={t => setFormData({...formData, email: t})} />
 
+                    <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Bank Account</Text>
+                    <TextInput style={[s.input, { borderColor: theme.navBorder, color: theme.text }]} placeholder="MB Bank - 123456789" placeholderTextColor={theme.sub} value={formData.bank_account} onChangeText={t => setFormData({...formData, bank_account: t})} />
+
                     {!editingId && (
                       <>
                         <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Password (*)</Text>
@@ -262,7 +287,7 @@ export default function AdminUsers() {
 
                     <Text style={{ color: theme.text, marginTop: 15, marginBottom: 5, fontWeight: 'bold' }}>Role</Text>
                     <View style={{ flexDirection: 'row', gap: 10 }}>
-                        {['Employee', 'Manager', 'Admin'].map(r => (
+                        {['Employee', 'Manager', 'Admin', 'Accountant'].map(r => (
                           <TouchableOpacity key={r} style={[s.badge, { backgroundColor: formData.role === r ? getRoleColor(r) : theme.bg, borderWidth: formData.role === r ? 0 : 1, borderColor: theme.navBorder }]} onPress={() => setFormData({...formData, role: r})}>
                              <Text style={{ color: formData.role === r ? '#fff' : theme.text, fontWeight: 'bold' }}>{r}</Text>
                           </TouchableOpacity>

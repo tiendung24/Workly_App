@@ -28,6 +28,10 @@ const createRequest = async (req, res, next) => {
             return res.status(400).json({ message: 'Please provide all correction details' });
         }
 
+        if (!reason || reason.trim().length < 5) {
+            return res.status(400).json({ message: 'Reason must be at least 5 characters long' });
+        }
+
         const today = moment().format('YYYY-MM-DD');
 
         // 1. Correction chỉ cho sửa ngày quá khứ
@@ -55,6 +59,10 @@ const createRequest = async (req, res, next) => {
         }
         if (requested_check_out) {
             checkOutDateTime = new Date(`${date}T${requested_check_out}:00`);
+        }
+
+        if (checkInDateTime && checkOutDateTime && checkInDateTime >= checkOutDateTime) {
+            return res.status(400).json({ message: 'Check-in time must be before check-out time' });
         }
 
         const newRequest = await CorrectionRequest.create({

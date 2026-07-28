@@ -15,11 +15,14 @@ import { adminStyles as s } from "../../_styles/pages/adminStyles";
 import { COLORS } from "../../_styles/theme";
 import { adminService } from "../../_utils/adminService";
 import Toast from "react-native-toast-message";
+import ErrorModal from "../../_components/common/ErrorModal";
 
 export default function AdminOrgs() {
   const [departments, setDepartments] = useState([]);
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Form State
   const [modalVisible, setModalVisible] = useState(false);
@@ -64,10 +67,16 @@ export default function AdminOrgs() {
     setModalVisible(true);
   };
 
+  const handleCloseForm = () => {
+      setModalVisible(false);
+  };
+
   const handleSave = async () => {
     try {
-      if (!formData.name) {
-        Toast.show({ type: "error", text1: "Error", text2: "Name cannot be empty" });
+      const val = formData.name.trim();
+      if (!val) {
+        setErrorMessage("Name cannot be empty");
+        setErrorModalVisible(true);
         return;
       }
 
@@ -80,10 +89,11 @@ export default function AdminOrgs() {
       }
       
       Toast.show({ type: "success", text1: "Success", text2: "Updated successfully" });
-      setModalVisible(false);
+      handleCloseForm();
       loadData();
     } catch (error) {
-      Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "An error occurred" });
+      setErrorMessage(error.response?.data?.message || "An error occurred");
+      setErrorModalVisible(true);
     }
   };
 
@@ -94,11 +104,13 @@ export default function AdminOrgs() {
           Toast.show({ type: "success", text1: "Success", text2: "Deleted successfully" });
           loadData();
       } catch (error) {
-          Toast.show({ type: "error", text1: "Error", text2: error.response?.data?.message || "Delete failed" });
+          setErrorMessage(error.response?.data?.message || "Delete failed");
+          setErrorModalVisible(true);
       }
   };
 
   return (
+    <>
     <Layout>
       {({ theme, isDark, insets, isWeb, webPadding }) => (
         <ScrollView
@@ -212,5 +224,7 @@ export default function AdminOrgs() {
         </ScrollView>
       )}
     </Layout>
+    <ErrorModal visible={errorModalVisible} errorMessage={errorMessage} onClose={() => setErrorModalVisible(false)} />
+    </>
   );
 }
