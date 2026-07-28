@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useContext } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
@@ -13,10 +13,10 @@ import Layout from "../../_components/layout/Layout";
 import { adminStyles as s } from "../../_styles/pages/adminStyles";
 import { COLORS } from "../../_styles/theme";
 import { adminService } from "../../_utils/adminService";
-import { useAuth } from "../../_utils/AuthContext";
+import { AuthContext } from "../../_utils/AuthContext";
 
 export default function AdminDashboard({ navigation }) {
-  const { userInfo } = useAuth();
+  const { userInfo } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     users: 0,
